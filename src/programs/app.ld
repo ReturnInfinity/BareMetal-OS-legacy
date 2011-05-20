@@ -1,0 +1,10 @@
+OUTPUT_FORMAT("binary")
+OUTPUT_ARCH("i386:x86-64")
+ENTRY(main)
+SECTIONS
+{
+	. = 0x0000000000200000;
+	.text : { *(.text) }
+	.data : { *(.data .rodata) QUAD(ADDR(.bss)+SIZEOF(.bss)) }
+	.bss : { *(.bss) }
+}

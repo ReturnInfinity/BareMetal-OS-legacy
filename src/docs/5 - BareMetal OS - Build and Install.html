@@ -1,0 +1,96 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html lang="en">
+
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>BareMetal OS - Application Examples</title>
+<style type="text/css">
+body {color:#222; font-family:Verdana,sans-serif; font-size:12px;}
+pre {background-color:#FAFAFA; border:1px solid #DADADA; margin-bottom:6px; padding:6px;}
+</style>
+<script type="text/javascript" src="scripts/shCore.js"></script>
+<script type="text/javascript" src="scripts/shBrushAsm.js"></script>
+<script type="text/javascript" src="scripts/shBrushCpp.js"></script>
+<link type="text/css" rel="stylesheet" href="css/shCore.css"/>
+<link type="text/css" rel="stylesheet" href="css/shThemeDefault.css"/>
+<script type="text/javascript">
+	SyntaxHighlighter.defaults['tab-size'] = 8;
+	SyntaxHighlighter.all();
+</script>
+</head>
+
+<body>
+<div class="container">
+
+<h1>BareMetal OS - Build/Install Instructions</h1>
+
+<h3>Version 0.5.0 (DRAFT), 14 February 2011 - Return Infinity</h3>
+
+<p>This documentation details how to build the OS and applications from source and also how to install the OS and applications on a Virtual or Phyisical computer.</p>
+
+<br />
+
+
+<hr noshade="noshade"></hr>
+
+
+<h2>Overview</h2>
+
+<p>.</p>
+
+<br />
+
+<h3>Building the OS</h3>
+
+<p>Building the BareMetal OS kernel only requires one program to be installed: <a href="http://www.nasm.us/">NASM</a>. NASM will compile the Assembly source files into a executable binary file. NASM is also used to compile any applications that are writtin in Assembly.</p>
+
+<p>Download and extract the BareMetal OS source files to your harddrive. A link to the latest source files is always at the bottom of the BareMetal OS webpage.</p>
+
+<pre>nasm kernel64.asm -o kernel64.sys</pre>
+
+<br />
+
+<h3>Creating a bootable drive</h3>
+
+<p>Get an old IDE hard drive (or a compact flash to IDE adapter with a compact flash card).</p>
+<p>Partition the drive in MBR format with a primary partition. The primary partition needs to be FAT16 (2GiB in size or less). Format the partition with FAT16 and set it as active.</p>
+<p>Open the hard drive with a hex editor. By default it should load the first sector on the drive (Sector 0).</p>
+<img src="images/hex1.png"></img>
+<p>The infomation for the first partition starts at 0x1BE and the LBA start of the partition is a 32-bit value at 0x1C6. 0x80000000 is actually 0x00000008 as it needs to be converted to <a href="http://en.wikipedia.org/wiki/Endian#Examples_of_storing_the_value_0A0B0C0Dh_in_memory">Big-endian</a>. In the example screenshot the first sector of the first partition is 128 (0x80). More information on MBR can be found here: <a href="http://en.wikipedia.org/wiki/Master_boot_record">MBR layout</a></p>
+<img src="images/hex2.png"></img>
+<p>Using the hex editor go to the first sector of the first partition. Overwrite bytes 0x3E - 0x1FD of the boot sector with the boot sector from Pure64's FAT16 boot sector (boot16b.bin).</p>
+<p>Copy pure64.sys and kernel64.sys to the hard drive.</p>
+<p>Install the hard drive into the computer making sure the hard drive is on the primary IDE channel and that the drive is set to master.</p>
+
+The PC should be bootable now.
+Pure64 will display debug information in the top right corner of the screen during bootup.
+If you have any issues please email us at support@returninfinity.com.
+
+Writing the disk image to a drive
+Linux uses dd
+Windows users can use dd for windows
+
+
+
+<br />
+
+
+<hr noshade="noshade"></hr>
+
+
+<h2>Extra</h2>
+
+<a name="license"></a>
+<h3>License</h3>
+
+<p>BareMetal OS is open source and released under the 3-clause "New BSD License" (see <strong>docs/LICENSE.TXT</strong> in the BareMetal OS distribution). Essentially, it means you can do anything you like with the code, including basing your own project on it, providing you retain the license file and give credit to Return Infinity and the BareMetal OS developers for their work.</p>
+
+
+<br />
+
+
+
+</div>
+</body>
+</html>
+

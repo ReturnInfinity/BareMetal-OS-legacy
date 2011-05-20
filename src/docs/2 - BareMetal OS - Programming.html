@@ -1,0 +1,319 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html lang="en">
+
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>BareMetal OS - Programming</title>
+<style type="text/css">
+body {color:#222; font-family:Verdana,sans-serif; font-size:12px;}
+pre {background-color:#FAFAFA; border:1px solid #DADADA; margin-bottom:6px; padding:6px;}
+</style>
+<script type="text/javascript" src="scripts/shCore.js"></script>
+<script type="text/javascript" src="scripts/shBrushAsm.js"></script>
+<script type="text/javascript" src="scripts/shBrushCpp.js"></script>
+<link type="text/css" rel="stylesheet" href="css/shCore.css"/>
+<link type="text/css" rel="stylesheet" href="css/shThemeDefault.css"/>
+<script type="text/javascript">
+	SyntaxHighlighter.defaults['tab-size'] = 8;
+	SyntaxHighlighter.all();
+</script>
+</head>
+
+<body>
+<div class="container">
+
+<h1>BareMetal OS - Programming</h1>
+
+<h3>Version 0.5.0 (DRAFT), 14 February 2011 - Return Infinity</h3>
+
+<p>This documentation explains how to write software for BareMetal OS in assembly language. It shows you the tools you need, how BareMetal OS programs work, and how to use the system calls included in the kernel.</p>
+
+<br />
+
+
+<hr noshade="noshade"></hr>
+
+
+<h2>Overview</h2>
+
+<h3>Introduction to 64-bit (x86-64) Assembly</h3>
+
+<p>Most of todays modern operating systems are written in high-level programming languages such as C and C++. High-level programming is very useful when portability and code-maintainability are crucial, but it adds an extra layer of complexity to the proceedings. BareMetal OS is written in assembly to remove those extra layers and get right down to the hardware level. It's more verbose and non-portable, but you don't have to worry about compilers and linkers. Assembly also gives you full and total control over what the computer is doing at a granularity that is not possible with a high-level language.</p>
+
+<p>Assembly language (or colloquially "asm") is a textual way of representing the instructions that a CPU executes. For instance, an instruction to move some memory in the CPU may be <strong>11001001 01101110</strong> - but that's hardly memorable. Assembly provides mnemonics to substitute for these instructions, such as <strong>mov rax, 55</strong>. These mnemonics correlate directly with machine-code CPU instructions, without the convoluted binary numbers.</p>
+
+<p>Like most programming languages, assembly is a list of instructions to be followed in order. You can jump around between various places and set up subroutines/functions, but it's much more minimal than C/C++ and friends. You can't just print "Hello world" to the screen - the CPU has no concept of what a screen is! Instead, you work with memory, manipulating chunks of RAM, performing arithmetic on them and putting the results in the right place. Sound scary? It's a bit alien at first, but it's not hard to grasp once you wrap your head around the concept.</p>
+
+<p>At the assembly language level, there is no such thing as a variable in the high-level language sense. What you do have, however, is a set of <strong>registers</strong>, which are on-CPU memory stores. You can put numbers into these registers and perform calculations on them. In 64-bit mode, the general purpose registers can hold numbers between 0 and 18446744073709551615 (The maximum 32 and 16-bit values are 4294967295 and 65535 respectively). Here is a list of the fundamental registers on an x86-64 CPU:</p>
+
+<table border="1" cellpadding="5">
+<tbody>
+
+<tr>
+<td>RAX, RBX, RCX, RDX</td>
+<td>General-purpose registers for storing numbers that you're using. For instance, you may use RAX to store the character that has been pressed on the keyboard, while using RCX to act as a counter in a loop. These 64-bit registers can be used as a 32-bit, 16-bit, or 8-bit register as well (See below).</td>
+</tr>
+
+<tr>
+<td>RSI, RDI</td>
+<td>Source and destination data index registers. These point to places in memory for retrieving and storing data.</td>
+</tr>
+
+<tr>
+<td>RSP</td>
+<td>The Stack Pointer (explained in a moment).</td>
+</tr>
+
+<tr>
+<td>RIP</td>
+<td>The Instruction/Code Pointer. This contains the location in memory of the instruction being executed. When an instruction has finished, it is incremented and moves on to the next instruction. You can change the contents of this register to move around in your code.</td>
+</tr>
+
+<tr>
+<td>Notes:</td>
+<td>RAX is the 64-bit register but can also go by other names depending on "how much" of the register you want to use. EAX will use the lower 32-bits, AX will use the lower 16-bits, and AL will use the lower 8-bits. The same goes for other registers. More information can be found <a href="http://sandpile.org/aa64/reg.htm">here</a>.</td>
+</tr>
+
+</tbody>
+</table>
+
+
+<p>So you can use these registers to store numbers as you work - a bit like variables, but they're much more fixed in size and purpose. There are a few others, notably the extra 64-bit registers (R8, R9, R10, R11, R12, R13, R14, and R15), 8 80-bit Floating Point registers (ST0 - ST7), and 16 128-bit SIMD registers (XMM0 - XMM15).<p>
+
+<p>The <strong>stack</strong> is an area of your main RAM used for storing temporary information. A stack is a last in, first out (LIFO) data structure. The push operation adds to the top of the list, hiding any items already on the stack, or initializing the stack if it is empty. The pop operation removes an item from the top of the list, and returns this value to the caller. A pop either reveals previously concealed items, or results in an empty list. If you were to <strong>push</strong> the numbers 5, 7 and 15 onto the stack, you will <strong>pop</strong> them out as 15 first, then 7, and lastly 5. In assembly, you can push registers onto the stack and pop them out later - it's useful when you want to save the value of a register while you use that register for something else.</p>
+
+<p>Computer <strong>memory</strong> can be viewed as a linear line of cells ranging from byte 0 to whatever you have installed (millions of bytes on modern machines). Computers are better off with powers of two (because they're based on binary) whereas humans count in powers of 10 (10, 100, 1000 etc. - decimal). So we use <strong>hexadecimal</strong>, which is <strong>base 16</strong>, as a way of representing numbers. See this chart to understand:</p>
+
+<table border="1" cellpadding="5">
+<tbody>
+<tr>
+<td>Decimal</td>
+<td>0</td><td>1</td><td>2</td><td>3</td><td>4</td><td>5</td><td>6</td><td>7</td><td>8</td><td>9</td><td>10</td><td>11</td><td>12</td><td>13</td><td>14</td><td>15</td><td>16</td><td>17</td><td>18</td><td>19</td><td>20</td>
+</tr>
+<tr>
+<td>Hexadecimal</td>
+<td>0</td><td>1</td><td>2</td><td>3</td><td>4</td><td>5</td><td>6</td><td>7</td><td>8</td><td>9</td><td>A</td><td>B</td><td>C</td><td>D</td><td>E</td><td>F</td><td>10</td><td>11</td><td>12</td><td>13</td><td>14</td>
+</tr>
+</tbody>
+</table>
+
+<p>As you can see, whereas our normal decimal system uses 0 - 9, hexadecimal uses 0 - F in counting. It's a bit weird at first, but you'll get the hang of it. In assembly programming, we identify hexadecimal (hex) numbers by tagging a <strong>'0x'</strong> at the beginning - so <strong>0x0A</strong> is hex for the decimal number <strong>10</strong>. (You can also denote hexadecimal in assembly by putting an 'h' at the end of the number - for instance, 0Ah.)</p>
+
+<p>Let's finish off with a few common assembly instructions. These move memory around, compare them and perform calculations. They're the building blocks of your software - there are hundreds of instructions, but you don't have to memorise them all, because the most important handful are used 90% of the time.</p>
+
+<p>Please keep in mind that for this document and all of the BareMetal OS source files we are using the Intel syntax (not AT&amp;T syntax). The Intel syntax is the most popular but may look odd to those who have used C or C++. Intel syntax uses this format: <strong>OPCODE DESTINATION, SOURCE</strong>.</p>
+
+<table border="1" cellpadding="2" cellspacing="0">
+<tr><td>ADD</td><td>Add - Adds the destination operand (first operand) and the source operand (second operand) and then stores the result in the destination operand.</td><td><strong>add rax, 120</strong> adds 120 to the RAX register. <strong>add rdx, rbx</strong> adds the value in RBX to RDX</td></tr>
+<tr><td>CALL</td><td>Call procedure - Jump to a sub-procedure</td><td><strong>call b_print_char</strong> would call the BareMetal print character function. CALL saves the address of the operation that follows it to the stack and branches to the called procedure specified using the target operand. RET is required in the called function to restore program flow.</td></tr>
+<tr><td>CLC</td><td>Clear carry flag</td><td><strong>clc</strong> clears the Carry flag to 0.</td></tr>
+<tr><td>CMP</td><td>Compare operands - Compares the first source operand with the second source operand and sets the status flags according to the results.</td><td><strong>cmp rax, rbx</strong> compares the RAX and RBX registers. If they are equal the Zero flag is set (otherwise it is cleared). If RAX is less than RBX then the Carry flag is set (otherwise it is cleared). You can also compare immediate values like <strong>cmp rdx, 1200</strong>.</td></tr>
+<tr><td>DEC</td><td>Decrement by 1 - Subtracts 1 from the destination operand.</td><td><strong>dec rdx</strong> decrements the RDX register by 1.</td></tr>
+<tr><td>DIV</td><td>Unsigned divide - Preform an unsigned divide of the value in the AX, DX:AX, EDX:EAX, or RDX:RAX registers (dividend) by the source operand (divisor) and stores the result in the AX (AH:AL), DX:AX, EDX:EAX, or RDX:RAX registers</td><td><strong>div rbx</strong> divides RDX:RAX by RBX and stores the result in RDX:RAX.</td></tr>
+<tr><td>IN</td><td>Input from port - Copies the value from the I/O port specified with the second operand (source operand) to the destination operand (first operand).</td><td><strong>in al, 0x20</strong> inputs a byte from port 0x20 and puts it into AL. In order to access a 16-bits port you must use <strong>in al, dx</strong> where DX is set to the port number.</td></tr>
+<tr><td>INC</td><td>Increment by 1 - Adds 1 to the destination operand.</td><td><strong>inc rbx</strong> increments the RBX register by 1.</td></td>
+<tr><td>Jxx</td><td>Jump if condition - Checks the state of one or more of the status flags and, if the flags are in the specified state (condition), performs a jump to the target instruction specified by the destination operand.</td><td><strong>jc test_area</strong> - Jump if Carry - Only jump if the carry flag is set.<br /><strong>je test_area</strong> - Jump if Equal - Only jump if the equal flag is set.<br /><strong>jnc test_area</strong> - Jump if Not Carry - Only jump if the carry flag is not set.<br /><strong>jne test_area</strong> - Jump if Not Equal - Only jump if the equal flag is not set.<br />More information on all of the available conditional jump types can be found in the x86-64 manuals from Intel or AMD.</td></tr>
+<tr><td>JMP</td><td>Jump - Unconditionally transfers program control to a different point in the instruction stream without recording return information.</td><td><strong>jmp test_area</strong> jumps to the code address of test_area (defined by "test_area:" in your source code).</td></tr>
+<tr><td>LODSx</td><td>Load - For loading a byte, word, doubleword, or quadword (8-bit, 16-bit, 32-bit, or 64-bit) value from the address in the RSI register</td><td><strong>lodsb</strong> will load a byte in AL, <strong>lodsw</strong> for loading a word in AX, <strong>lodsd</strong> for a doubleword in EAX, and <strong>lodsq</strong> for a quadword in RAX</td></tr>
+<tr><td>MOV</td><td>Move - Copies the second operand (source operand) to the first operand (destination operand).</td><td><strong>mov rax, 1000</strong> stores the value 1000 in the RAX register.</td></tr>
+<tr><td>MUL</td><td>Unsigned multiply - Perform an unsigned multiplication of the value in AL, AX, EAX or RAX by the source operand and stores the result in the AX (AH:AL), DX:AX, EDX:EAX, or RDX:RAX registers.</td><td><strong>mul rbx</strong> mulitplies RAX by RBX and stores the result in RDX:RAX</td></tr>
+<tr><td>OUT</td><td>Output to port - Copies the value from the second operand (source operand) to the I/O port specified with the destination operand (first operand).</td><td><strong>out 0x20, al</strong> - Send the byte in AL to port 0x20. In order to access a 16-bit port you must use <strong>out dx, al</strong> where DX is set to the port number.</td></tr>
+<tr><td>POP</td><td>Pop data from the stack - Loads the value from the top of the stack to the location specified with the destination operand and then increments the stack pointer.</td><td><strong>pop rcx</strong> pops a 64-bit value from the stack and places it in RCX. <strong>pop ax</strong> pops a 16-bit value from the stack and places it in AX.</td></tr>
+<tr><td>PUSH</td><td>Push data onto the stack - Decrements the stack pointer and then stores the source operand on the top of the stack.</td><td><strong>push rbx</strong> pushes the 64-bit value in RBX to the stack. <strong>push dl</strong> pushes the 8-bit value in DL to the stack.</td></tr>
+<tr><td>RET</td><td>Return from procedure - Transfers program control to a return address located on the top of the stack.</td><td><strong>ret</strong> transfers program control to a return address located on the top of the stack. The address is usually placed on the stack by a CALL instruction, and the return is made to the instruction that follows the CALL instruction.</td></tr>
+<tr><td>STC</td><td>Set carry flag</td><td><strong>stc</strong> sets the Carry flag to 1.</td></tr>
+<tr><td>STOSx</td><td>Store - For storing a byte, word, doubleword, or quadword (8-bit, 16-bit, 32-bit, or 64-bit) value to the address in the RDI register</td><td><strong>stosb</strong> will store the byte in AL, <strong>stosw</strong> for storing the word in AX, <strong>stosd</strong> for the doubleword in EAX, and <strong>stosq</strong> for the quadword in RAX</td></tr>
+<tr><td>SUB</td><td>Subtraction - Subtracts the second operand (source operand) from the first operand (destination operand) and stores the result in the destination operand.</td><td><strong>sub rax, 57</strong> subtracts 57 from the RAX register. <strong>sub rdx, rcx</strong> subtracts the value in RCX from the RDX register.</td></tr>
+<tr><td>XCHG</td><td>Exchange data - Exchanges the contents of the destination (first) and source (second) operands.</td><td><strong>xchg rax, rbx</strong> exchanges the contents of the RAX and RBX registers.</td></tr>
+</table>
+
+
+<p>Let's look at some of these instructions in a little more detail. Consider the following code snippet:</p>
+
+
+<pre class="brush: asm; tab-size: 8">
+	mov rbx, 0x1000
+	mov rax, [rbx]
+	cmp rax, 50
+	jge label
+	...
+
+label:
+	mov rax, 10
+</pre>
+
+
+<p>In the first instruction, we move the number 0x1000 into the RBX register. Then, in the second instruction, we store in RAX whatever's in the memory location pointed to by RBX. This is what the <strong>[rbx]</strong> means: if we just did <strong>mov rax, rbx</strong> it'd simply copy the number 0x1000 into the RAX register. But by using square brackets, we're saying: don't just copy the contents of RBX into RAX, but copy the contents of the memory address to which RBX points. Given that RBX contains 0x1000, this instruction says: find whatever is at memory location 0x1000, and put it into RAX.</p>
+
+<p>So, if the byte of memory at location 0x1000 contains 37, then that number 37 will be put into the RAX register via our second instruction. Next up, we use <strong>cmp</strong> to compare the number in RAX with the number 50 (the decimal number 50 - we didn't use the '0x' prefix) The following <strong>jge</strong> instruction acts on the <strong>cmp</strong> comparison, which has set the FLAGS register as described earlier. The <strong>jge label</strong> says: if the result from the previous comparison is greater than or equal, jump to the part of the code denoted by <strong>label:</strong>. So if the number in RAX is greater than or equal to 50, execution jumps to label:. If not, execution continues at the '...' stage.</p>
+
+<p>One last thing: you can insert data into a program with the <strong>db</strong> (define byte) directive. For instance, this defines a series of bytes with the number zero at the end, representing a string:</p>
+
+<pre>mylabel: db 'Message here', 0</pre>
+
+<p>In our assembly code, we know that a string of characters, terminated by a zero, can be found at the <strong>mylabel:</strong> position. We could also set up single byte to use somewhat like a variable:</p>
+
+<pre>foo: db 0</pre>
+
+<p>Now <strong>foo:</strong> points at a single byte in the code, which in the case of BareMetal OS will be writable as the OS is copied completely to RAM. So you could have this instruction:</p>
+
+<pre>mov byte al, [foo]</pre>
+
+<p>This moves the byte pointed to by <strong>foo</strong> into the AL register.</p>
+
+<p>That's the essentials of x86-64 assembly language, and enough to get you started. When writing an OS or program, though, you'll need to learn much more as you progress, so see the <a href="#resources">Resources</a> section for links to more in-depth assembly tutorials.</p>
+
+
+<p></p>
+
+<a name="introduction"></a>
+<h3>Introduction to BareMetal OS Programs</h3>
+
+<p>BareMetal OS programs are written in 64-bit, protected mode assembly language. The OS, OS buffers, CLI, and the memory structures needed for 64-bit mode are contained in the first 2 MiB of physical memory (0x0000000000000000 - 0x00000000001FFFFF). Memory above 2 MiB is available for programs.</p>
+
+<p>BareMetal OS programs are loaded at the <strong>2 MiB</strong> point (Address 0x0000000000200000). Consequently, programs will need to begin with these directives:</p>
+
+<pre class="brush: asm; tab-size: 8">
+[BITS 64]
+[ORG 0x0000000000200000]
+</pre>
+
+<p>There are many system calls available in BareMetal OS for controlling the screen, getting input, manipulating strings, loading/saving files, and more. All parameters to BareMetal OS system calls are passed in registers, and not on the stack. To use them in your programs, you need this line:</p>
+
+<pre class="brush: asm; tab-size: 8">
+%INCLUDE "bmdev.asm"
+</pre>
+
+<p>This doesn't include any code, but a list of <strong>equ</strong> directives that point to system call vectors in the kernel. So, by including this file you can call, for instance, the BareMetal OS <strong>b_print_string</strong> routine without having to know exactly where it is in the kernel. <strong>bmdev.inc</strong> is included in the <strong>programs/</strong> directory of the BareMetal OS download -- it also provides a quick reference to the system calls.</p>
+
+<br />
+
+
+<a name="toolsneeded"></a>
+<h3>Tools needed</h3>
+
+<p>To write BareMetal OS programs you need:</p>
+
+<ul>
+<li><strong>NASM</strong> -- A powerful, free and open source assembler</li>
+<li><strong>bmdev.asm</strong> -- The system call vectors described above</li>
+<li>A way to add programs to the disk/disk image</li>
+</ul>
+
+<p>BareMetal OS uses NASM for its programs and kernel source code, hence why we recommend it here. You can, of course, use any other assembler that can output plain binary files (ie with no header) and accept 64-bit code. NASM is available in most Linux distro repositories, or you can download the Windows version <a href="http://www.nasm.us/pub/nasm/releasebuilds/?C=M;O=D">from here</a> (get the 'win32' file).</p>
+
+<p>For the second point, copy <strong>programs/bmdev.asm</strong> so that it's alongside your program's source code for inclusion.</p>
+
+<p>For the third point, if you've written BareMetal OS to a real hard disk, you can just copy your <strong>.APP</strong> programs onto that disk (root directory only!), boot BareMetal OS and test them out.</p>
+
+
+
+<br />
+
+
+<hr noshade="noshade"></hr>
+
+
+<h2>Example</h2>
+
+<a name="sourcecode"></a>
+<h3>Source code</h3>
+
+<p>Here is an example BareMetal OS program, in NASM format, which prints a string to the screen:</p>
+
+<pre class="brush: asm; tab-size: 8">
+[BITS 64]
+[ORG 0x0000000000200000]
+
+%INCLUDE "bmdev.asm"
+
+start:					; Start of program label
+
+	mov rsi, test_message		; Load RSI with memory address of string
+	call b_print_string		; Print the string that RSI points to
+
+ret					; Return to OS
+
+test_message: db 'My first program in BareMetal OS!', 13, 0
+</pre>
+
+
+<br />
+
+
+<a name="building"></a>
+<h3>Building</h3>
+
+<p>Save the above code as <strong>test.asm</strong>, and enter this command to assemble it (works on both Linux and Windows):</p>
+
+<pre>
+nasm -f bin -o test.app test.asm
+</pre>
+
+<p>Using the '-f bin' option we tell NASM that we just want a plain binary file: no header or sections. The resulting executable file is <strong>test.app</strong> that we can copy to our hard drive or add to the virtual disk image as described in <em>Copying files</em> in the User Handbook. Then we can boot BareMetal OS and run the program.</p>
+
+
+<br />
+
+
+<a name="explanation"></a>
+<h3>Explanation</h3>
+
+
+<p>This is a very short program, but we'll explain exactly how it works for complete clarity. The first three lines will not be assembled to machine code instructions, but are just directives to tell NASM that we want to operate in 64 bit mode, our code is written to be executed from the 2MiB mark, and we want to use system calls from the BareMetal OS API.</p>
+
+<p>Next we have the 'start:' label, which is not essential but good practice to make things clear. We put the location of a zero-terminated string into the <strong>RSI</strong> register, then call the BareMetal OS <strong>b_print_string</strong> routine which we can access via the vectors listed in <strong>bmdev.asm</strong>.</p>
+
+<p>All BareMetal OS programs must end with a <strong>ret</strong> instruction, which passes control back to the OS.</p>
+
+
+
+<br />
+
+
+<hr noshade="noshade"></hr>
+
+
+<h2>Resources</h2>
+
+<a name="resources"></a>
+<h3>Online</h3>
+<ul>
+<li><a href="http://developer.amd.com/documentation/guides/pages/default.aspx#manuals">AMD64 Architecture Programmer's Manuals</a></li>
+<li><a href="http://www.intel.com/products/processor/manuals/">Intel® 64 and IA-32 Architectures Software Developer's Manuals</a></li>
+<li><a href="http://ref.x86asm.net/coder64-abc.html">X86-64 Opcode and Instruction Reference</a></li>
+</ul>
+
+<p></p>
+
+<h3>Books</h3>
+<ul>
+<li><a href="http://www.amazon.com/dp/1593272073/">The Art of Assembly Language by Randall Hyde</a> - ISBN-13: 978-1593272074</li>
+<li><a href="http://www.amazon.com/dp/1598220020/">32/64-Bit 80x86 Assembly Language Architecture by James Leiterman</a> - ISBN-13: 978-1598220025</li>
+</ul>
+
+<p></p>
+
+
+<br />
+
+
+<hr noshade="noshade"></hr>
+
+
+<h2>Extra</h2>
+
+<a name="license"></a>
+<h3>License</h3>
+
+<p>BareMetal OS is open source and released under the 3-clause "New BSD License" (see <strong>docs/LICENSE.TXT</strong> in the BareMetal OS distribution). Essentially, it means you can do anything you like with the code, including basing your own project on it, providing you retain the license file and give credit to Return Infinity and the BareMetal OS developers for their work.</p>
+
+
+<br />
+
+
+
+</div>
+</body>
+</html>
+

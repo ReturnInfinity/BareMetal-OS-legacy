@@ -1,0 +1,117 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html lang="en">
+
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>BareMetal OS - Architecture</title>
+<style type="text/css">
+body {color:#222; font-family:Verdana,sans-serif; font-size:12px;}
+pre {background-color:#FAFAFA; border:1px solid #DADADA; margin-bottom:6px; padding:6px;}
+</style>
+</head>
+
+<body>
+<div class="container">
+
+<h1>BareMetal OS - Architecture</h1>
+
+<h3>Version 0.5.0 (DRAFT), 14 February 2011 - Return Infinity</h3>
+
+<p>This document details the architecture of BareMetal OS and how it differs from other Operating Systems.</p>
+
+<br />
+
+
+<hr noshade="noshade"></hr>
+
+<h2>Introduction to BareMetal OS</h2>
+
+<p>BareMetal OS is a new Operating System being written by Return Infinity. There are a few key differences that make it stand apart from other Operating Systems that are currently available:</p>
+
+<dl>
+	<dt><strong>64-Bit Only</strong></dt>
+	<dd>No backwards compatibility here! BareMetal OS has been written from scratch for modern 64-bit computers with CPUs using the <a href="http://en.wikipedia.org/wiki/X86-64">x86-64</a> architecture. Operating in 64-bit mode has several <a href="http://en.wikipedia.org/wiki/X86-64#Architectural_features">new features</a> that offer advantages over 32-bit mode. BareMetal OS makes use of the <a href="http://www.returninfinity.com/pure64.html">Pure64</a> bootloader to get the computer and all of its CPUs into 64-bit mode, gather and store valuable system information, and to load the BareMetal OS binary.</dd>
+	<p></p>
+	<dt><strong>Written in 100% Assembly language</strong></dt>
+	<dd>Most Operating Systems are written in high level languages like C or C++. High level languages are great if you want your code to compile for running on different kinds of hardware but it also adds another layer of abstraction to the overall picture. BareMetal OS is written in Assembly (also known as machine code) and targets the X86-64 CPU architecture only. While writing code in Assembly language is a bit more difficult you have the advantage of being in full control of what the CPU is executing at any given time. Assembly also lets us focus on optimization of the code at the core level.</dd>
+	<p></p>
+	<dt><strong>Monotasking</strong></dt>
+	<dd>The philosophy behind BareMetal OS is to run one application at a time. Multitasking adds complexity to the overall system as well as degraded performance due to the protection mechanisms necessary in a multitasking system. While BareMetal OS is a mono-tasking system it does allow for <a href="http://en.wikipedia.org/wiki/Symmetric_multiprocessing">multiprocessing</a> to submit sub-tasks to other available CPUs.</dd>
+	<p></p>
+	<dt><strong>Multiprocessor</strong></dt>
+	<dd>The computer industry is undergoing a paradigm shift as chip manufacturers are shifting development resources away from single-processor chips to a new generation of multi-processor chips. This fundamental change in our core computing architecture requires a fundamental change in how we program in order to optimize the use of the CPU resources that are available. BareMetal OS includes system calls to utilize all available CPU's. BareMetal OS currently supports up to 128 x86-64 processors.</dd>
+	<p></p>
+	<dt><strong>No GUI</strong></dt>
+	<dd>A graphical user interface is great for today's modern multitasking OS's but is not nessecary for a monotasking system. BareMetal OS has a CLI (Command Line Interface) for a more simplified operating environment.</dd>
+	<p></p>
+	<dt><strong>Size</strong></dt>
+	<dd>The current size of the BareMetal OS kernel binary is 16384 bytes (16KiB). In actuality the size of the kernel code is only about 10000 bytes with the additional space being used as padding. The memory footprint of the OS, while running, is less than 512KiB, the majority of this being the <a href="http://en.wikipedia.org/wiki/Page_table">Page Table</a> structures in memory that are needed for 64-bit operation and the individual stacks for each CPU.</dd>
+	<p></p>
+	<dt><strong>Open Source</strong></dt>
+	<dd>The source code for BareMetal OS is freely available. Feel free to modify anything to more fit your needs. If you create a function that others would find useful you may submit your code to have it included in future versions. All source code is heavily commented to give you a better understanding of what is going on and how this work. The BSD license allows you to do anything you like with the code, including basing your own project on it, providing you retain the license file and give credit to Return Infinity and the BareMetal OS developers for their work.</dd>
+	<p></p>
+	<dt><strong>Simplicity</strong></dt>
+	<dd>We believe that simplicity is key in creating a lean and powerful Operating System.</dd>
+</dl> 
+
+<br />
+
+
+<hr noshade="noshade"></hr>
+
+<h2>Goals</h2>
+
+<p>BareMetal OS development is being guided by three main goals.</p>
+
+<ol>
+<li><strong>High Performance Computing</strong> - Act as the base OS for a HPC cluster node. Running advanced computation workloads is ideal for a mono-tasking Operating System.</li>
+<li><strong>Embedded Applications</strong> - Provide a platform for embedded applications running on commodity x86-64 hardware.</li>
+<li><strong>Education</strong> - Provide an environment for learning and experimenting with programming in x86-64 Assembly as well as Operating System fundamentals.</li>
+</ol>
+
+<br />
+
+
+<hr noshade="noshade"></hr>
+
+<h2>Overview of System</h2>
+
+<p>The architecture of BareMetal OS isn't anything new. In fact if you have been around computers long enough it should remind you of something like <a href="http://en.wikipedia.org/wiki/DOS">DOS</a>. What is new is that we are applying this concept to today's 64-bit computers.</p>
+
+<img src="images/OS Diagram - BareMetal.png"></img>
+<p>As you can see in the above diagram both the running application as well as the OS have full access to the underlying hardware. In BareMetal OS the kernel as well as the running application are in "<a href="http://en.wikipedia.org/wiki/Ring_%28computer_security%29">Ring 0</a>". Mono-tasking allows us to keep costly <a href="http://en.wikipedia.org/wiki/Context_switch">context switches</a> to an absolute minimum. While the application is running the OS mainly stays out of the way, only providing system calls if the application asks.</p>
+
+
+
+<img src="images/OS Diagram - Standard.png"></img>
+<p>As you can see in the above diagram the application runs on top of the OS. Only the OS has full access to the underlying hardware. In this configuration the OS kernel runs in "Ring 0" and the application(s) run in "Ring 3". This layout works very well for multi-tasking OS's as it keeps the application from doing any damage to the OS or causing a complete system crash.</p>
+
+<br />
+
+
+<hr noshade="noshade"></hr>
+
+
+<h2>Extra</h2>
+
+
+<a name="help"></a>
+<h3>Help</h3>
+
+<p>If you have any questions about BareMetal OS, or you're developing a similar OS and want to share code and ideas, you can post a message to the <a href="http://groups.google.com/group/baremetal-os">BareMetal OS Group</a> hosted by Google Groups.</p>
+
+
+<a name="license"></a>
+<h3>License</h3>
+
+<p>BareMetal OS is open source and released under the 3-clause "New BSD License" (see <strong>docs/LICENSE.TXT</strong> in the BareMetal OS distribution). Essentially, it means you can do anything you like with the code, including basing your own project on it, providing you retain the license file and give credit to Return Infinity and the BareMetal OS developers for their work.</p>
+
+
+<br />
+
+
+
+</div>
+</body>
+</html>
+
