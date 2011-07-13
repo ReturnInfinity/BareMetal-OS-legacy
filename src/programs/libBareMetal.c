@@ -197,10 +197,10 @@ unsigned long b_smp_enqueue(void *ptr,  unsigned long var)
 }
 
 
-unsigned long b_smp_dequeue(void)
+unsigned long b_smp_dequeue(unsigned long *var)
 {
 	unsigned long tlong;
-        asm volatile ("call *0x00100228" : "=a"(tlong));
+        asm volatile ("call *0x00100228" : "=a"(tlong), "=D"(var));
 	return tlong;
 }
 

@@ -24,7 +24,7 @@ pre {background-color:#FAFAFA; border:1px solid #DADADA; margin-bottom:6px; padd
 
 <h1>BareMetal OS - Application Examples</h1>
 
-<h3>Version 0.5.0 (DRAFT), 14 February 2011 - Return Infinity</h3>
+<h3>Version 0.5.2 (DRAFT), 4 July 2011 - Return Infinity</h3>
 
 <p>This documentation details some application examples in Assembly and C.</p>
 
@@ -76,7 +76,7 @@ hello_message: db 'Hello, world!', 13, 0
 nasm hello.asm -o hello.app
 </pre>
 
-<h3>Writing an application in C</h3>
+<h3>Writing an application in C (without the standard ANSI C Library)</h3>
 
 Here is a complete "Hello world" example written in C: 
 
@@ -108,6 +108,28 @@ clang -c -fomit-frame-pointer -o helloc.o helloc.c
 ld -T app.ld -o helloc.app helloc.o libBareMetal.o
 </pre>
 
+<h3>Writing an application in C (with the Newlib ANSI C Library)</h3>
+
+Here is a complete "Hello world" example written in C: 
+
+<pre class="brush: c;">
+#include "stdio.h"
+
+int main(void)
+{
+	printf("Hello world, from C!\n");
+	return 0;
+}
+</pre>
+
+We support GCC compiling applications in C with Newlib
+
+<h4>GCC</h4>
+Tested with 4.5.0
+<pre>
+gcc -I ../../newlib-1.19.0/newlib/libc/include/ -c -m64 helloc.c -o helloc.o
+ld -T app.ld -o helloc.app helloc.o libc.a
+</pre>
 
 <h3>Advanced C application</h3>
 

@@ -45,7 +45,7 @@ os_smp_wakeup:
 	shl eax, 24		; AL holds the CPU #, shift left 24 bits to get it into 31:24, 23:0 are reserved
 	mov [rdi+0x0310], eax	; Write to the high bits first
 	xor eax, eax		; Clear EAX, namely bits 31:24
-	mov al, 0x80		; Execute interrupt 0x81
+	mov al, 0x80		; Execute interrupt 0x80
 	mov [rdi+0x0300], eax	; Then write to the low bits
 
 	pop rax
@@ -132,30 +132,12 @@ os_smp_enqueue_spin:
 
 os_smp_enqueue_end:
 	mov [cpuqueuefinish], cx
-
-	mov rsi, cpustatus		; The queue now has a pending job, check for an idle CPU core
-	xor eax, eax
-	xor ecx, ecx
-os_smp_enqueue_end_check_next:
-	lodsb
-	add ecx, 1
-	cmp ecx, 256
-	je os_smp_enqueue_real_end
-	bt ax, 0			; Is this CPU core Present? Bit 0 is set if so
-	jnc os_smp_enqueue_end_check_next
-	bt ax, 1
-	jc os_smp_enqueue_end_check_next
-	mov al, cl
-	sub al, 1
-	call os_smp_wakeup		; Wake up a CPU core
-	jmp os_smp_enqueue_end_check_next
-
-os_smp_enqueue_real_end:
 	pop rax
 	pop rcx
 	pop rsi
 	pop rdi
 	btr word [os_QueueLock], 0	; Release the lock
+	call os_smp_wakeup_all
 	clc				; Carry clear for success
 	ret
 

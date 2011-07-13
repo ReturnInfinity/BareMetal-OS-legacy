@@ -172,6 +172,7 @@ rtc_end:
 align 16
 network:
 	push rdi
+	push rsi
 	push rcx
 	push rax
 
@@ -208,6 +209,16 @@ network:
 network_rx_buffer_nowrap:
 	mov byte [os_EthernetBuffer_C2], al
 
+	; Check the packet type
+	mov ax, [rdi+12]		; Grab the EtherType/Length
+	xchg al, ah			; Convert big endian to little endian
+	cmp ax, 0x0800			; IPv4
+	je network_IPv4_handler
+	cmp ax, 0x0806			; ARP
+	je network_ARP_handler
+	cmp ax, 0x86DD			; IPv6
+	je network_IPv6_handler
+
 	jmp network_end
 
 network_tx:
@@ -223,8 +234,58 @@ network_ack_only_low:
 
 	pop rax
 	pop rcx
+	pop rsi
 	pop rdi
 	iretq
+
+network_ARP_handler:			; Copy the packet and call the handler
+	mov rsi, rdi			; Copy the packet location
+	mov rdi, os_eth_temp_buffer	; and copy it here
+	push rsi
+	push rcx
+	rep movsb
+	pop rcx
+	pop rsi
+
+	; Remove the ARP packet from the ring buffer
+;	mov al, byte [os_EthernetBuffer_C2]
+
+	call os_arp_handler		; Handle the packet
+	jmp network_end
+
+network_IPv4_handler:
+	mov rsi, rdi			; Copy the packet location
+	mov rdi, os_eth_temp_buffer	; and copy it here
+	push rsi
+	push rcx
+	rep movsb
+	pop rcx
+	pop rsi
+
+	mov al, [rsi+0x17]
+	cmp al, 0x01			; ICMP
+	je network_IPv4_ICMP_handler
+	cmp al, 0x06			; TCP
+	je network_end
+	cmp al, 0x11			; UDP
+	je network_end
+	jmp network_end
+
+network_IPv4_ICMP_handler:
+	push rsi
+	mov rsi, network_string02
+	call os_print_string
+	pop rsi
+	call os_icmp_handler
+	jmp network_end
+
+network_IPv6_handler:
+	jmp network_end
+
+network_string01 db 'ARP!', 0
+network_string02 db 'ICMP!', 0
+network_string03 db 'TCP!', 0
+network_string04 db 'UDP!', 0
 ; -----------------------------------------------------------------------------
 
 
@@ -259,6 +320,45 @@ ap_reset:
 	xor rax, rax
 	stosd
 	iretq				; Return from the IPI. CPU will execute code at ap_clear
+; -----------------------------------------------------------------------------
+
+
+; -----------------------------------------------------------------------------
+; Enable an interrupt line
+; Expects the interrupt line # in AL
+align 16
+interrupt_enable:
+	push rdx
+	push rcx
+	push rbx
+	push rax
+	push rax
+
+	in al, 0x21				; low byte target 0x21
+	mov bl, al
+	pop rax
+	mov dx, 0x21				; Use the low byte pic
+	cmp al, 8
+	jl interrupt_enable_low
+	sub al, 8				; IRQ 8-16
+	push rax
+	in al, 0xA1				; High byte target 0xA1
+	mov bl, al
+	pop rax
+	mov dx, 0xA1				; Use the high byte pic
+interrupt_enable_low:
+	mov cl, al
+	mov al, 1
+	shl al, cl
+	not al
+	and al, bl
+	out dx, al
+
+	pop rax
+	pop rbx
+	pop rcx
+	pop rdx
+	ret
 ; -----------------------------------------------------------------------------
 
 

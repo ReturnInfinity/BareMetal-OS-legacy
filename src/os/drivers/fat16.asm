@@ -673,12 +673,11 @@ os_fat16_file_delete_next_cluster:
 	mov rax, rdx				; Get the sector back. RSI already points to what we need
 	mov rcx, 1
 	call writesectors
-
 	jmp os_fat16_file_delete_done
 
 os_fat16_file_delete_error:
-	stc				; Set carry
 	xor rax, rax
+	stc				; Set carry
 
 os_fat16_file_delete_done:
 	pop rbx

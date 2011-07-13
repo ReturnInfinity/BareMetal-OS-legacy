@@ -81,27 +81,9 @@ os_net_i8254x_init_get_MAC_via_EPROM:
 	mov [os_NetMAC+5], al
 os_net_i8254x_init_done_MAC:
 
-	; Enable the Network IRQ in the PIC 
-	; IRQ value 0-7 set to zero bit 0-7 in 0x21 and value 8-15 set to zero bit 0-7 in 0xa1
-	in al, 0x21				; low byte target 0x21
-	mov bl, al
+	; Enable the Network IRQ in the PIC
 	mov al, [os_NetIRQ]
-	mov dx, 0x21				; Use the low byte pic
-	cmp al, 8
-	jl os_net_i8254x_init_low
-	sub al, 8				; IRQ 8-16
-	push ax
-	in al, 0xA1				; High byte target 0xA1
-	mov bl, al
-	pop ax
-	mov dx, 0xA1				; Use the high byte pic
-os_net_i8254x_init_low:
-	mov cl, al
-	mov al, 1
-	shl al, cl
-	not al
-	and al, bl
-	out dx, al
+	call interrupt_enable
 
 	; Reset the device
 	call os_net_i8254x_reset
@@ -122,7 +104,6 @@ os_net_i8254x_init_low:
 ;  IN:	Nothing
 ; OUT:	Nothing, all registers preserved
 os_net_i8254x_reset:
-
 	mov rsi, [os_NetIOBaseMem]
 	mov rdi, rsi
 
@@ -131,36 +112,21 @@ os_net_i8254x_reset:
 	mov eax, [rsi+I8254X_REG_ICR]		; Clear any pending interrupts
 	xor eax, eax
 	mov [rsi+I8254X_REG_ITR], eax		; Disable interrupt throttling logic
-	
-	push rdi
-	add rdi, 0x1000
-	mov eax, 0x00000030			; PBA: set the RX buffer size to 48KB (TX buffer is calculated as 64-RX buffer)
-	stosd
-	pop rdi
-	push rdi
-	add rdi, 0x2820				; RDTR: set no delay
-	xor eax, eax
-	stosd
-	pop rdi
 
-	push rdi
-	add rdi, 0x0178				; TXCW: set ANE, TxConfigWord (Half/Full duplex, Next Page Request)
+	mov eax, 0x00000030
+	mov [rsi+I8254X_REG_PBA], eax		; PBA: set the RX buffer size to 48KB (TX buffer is calculated as 64-RX buffer)
+
 	mov eax, 0x08008060
-	stosd
-	pop rdi
-	
-	push rdi
-	push rsi
-	lodsd					; CTRL: clear LRST, set SLU and ASDE, clear RSTPHY, VME, and ILOS
+	mov [rsi+I8254X_REG_TXCW], eax		; TXCW: set ANE, TxConfigWord (Half/Full duplex, Next Page Request)
+
+	mov eax, [rsi+I8254X_REG_CTRL]
 	btr eax, 3
 	bts eax, 6
 	bts eax, 5
 	btr eax, 31
 	btr eax, 30
 	btr eax, 7
-	stosd
-	pop rsi
-	pop rdi
+	mov [rsi+I8254X_REG_CTRL], eax		; CTRL: clear LRST, set SLU and ASDE, clear RSTPHY, VME, and ILOS
 
 	push rdi
 	add rdi, 0x5200				; MTA: reset
@@ -179,7 +145,7 @@ os_net_i8254x_reset:
 	mov [rsi+I8254X_REG_RDLEN], eax		; Receive Descriptor Length
 	xor eax, eax
 	mov [rsi+I8254X_REG_RDH], eax		; Receive Descriptor Head
-	mov eax, (32 - 1)
+	mov eax, 1
 	mov [rsi+I8254X_REG_RDT], eax		; Receive Descriptor Tail
 	mov eax, 0x04008006			; Receiver Enable, Store Bad Packets, Broadcast Accept Mode, Strip Ethernet CRC from incoming packet
 	mov [rsi+I8254X_REG_RCTL], eax		; Receive Control Register
@@ -199,9 +165,9 @@ os_net_i8254x_reset:
 	xor eax, eax
 	mov [rsi+I8254X_REG_TDH], eax		; Transmit Descriptor Head
 	mov [rsi+I8254X_REG_TDT], eax		; Transmit Descriptor Tail
-	mov eax, 0x010400FA		; CHECK
-	mov [rsi+I8254X_REG_TCTL], eax		; Transmit Control Register: Enabled, Pad Short Packets, 15 retrys, 64-byte COLD, Re-transmit on Late Collision			
-	mov eax, 0x00602006;0x0050280A
+	mov eax, 0x010400FA			; Enabled, Pad Short Packets, 15 retrys, 64-byte COLD, Re-transmit on Late Collision
+	mov [rsi+I8254X_REG_TCTL], eax		; Transmit Control Register
+	mov eax, 0x0060200A			; IPGT 10, IPGR1 8, IPGR2 6
 	mov [rsi+I8254X_REG_TIPG], eax		; Transmit IPG Register
 
 	xor eax, eax
@@ -210,7 +176,7 @@ os_net_i8254x_reset:
 	mov [rsi+I8254X_REG_RSRPD], eax		; Clear the Receive Small Packet Detect Interrupt
 	bts eax, 0				; TXDW
 	bts eax, 7				; RXT0
-;	mov eax, 0xFFFF				; Temp enable all interrupt types
+;	mov eax, 0x1FFFF			; Temp enable all interrupt types
 	mov [rsi+I8254X_REG_IMS], eax		; Enable interrupt types
 
 	ret
@@ -224,7 +190,6 @@ os_net_i8254x_reset:
 ; OUT:	Nothing
 ;	Uses RAX, RCX, RSI, RDI
 os_net_i8254x_transmit:
-
 	mov rdi, os_eth_tx_buffer		; Transmit Descriptor Base Address
 	mov rax, rsi
 	stosq					; Store the data location
@@ -233,13 +198,11 @@ os_net_i8254x_transmit:
 	bts rax, 25				; IFCS
 	bts rax, 27				; RS
 	stosq
-
 	mov rdi, [os_NetIOBaseMem]
 	xor eax, eax
 	mov [rdi+I8254X_REG_TDH], eax		; TDH - Transmit Descriptor Head
 	add eax, 1
 	mov [rdi+I8254X_REG_TDT], eax		; TDL - Transmit Descriptor Tail
-
 	ret
 ; -----------------------------------------------------------------------------
 
@@ -259,7 +222,7 @@ os_net_i8254x_poll:
 	mov rsi, [os_NetIOBaseMem]
 	xor eax, eax
 	mov [rsi+I8254X_REG_RDH], eax		; Receive Descriptor Head
-	mov eax, (32 - 1)
+	mov eax, 1
 	mov [rsi+I8254X_REG_RDT], eax		; Receive Descriptor Tail
 	ret
 ; -----------------------------------------------------------------------------

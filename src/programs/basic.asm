@@ -53,7 +53,6 @@ mainloop:
 	mov esi, err_syntax		; Otherwise show an error and quit
 	jmp error
 .keyword:
-	xchg bx, bx
 	mov esi, token			; Start trying to match commands
 	mov edi, alert_cmd
 	call b_string_compare
@@ -1148,7 +1147,8 @@ do_print:
   mov eax, 0
   mov byte al, [token]
   call get_var
- call b_print_char
+  mov ah, 0Eh
+  int 10h
   jmp .newline_or_not
 .is_hex:
   call get_token
@@ -1669,7 +1669,6 @@ prog dd 0                               ; Pointer to current location in BASIC c
 prog_end dd 0                           ; Pointer to final byte of BASIC code
 load_point dd 0
 token_type db 0                         ; Type of last token read (eg NUMBER, VARIABLE)
-align 16
 token: times 255 db 0                   ; Storage space for the token
 variables: times 26 dd 0                ; Storage space for variables A to Z
 for_variables: times 26 dd 0            ; Storage for FOR loops
@@ -1712,7 +1711,7 @@ string_vars: times 1024 db 0            ; 8 * 128 byte strings
 ; ------------------------------------------------------------------
 basic_prog:
  DB 'CLS',13,10
- DB 'PRINT "Please type your name: "',13,10
+ DB 'PRINT "Please type your name: ";',13,10
  DB 'INPUT $N',13,10
  DB 'PRINT ""',13,10
  DB 'PRINT "Hello "',13,10

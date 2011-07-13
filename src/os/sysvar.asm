@@ -13,7 +13,7 @@ align 16
 hextable: 		db '0123456789ABCDEF'
 
 ; Strings
-system_status_header:	db 'BareMetal v0.5.1', 0
+system_status_header:	db 'BareMetal v0.5.2', 0
 readymsg:		db 'BareMetal is ready.', 0
 networkmsg:		db 'Network Address: ', 0
 prompt:			db '> ', 0
@@ -39,6 +39,7 @@ os_ethernet_rx_buffer:	equ 0x00000000001C0000
 os_eth_rx_buffer:	equ 0x00000000001C8000
 os_ethernet_tx_buffer:	equ 0x00000000001D0000
 os_eth_tx_buffer:	equ 0x00000000001D8000
+os_eth_temp_buffer:	equ 0x00000000001E0000
 cpustatus:		equ 0x00000000001FEF00	; Location of CPU status data (256 bytes) Bit 0 = Avaiable, Bit 1 = Free/Busy
 cpuqueue:		equ 0x00000000001FF000	; Location of CPU Queue. Each queue item is 16 bytes. (4KiB before the 2MiB mark, Room for 256 entries)
 programlocation:	equ 0x0000000000200000	; Location in memory where programs are loaded (the start of 2MiB)
@@ -55,6 +56,7 @@ os_net_transmit:	equ os_SystemVariables + 0x38
 os_net_poll:		equ os_SystemVariables + 0x40
 os_net_ack_int:		equ os_SystemVariables + 0x48
 os_NetIOBaseMem:	equ os_SystemVariables + 0x50
+os_NetMAC:		equ os_SystemVariables + 0x58
 
 ; DD - Starting at offset 128, increments by 4
 cpu_speed:		equ os_SystemVariables + 128	; in MHz
@@ -113,8 +115,6 @@ fat16_BytesPerSector:		dw 0x0000
 fat16_SectorsPerCluster:	db 0x00
 fat16_Fats:			db 0x00
 
-; Network
-os_NetMAC:			times 6 db 0		; 48-bit Address of NIC
 
 keylayoutlower:
 db 0x00, 0, '1', '2', '3', '4', '5', '6', '7', '8', '9', '0', '-', '=', 0x0e, 0, 'q', 'w', 'e', 'r', 't', 'y', 'u', 'i', 'o', 'p', '[', ']', 0x1c, 0, 'a', 's', 'd', 'f', 'g', 'h', 'j', 'k', 'l', ';', 0, '`', 0, 0, 'z', 'x', 'c', 'v', 'b', 'n', 'm', ',', '.', '/', 0, 0, 0, ' ', 0

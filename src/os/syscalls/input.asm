@@ -89,7 +89,7 @@ os_input_string_backspace:
 	jmp os_input_string_more
 
 os_input_string_halt:
-	hlt
+	hlt				; Halt until another keystroke is received
 	jmp os_input_string_more
 
 os_input_string_done:

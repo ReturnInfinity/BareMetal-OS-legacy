@@ -78,6 +78,9 @@ b_hide_cursor			equ 0x0000000000100460	; Turns off cursor in text mode
 b_show_statusbar		equ 0x0000000000100470	; Show the system status bar
 b_hide_statusbar		equ 0x0000000000100480	; Hide the system status bar
 b_screen_update			equ 0x0000000000100490	; Manually refresh the screen from the frame buffer
+b_print_chars			equ 0x00000000001004A0	; Displays text. IN: RSI = message location (A string, not zero-terminated), RCX = number of chars to print
+b_print_chars_with_color	equ 0x00000000001004B0	; Displays text with color. IN: RSI = message location (A string, not zero-terminated), BL = color, RCX = number of chars to print
+
 
 ; =============================================================================
 ; EOF

@@ -50,7 +50,7 @@ void b_file_delete(unsigned char *name);
 
 
 unsigned long b_smp_enqueue(void *ptr, unsigned long var);
-unsigned long b_smp_dequeue(void);
+unsigned long b_smp_dequeue(unsigned long *var);
 void b_smp_run(unsigned long ptr);
 unsigned long b_smp_queuelen(void);
 void b_smp_wait(void);

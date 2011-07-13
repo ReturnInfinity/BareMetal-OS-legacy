@@ -10,6 +10,14 @@ db 'DEBUG: IPv4 ICMP'
 align 16
 
 
+; -----------------------------------------------------------------------------
+; os_icmp_handler -- Handle an incoming ICMP packet
+;  IN:	RCX = packet length
+;	RSI = location of received ICMP packet
+os_icmp_handler:
+
+	ret
+; -----------------------------------------------------------------------------
 
 
 ; =============================================================================

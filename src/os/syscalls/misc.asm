@@ -182,6 +182,35 @@ rx_idle:
 	add rdi, 1
 system_status_no_network:
 
+	; Display the RTC pulse
+	add rdi, 4
+	mov al, '['
+	stosb
+	add rdi, 1
+	mov ax, 0x8F72			; 'r'
+	stosw
+	mov ax, 0x8F74			; 't'
+	stosw
+	mov ax, 0x8F63			; 'c'
+	stosw
+	mov ax, 0x8F3A			; ':'
+	stosw
+	add rdi, 2
+	mov al, 0xFE			; Ascii block character
+	stosb				; Put the block character on the screen
+	mov rax, [os_ClockCounter]
+	bt rax, 0			; Check bit 0. Store bit 0 in CF
+	jc system_status_rtc_flash_hi
+	mov al, 0x87			; Light Gray on Dark Gray (Active Core Low)
+	jmp system_status_rtc_flash_lo
+system_status_rtc_flash_hi:
+	mov al, 0x8F			; White on Dark Gray (Active Core High)
+system_status_rtc_flash_lo:
+	stosb				; Store the color (attribute) byte
+	mov al, ']'
+	stosb
+	add rdi, 1
+
 	; Display header text
 	mov rdi, os_screen ;0x00000000000B8080
 	add rdi, 0x80

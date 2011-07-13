@@ -146,6 +146,7 @@ os_print_string:
 
 	cld				; Clear the direction flag.. we want to increment through the string
 	mov ah, 0x07			; Store the attribute into AH so STOSW can be used later on
+
 os_print_string_nextchar:
 	lodsb				; Get char from string and store in AL
 	cmp al, 0			; Strings are Zero terminated.
@@ -178,6 +179,7 @@ os_print_string_done:
 ;  IN:	RSI = message location (zero-terminated string)
 ;	BL  = color
 ; OUT:	All registers perserved
+; This function uses the the os_print_string function to do the actual printing
 os_print_string_with_color:
 	push rdi
 	push rsi
@@ -185,28 +187,8 @@ os_print_string_with_color:
 
 	cld					; Clear the direction flag.. we want to increment through the string
 	mov ah, bl				; Copy the attribute into AH so STOSW can be used later on
-os_print_string_with_color_nextchar:
-	lodsb					; Get char from string and store in AL
-	cmp al, 0				; Strings are Zero terminated.
-	je os_print_string_with_color_done	; If char is Zero then it is the end of the string
-	cmp al, 13				; Check if there was a newline character in the string
-	je os_print_string_with_color_newline	; If so then we print a new line
-	mov rdi, [screen_cursor_offset]
-	stosw					; Write the character and attribute with one call
-	call os_inc_cursor
-	jmp os_print_string_with_color_nextchar
 
-os_print_string_with_color_newline:
-	call os_print_newline
-	jmp os_print_string_with_color_nextchar
-
-os_print_string_with_color_done:
-	call os_screen_update
-
-	pop rax
-	pop rsi
-	pop rdi
-	ret
+	jmp os_print_string_nextchar		; Use the logic from os_print_string
 ; -----------------------------------------------------------------------------
 
 
@@ -217,13 +199,12 @@ os_print_string_with_color_done:
 os_print_char:
 	push rdi
 	push rsi
+	push rax
 
 	mov rdi, [screen_cursor_offset]
-	stosb			; Store the character to video memory
-	push ax
-	mov al, 0x07		; Default of light grey on black
-	stosb			; Store the color attribute to video memory
-	pop ax
+	mov ah, 0x07		; Store the attribute into AH so STOSW can be used later on
+	stosw			; Write the character and attribute with one call
+
 	call os_inc_cursor
 	sub rdi, 2
 	mov rsi, rdi
@@ -231,6 +212,7 @@ os_print_char:
 	add rdi, 0xB8000	; Offset to video text memory
 	movsw
 
+	pop rax
 	pop rsi
 	pop rdi
 	ret
@@ -261,6 +243,68 @@ os_print_char_with_color:
 	pop rsi
 	pop rdi
 	ret
+; -----------------------------------------------------------------------------
+
+
+; -----------------------------------------------------------------------------
+; os_print_chars -- Displays text
+;  IN:	RSI = message location (A string, not zero-terminated)
+;	RCX = number of chars to print
+; OUT:	All registers perserved
+os_print_chars:
+	push rdi
+	push rsi
+	push rcx
+	push rax
+
+	cld				; Clear the direction flag.. we want to increment through the string
+	mov ah, 0x07			; Store the attribute into AH so STOSW can be used later on
+
+os_print_chars_nextchar:
+	jrcxz os_print_chars_done
+	sub rcx, 1
+	lodsb				; Get char from string and store in AL
+	cmp al, 10			; Check if there was a newline character in the string
+	je os_print_chars_newline	; If so then we print a new line
+	cmp al, 13			; Check if there was a newline character in the string
+	je os_print_chars_newline	; If so then we print a new line
+	mov rdi, [screen_cursor_offset]
+	stosw				; Write the character and attribute with one call
+	call os_inc_cursor
+	jmp os_print_chars_nextchar
+
+os_print_chars_newline:
+	call os_print_newline
+	jmp os_print_chars_nextchar
+
+os_print_chars_done:
+	call os_screen_update
+
+	pop rax
+	pop rcx
+	pop rsi
+	pop rdi
+	ret
+; -----------------------------------------------------------------------------
+
+
+; -----------------------------------------------------------------------------
+; os_print_chars_with_color -- Displays text with color
+;  IN:	RSI = message location (A string, not zero-terminated)
+;	BL  = color
+;	RCX = number of chars to print
+; OUT:	All registers perserved
+; This function uses the the os_print_chars function to do the actual printing
+os_print_chars_with_color:
+	push rdi
+	push rsi
+	push rcx
+	push rax
+
+	cld				; Clear the direction flag.. we want to increment through the string
+	mov ah, bl			; Store the attribute into AH so STOSW can be used later on
+
+	jmp os_print_chars_nextchar	; Use the logic from os_print_chars
 ; -----------------------------------------------------------------------------
 
 

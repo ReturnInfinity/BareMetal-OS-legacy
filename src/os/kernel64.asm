@@ -9,7 +9,7 @@
 USE64
 ORG 0x0000000000100000
 
-%DEFINE BAREMETALOS_VER 'v0.5.1 (May 16, 2011)', 13, 'Copyright (C) 2008-2011 Return Infinity', 13, 0
+%DEFINE BAREMETALOS_VER 'v0.5.2 (June 29, 2011)', 13, 'Copyright (C) 2008-2011 Return Infinity', 13, 0
 %DEFINE BAREMETALOS_API_VER 1
 
 kernel_start:
@@ -382,6 +382,16 @@ kernel_start:
 	align 8
 	dq os_screen_update
 
+	align 8			; 0x04A0
+	jmp os_print_chars
+	align 8
+	dq os_print_chars
+
+	align 8			; 0x04B0
+	jmp os_print_chars_with_color
+	align 8
+	dq os_print_chars_with_color
+
 align 16
 
 start:
@@ -391,6 +401,16 @@ start:
 	call init_pci
 
 	call init_net			; Initialize the network
+
+	mov rdi, ip
+	mov al, 192
+	stosb
+	mov al, 168
+	stosb
+	mov al, 242
+	stosb
+	mov al, 100
+	stosb
 
 	call hdd_setup			; Gather information about the harddrive and set it up
 
@@ -415,12 +435,12 @@ start_no_network:
 	call os_show_cursor
 	
 	mov rsi, startupapp		; Look for a file called startup.app
-	mov rdi, programlocation	; We load the program to this location in memory (currently 0x00100000 : at the 2MB mark)
+	mov rdi, programlocation	; We load the program to this location in memory (currently 0x00200000 : at the 2MB mark)
 	call os_file_read		; Read the file into memory
 	jc ap_clear			; If carry is set then the file was not found
 
 	xchg bx, bx
-	mov rax, programlocation	; 0x00100000 : at the 2MB mark
+	mov rax, programlocation	; 0x00200000 : at the 2MB mark
 	xor rbx, rbx			; No arguements required (The app can get them with os_get_argc and os_get_argv)
 	call os_smp_enqueue		; Queue the application to run on the next available core
 
@@ -507,6 +527,7 @@ ap_process:				; Set the status byte to "Busy" and run the code
 %include "drivers.asm"
 %include "interrupt.asm"
 %include "cli.asm"
+%include "ipv4.asm"
 %include "sysvar.asm"			; Include this last to keep the read/write variables away from the code
 
 times 16384-($-$$) db 0			; Set the compiled kernel binary to at least this size in bytes
