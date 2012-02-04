@@ -1,0 +1,112 @@
+Building the Newlib C library for BareMetal OS
+==============================================
+
+Introduction
+------------
+
+This document contains the instructions necessary to build the [Newlib](http://sourceware.org/newlib/) C library for BareMetal OS. The latest version of Newlib as of this writing is 1.20.0
+
+Newlib gives BareMetal OS access to the standard set of C library calls like `printf()`, `scanf()`, `memcpy()`, etc.
+
+These instructions are for executing on a 64-bit Linux host. Building on a 64-bit host saves us from the steps of building a cross compiler. The latest distribution of Ubuntu was used while writing this document.
+
+
+Building Details
+----------------
+
+You will need the following Linux packages:
+
+	autoconf libtool sed gawk bison flex m4 texinfo texi2html subversion
+
+Create a Newlib directory and download the latest Newlib:
+
+	mkdir newlib
+	cd newlib
+	wget ftp://sources.redhat.com/pub/newlib/newlib-1.20.0.tar.gz
+
+Extract it:
+
+	tar xf newlib-1.20.0.tar.gz
+
+Download the latest BareMetal OS SVN:
+
+	svn checkout http://baremetal.googlecode.com/svn/trunk/ baremetal
+
+Create a build folder alongside the extracted `newlib-1.20.0` directory:
+
+	mkdir build
+
+Modify the following files:
+
+	newlib-1.20.0/config.sub
+	@ Line 1334
+	  	      | -sym* | -kopensolaris* \
+	  	      | -amigaos* | -amigados* | -msdos* | -newsos* | -unicos* | -aof* \
+	  	      | -aos* | -aros* \
+	+ 	      | -baremetal* \
+	  	      | -nindy* | -vxsim* | -vxworks* | -ebmon* | -hms* | -mvs* \
+	  	      | -clix* | -riscos* | -uniplus* | -iris* | -rtu* | -xenix* \
+	  	      | -hiux* | -386bsd* | -knetbsd* | -mirbsd* | -netbsd* \
+	
+	newlib-1.20.0/newlib/configure.host
+	@ Line 506
+	    z8k-*-coff)
+	  	sys_dir=z8ksim
+	  	;;
+	+   x86_64-*-baremetal*)
+	+ 	sys_dir=baremetal
+	+ 	;;
+	  esac
+	
+	newlib-1.20.0/newlib/libc/sys/configure.in
+	@ Line 46
+	  	tic80) AC_CONFIG_SUBDIRS(tic80) ;;
+	  	w65) AC_CONFIG_SUBDIRS(w65) ;;
+	  	z8ksim) AC_CONFIG_SUBDIRS(z8ksim) ;;
+	+ 	baremetal) AC_CONFIG_SUBDIRS(baremetal) ;;
+	    esac;
+	  fi
+
+In `newlib-1.20.0/newlib/libc/sys` create a directory called `baremetal`:
+
+	mkdir newlib-1.20.0/newlib/libc/sys/baremetal
+
+Copy the contents of the `newlib/baremetal` directory from the BareMetal OS SVN into the `newlib/libc/sys/baremetal` directory.
+
+Refresh the configuration files:
+
+	cd newlib-1.20.0/newlib/libc/sys
+	autoconf
+	cd baremetal
+	autoreconf
+	cd ../../../../..
+
+Change directory to the `build` directory that was created earlier.
+
+Run the following:
+
+	../newlib-1.20.0/configure --target=x86_64-pc-baremetal --disable-multilib
+
+Edit the Makefile and remove all instances of '`x86_64-pc-baremetal-`' in the FOR_TARGET section. This will instruct the compiler to use the default applications instead of looking for a special cross-compiler that does not exist (and is not necessary).
+
+Also add '`-fno-stack-protector`' to CFLAGS_FOR_TARGET and CXXFLAGS_FOR_TARGET. You may also want to add '`-mcmodel=large`' if you plan on running programs in the high canonical address range.
+
+Run the following:
+
+	make
+
+After a lengthy compile you should have an 'etc' and 'x86_64-pc-baremetal' in your build directory
+
+build/x86_64-pc-baremetal/newlib/libc.a is the compiled C library that is ready for linking.
+
+By default libc.a will be about 5 MiB. You can '`strip`' it to make it a little more compact. '`strip`' can decrease it to about 1.2 MiB.
+
+	strip --strip-debug libc.a
+
+Compiling Your Application
+--------------------------
+
+By default GCC will look in pre-defined system paths for the C headers. This will not work correctly as we need to use the Newlib C headers. Using the '`-I`' argument we can point GCC where to find the correct headers. Adjust the path as necessary.
+
+	gcc -I ../../newlib-1.20.0/newlib/libc/include/ -c helloc.c -o helloc.o
+	ld -T app.ld -o helloc.app helloc.o libc.a
