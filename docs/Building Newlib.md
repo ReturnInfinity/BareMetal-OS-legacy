@@ -87,9 +87,9 @@ Run the following:
 
 	../newlib-1.20.0/configure --target=x86_64-pc-baremetal --disable-multilib
 
-Edit the Makefile and remove all instances of '`x86_64-pc-baremetal-`' in the FOR_TARGET section. This will instruct the compiler to use the default applications instead of looking for a special cross-compiler that does not exist (and is not necessary).
+Edit the Makefile and remove all instances of `x86_64-pc-baremetal-` in the FOR_TARGET section. This will instruct the compiler to use the default applications instead of looking for a special cross-compiler that does not exist (and is not necessary).
 
-Also add '`-fno-stack-protector`' to CFLAGS_FOR_TARGET and CXXFLAGS_FOR_TARGET. You may also want to add '`-mcmodel=large`' if you plan on running programs in the high canonical address range.
+Also add `-fno-stack-protector` to CFLAGS_FOR_TARGET and CXXFLAGS_FOR_TARGET. You may also want to add `-mcmodel=large` if you plan on running programs in the high canonical address range.
 
 Run the following:
 
@@ -99,14 +99,14 @@ After a lengthy compile you should have an 'etc' and 'x86_64-pc-baremetal' in yo
 
 build/x86_64-pc-baremetal/newlib/libc.a is the compiled C library that is ready for linking.
 
-By default libc.a will be about 5 MiB. You can '`strip`' it to make it a little more compact. '`strip`' can decrease it to about 1.2 MiB.
+By default libc.a will be about 5 MiB. You can `strip` it to make it a little more compact. `strip` can decrease it to about 1.2 MiB.
 
 	strip --strip-debug libc.a
 
 Compiling Your Application
 --------------------------
 
-By default GCC will look in pre-defined system paths for the C headers. This will not work correctly as we need to use the Newlib C headers. Using the '`-I`' argument we can point GCC where to find the correct headers. Adjust the path as necessary.
+By default GCC will look in pre-defined system paths for the C headers. This will not work correctly as we need to use the Newlib C headers. Using the `-I` argument we can point GCC where to find the correct headers. Adjust the path as necessary.
 
 	gcc -I ../../newlib-1.20.0/newlib/libc/include/ -c helloc.c -o helloc.o
 	ld -T app.ld -o helloc.app helloc.o libc.a
