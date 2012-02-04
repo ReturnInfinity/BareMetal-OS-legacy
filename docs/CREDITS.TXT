@@ -1,0 +1,18 @@
+===============================================================================
+BareMetal OS -- a 64-bit OS written in Assembly for x86-64 systems
+Copyright (C) 2008-2012 Return Infinity -- see LICENSE.TXT
+===============================================================================
+
+
+PROJECT ADMIN (MAIN CODE AND DOCUMENTATION)
+
+ * Ian Seyler -- ian.seyler@returninfinity.com
+
+
+DEVELOPMENT AND TESTING
+
+ * Mike Saunders (and the MikeOS team)
+ * Members of OSDev.org
+
+
+===============================================================================
