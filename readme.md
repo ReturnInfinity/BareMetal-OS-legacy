@@ -1,0 +1,18 @@
+# BareMetal OS -- a 64-bit OS written in Assembly for x86-64 systems #
+Copyright (C) 2007-2012 Return Infinity -- see LICENSE.TXT
+
+BareMetal is a 64-bit OS for x86-64 based computers. The OS is written entirely in Assembly, while applications can be written in Assembly or C/C++. Development of the Operating System is guided by its 3 target segments:
+
+* **High Performance Computing** - Act as the base OS for a HPC cluster node. Running advanced computation workloads is ideal for a mono-tasking Operating System.
+* **Embedded Applications** - Provide a platform for embedded applications running on commodity x86-64 hardware.
+* **Education** - Provide an environment for learning and experimenting with programming in x86-64 Assembly as well as Operating System fundamentals.
+
+BareMetal is a 64-bit protected mode operating system for x86-64 compatible PCs, written entirely in assembly language, which boots from a hard drive. It features a command-line interface, support for FAT16 hard drives and sound via the PC speaker. It can load external programs and has over 60 system calls. BareMetal can also utilize all available CPU's in the computer it is run on.
+
+At the moment there is no plan to BareMetal into a general-purpose operating system like Windows, Mac OS X, or Linux; it is designed to be as lean as possible while still offering useful features.
+
+The complete documentation for BareMetal, including instructions on running it, building it and writing your own programs for it can be found in the docs/ directory.
+
+See LICENSE.TXT for redistribution/modification rights, and CREDITS.TXT for a list of people involved.
+
+Ian Seyler (ian.seyler@returninfinity.com)
