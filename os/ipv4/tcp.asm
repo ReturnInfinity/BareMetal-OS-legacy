@@ -2,12 +2,16 @@
 ; BareMetal -- a 64-bit OS written in Assembly for x86-64 systems
 ; Copyright (C) 2008-2012 Return Infinity -- see LICENSE.TXT
 ;
-; TCP (Transmission Control Protocol)
+; TCP (Transmission Control Protocol) over IPv4
 ; =============================================================================
 
 align 16
 db 'DEBUG: IPv4 TCP '
 align 16
+
+
+; os_ipv4_tcp_send -- Send data over a TCP socket
+; os_ipv4_tcp_recv -- Receive data from a TCP socket
 
 
 ; -----------------------------------------------------------------------------
