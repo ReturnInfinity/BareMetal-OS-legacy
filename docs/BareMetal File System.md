@@ -7,7 +7,7 @@ BMFS is a new file system used by BareMetal OS and its related systems. The desi
 - Very simple layout
 - All files are contiguous
 - Disk is divided into 2 MiB blocks
-- Flat organization; no directories/folders
+- Flat organization; no subdirectories/subfolders
 
 ## Disk structure
 
@@ -32,7 +32,7 @@ The first two disk blocks are reserved for file system usage. All other disk blo
 	     - Free space (512B)
 	     - Disk information (512B)
 	     - Free space (512B)
-	4KiB - File records (Max 64 files, 64-bytes for each record)
+	4KiB - Directory (Max 64 files, 64-bytes for each record)
 	Free space (1016KiB)
 	1MiB - Free space bitmap (Supports a drive up to 16TiB)
 	
@@ -50,7 +50,68 @@ BMFS supports a single directory with a maximum of 64 individual files. Each fil
 
 	Filename (32 bytes) - Null-terminated ASCII string
 	Starting Block number (64-bit unsigned int)
-	Blocks used (64-bit unsigned int)
+	Blocks reserved (64-bit unsigned int)
 	File size (64-bit unsigned int)
 	Unused (8 bytes)
+
+A filename that starts with 0x00 marks the end of the directory. A filename that starts with 0x01 marks an unused record.
+
+## Files
+
+The following system calls should be available:
+
+- Create (Create and reserve space for a new file)
+- Delete (Delete an existing file from the file system)
+- Read (Read a file into system memory)
+- Write (Write a section of system memory to a file)
+- Directory/List (Prepare and display a list of file)
+- Query (Query the existance/details of a file)
+
+# Create
+
+The create function accepts two parameters:
+
+	Name = A null-terminated string no more that 63 characters
+	Reserved = The number of blocks to reserve for the file
+
+
+# Delete
+
+The delete function accepts one parameter:
+
+	Name = The name of the file to delete
+
+
+# Read
+
+The read function accepts two parameters:
+
+	Name = The name of the file to read
+	Destination = The memory address to store the file
+
+
+# Write
+
+The write function accepts three parameters:
+
+	Name = The name of the file to write
+	Source = The memory address of the data
+	Size = The amount of bytes to write
+
+
+# Directory/List
+
+The dir/ls function accepts no parameters
+
+
+# Query
+
+The query function accepts one parameter:
+
+	Name = The name of the file to query
+
+The query function will return the following:
+
+	Size = The current size of the file in bytes (0 if it doesn't exist)
+	Reserved = The amount of blocks reserved for the file
 
