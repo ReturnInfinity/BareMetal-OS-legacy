@@ -56,6 +56,8 @@ BMFS supports a single directory with a maximum of 64 individual files. Each fil
 
 A filename that starts with 0x00 marks the end of the directory. A filename that starts with 0x01 marks an unused record.
 
+Maximum file size supported is 18,446,744,073,709,551,614 bytes (~18 EiB) with a maximum of 9,223,372,036,854,775,807 allocated blocks.
+
 ## Files
 
 The following system calls should be available:
