@@ -13,7 +13,7 @@ align 16
 hextable: 		db '0123456789ABCDEF'
 
 ; Strings
-system_status_header:	db 'BareMetal v0.5.2', 0
+system_status_header:	db 'BareMetal v0.5.3', 0
 readymsg:		db 'BareMetal is ready.', 0
 networkmsg:		db 'Network Address: ', 0
 prompt:			db '> ', 0
