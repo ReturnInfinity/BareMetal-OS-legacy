@@ -60,8 +60,66 @@ align 16
 
 
 ; -----------------------------------------------------------------------------
+; os_arp_request -- sends an ARP request to fetch the MAC address of an IP node
+; IN:  EAX = target IP address
+; All registers will be preserved.
 os_arp_request:
+	push rsi
+	push rdi
+	push rax
+	push rbx
+	push rcx
+	
+	; Check if the IP is still valid
+	mov rdi, arp_table		; Search in ARP lookup table
+os_arp_request_next:
+	mov ebx, [rdi]			; Fetch IP address from ARP table
+	cmp eax, ebx			; Check if it is a duplicate
+	je os_arp_request_entry_exists
+	inc cx				; Increment loop counter
+	add rdi, 16			; Each entry in ARP table is 16 bytes
+	cmp cx, 64			; There are 64 entries in ARP table
+	jne os_arp_request_next
 
+	jmp os_arp_request_fresh	; A fresh request should be sent
+	
+os_arp_request_entry_exists:
+	mov ebx, [rdi + 10]		; Fetch the last update time stamp
+	mov eax, [os_ClockCounter]	; Grab current RTC
+	sub eax, ebx			; Calculate how old the entry is
+	cmp eax, ARP_timeout		; Check if entry is outdated
+	jg os_arp_request_fresh
+	jmp os_arp_request_end		; Entry is still valid, finish
+
+os_arp_request_fresh:
+	; Store target IP
+	mov rdi, arpreq_target_ip
+	stosd
+
+	; Copy source MAC
+	mov rsi, os_NetMAC
+	mov rdi, arpreq_source_mac
+	movsd
+	movsw
+	
+	; Copy source IP
+	mov rsi, ip
+	mov rdi, arpreq_source_ip
+	movsd
+
+	; Prepare packet for sending
+	mov rsi, arp_request_msg
+	mov rdi, broadcast_mac_addr
+	mov rbx, 0x0806
+	mov rcx, 28
+	call os_ethernet_tx
+
+os_arp_request_end:	
+	pop rcx
+	pop rbx
+	pop rax
+	pop rdi
+	pop rsi
 ret
 ; -----------------------------------------------------------------------------
 
@@ -74,7 +132,10 @@ os_arp_handler:
 	push rdi
 	push rsi
 	push rax
-	
+	push rbx
+	push rcx
+	push rdx
+
 	mov ax, [rsi+0x14]		; Grab the Opcode
 	xchg al, ah			; Convert to proper endianess
 	cmp ax, 0x0001			; Request
@@ -122,16 +183,169 @@ os_arp_handler_request:
 	jmp os_arp_handler_end
 
 os_arp_handler_reply:
-	; If this was a reply to a request that this computer sent out then this should be added to the local ARP table
-	jmp os_arp_handler_end
+	; Search for the IP address to see if it is already resolved
+	mov eax, [rsi + 28]		; Fetch sender IP address
+	push rax			; Save sender IP address
+	xor cx, cx			; Initialize loop counter
+	mov rdi, arp_table		; Search in ARP lookup table
+os_arp_handler_next1:
+	mov ebx, [rdi]			; Fetch IP address from ARP table
+	cmp eax, ebx			; Check if it is a duplicate
+	je os_arp_handler_duplicate_ip
+	inc cx				; Increment loop counter
+	add rdi, 16			; Each entry in ARP table is 16 bytes
+	cmp cx, 64			; There are 64 entries in ARP table
+	jne os_arp_handler_next1
+
+	; If the IP address is not a duplicate, then
+	; store it in the first free entry of ARP table.
+
+	xor cx, cx
+	mov rdi, arp_table
+os_arp_handler_next2:
+	mov ebx, [rdi]
+	cmp ebx, 0
+	je os_arp_handler_store_entry
+	inc cx
+	add rdi, 16
+	cmp cx, 64
+	jne os_arp_handler_next2
+
+	; If no entry is free, then find the oldest entry
+
+	xor cx, cx
+	mov rdi, arp_table
+	mov eax, [rdi + 10]		; Assume the first entry as oldest
+	inc cx
+	add rdi, 16
+os_arp_handler_next3:
+	mov ebx, [rdi + 10]
+	cmp eax, ebx
+	jg os_arp_handler_increment
+	mov eax, ebx			; Keep the oldest element value
+	mov rdx, rdi			; Keep the oldest entry index
+os_arp_handler_increment:
+	inc cx
+	add rdi, 16
+	cmp cx, 64
+	jne os_arp_handler_next3
+
+	mov rdi, rdx			; Point to the oldest entry
+	jmp os_arp_handler_store_entry
+
+os_arp_handler_duplicate_ip:
+	; Continue storing the data at the location found.
+	; Expiration data will be updated.
+
+os_arp_handler_store_entry:
+	pop rax				; Recover the saved IP address
+	mov dword [rdi], eax		; Store IP on ARP table
+	mov rax, [rsi + 22]		; Grab MAC address from ARP packet
+	mov qword [rdi + 4], rax	; Store MAC on ARP table
+	mov rax, [os_ClockCounter]	; Grab current system counter
+	mov dword [rdi + 10], eax	; Store lower part of time value
 
 os_arp_handler_end:
+	pop rdx
+	pop rcx
+	pop rbx
 	pop rax
 	pop rsi
 	pop rdi
 ret
 ; -----------------------------------------------------------------------------
 
+
+; -----------------------------------------------------------------------------
+; os_get_arp_table :  Gets a copy of the ARP table
+; IN:  RDI = Pointer to location where ARP table will be stored
+; OUT: RCX = Total number of entries
+;	[RDI] will be filled by IP addresses and MAC addresses
+; All other registers will be preserved.
+os_get_arp_table:
+	push rsi
+	push rdi
+	push rax
+	push rbx
+	
+	mov rsi, arp_table
+	xor rax, rax
+	xor rbx, rbx
+	mov rcx, 64		; There are maximum 64 entries in ARP table
+os_get_arp_table_check_next_entry:
+	lodsd
+	cmp eax, 0
+	je os_get_arp_table_skip_entry
+	stosd
+	movsd
+	movsw
+	inc rbx
+	add rsi, 6
+	jmp os_get_arp_table_dec_counter
+os_get_arp_table_skip_entry:
+	add rsi, 12
+os_get_arp_table_dec_counter:
+	dec rcx
+	cmp rcx, 0
+	jne os_get_arp_table_check_next_entry
+	mov rcx, rbx
+	
+	pop rbx
+	pop rax
+	pop rdi
+	pop rsi
+	ret
+; -----------------------------------------------------------------------------
+
+
+;------------------------------------------------------------------------------
+; os_lookup_ip_addr -- Looks for an IP address in the ARP table
+; IN:  EAX = IP address in little endian
+;      RDI = Location to store the MAC address
+os_lookup_ip_addr:
+	push rax
+	push rbx
+	push rcx
+	push rsi
+	push rdi
+
+	; Search for the IP address to see if it is already resolved
+	xor cx, cx			; Initialize loop counter
+	mov rsi, arp_table		; Search in ARP lookup table
+os_lookup_ip_addr_next:
+	mov ebx, [rsi]			; Fetch IP address from ARP table
+	cmp eax, ebx			; Check if it is a duplicate
+	je os_lookup_ip_addr_found
+	inc cx				; Increment loop counter
+	add rsi, 16			; Each entry in ARP table is 16 bytes
+	cmp cx, 64			; There are 64 entries in ARP table
+	jne os_lookup_ip_addr_next
+	jmp os_lookup_ip_addr_not_found
+
+os_lookup_ip_addr_found:
+	add rsi, 4
+	movsd				; Copy the MAC address
+	movsw
+	jmp os_lookup_ip_addr_end
+	
+os_lookup_ip_addr_not_found:
+	
+os_lookup_ip_addr_end:
+	pop rdi
+	pop rsi
+	pop rcx
+	pop rbx
+	pop rax
+	ret
+;------------------------------------------------------------------------------
+
+
+broadcast_mac_addr:	dw  0xffff, 0xffff, 0xffff
+arp_request_msg:	db  0, 1, 8, 0, 6, 4, 0, 1, 'macmac', 'ipip', 0, 0, 0, 0, 0, 0, 'ipip'
+arpreq_source_mac:	equ arp_request_msg + 8
+arpreq_source_ip:	equ arp_request_msg + 14
+arpreq_target_mac	equ arp_request_msg + 18
+arpreq_target_ip	equ arp_request_msg + 24
 
 ; =============================================================================
 ; EOF

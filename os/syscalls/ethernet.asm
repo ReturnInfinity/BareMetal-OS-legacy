@@ -63,7 +63,7 @@ os_ethernet_tx:
 	push rcx
 	push rbx
 	push rax
-	
+
 	cmp byte [os_NetEnabled], 1
 	jne os_ethernet_tx_fail
 	cmp cx, 1500				; Fail if more then 1500 bytes
@@ -288,6 +288,71 @@ os_ethernet_rx_from_interrupt:
 	pop rdi
 	ret
 ; -----------------------------------------------------------------------------
+
+
+; -----------------------------------------------------------------------------
+; os_get_ethernet_driver -- Returns the currently loaded ethernet driver
+; IN:  RDI = Memory location where the driver name string should be stored
+; All registers are preserved
+os_get_ethernet_driver:
+	push rsi
+	mov rsi, [NIC_name_ptr]
+	call os_string_copy
+	pop rsi
+	ret
+; -----------------------------------------------------------------------------
+
+
+; -----------------------------------------------------------------------------
+; os_get_mac_addr -- Returns the MAC address
+; IN:  RDI = Memory location to put the system MAC address
+; All registers are preserved
+os_get_mac_addr:
+	push rsi
+	push rdi
+	mov rsi, os_NetMAC
+	movsd
+	movsw
+	pop rdi
+	pop rsi
+	ret
+; -----------------------------------------------------------------------------
+
+
+; -----------------------------------------------------------------------------
+; os_mac_addr_to_str -- Converts a MAC address to string
+; IN:  RSI = Pointer to the 6 bytes MAC address
+;      RDI = Location where string should be stored
+; All registers are preserved
+os_mac_addr_to_str:
+	push rax
+	push rcx
+	push rsi
+	push rdi
+	xor rax, rax
+	lodsb
+	call os_byte_to_hex_string
+	add rdi, 2
+	mov rcx, 5
+os_mac_addr_to_str_next_component:
+	mov al, ':'
+	mov byte [rdi], al
+	inc rdi
+	lodsb
+	call os_byte_to_hex_string
+	add rdi, 2
+	dec rcx
+	cmp rcx, 0
+	jne os_mac_addr_to_str_next_component
+	xor al, al
+	stosb
+	pop rdi
+	pop rsi
+	pop rcx
+	pop rax
+	ret
+; -----------------------------------------------------------------------------
+
 
 
 ; =============================================================================
