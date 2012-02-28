@@ -22,8 +22,16 @@ newline:		db 13, 0
 appextension:		db '.APP', 0
 memory_message:		db 'Not enough system memory for CPU stacks! System halted.', 0
 startupapp:		db 'startup.app', 0
+device_name_rtl8169	db 'rtl8169', 0
+device_name_i8254x	db 'i8254x', 0
+NIC_name_ptr		dq 0x00000000000000000	; Pointer to network interface device name
+ARP_timeout		dd 0x10000000		; After this time, ARP entry must be refreshed
+os_icmp_callback	dq 0x00000000000000000	; Point to ICMP reciever call back fundtion
 
 ; Memory addresses
+os_ip_rx_buffer		equ 0x000000000004EC00	; 2048 bytes
+os_ip_tx_buffer		equ 0x000000000006F400	; 2048 butes
+arp_table		equ 0x000000000006FC00  ; 1024 bytes	0x06FC00 -> 0x06FFFF
 hdbuffer0:		equ 0x0000000000070000	; 32768 bytes	0x070000 -> 0x077FFF
 hdbuffer1:		equ 0x0000000000078000	; 32768 bytes	0x078000 -> 0x07FFFF
 cli_temp_string:	equ 0x0000000000080000	; 1024 bytes	0x080000 -> 0x0803FF

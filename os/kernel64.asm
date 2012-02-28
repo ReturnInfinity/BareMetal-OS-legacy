@@ -392,6 +392,62 @@ kernel_start:
 	align 8
 	dq os_print_chars_with_color
 
+	align 8			; 0x04C0
+	jmp os_arp_request
+	align 8
+	dq os_arp_request
+
+	align 8			; 0x04D0
+	jmp os_get_ethernet_driver
+	align 8
+	dq os_get_ethernet_driver
+
+	align 8			; 0x04E0
+	jmp os_get_ip_config
+	align 8
+	dq os_get_ip_config
+
+	align 8			; 0x04F0
+	jmp os_set_ip_config
+	align 8
+	dq os_set_ip_config
+
+	align 8			; 0x0500
+	jmp os_parse_ip_addr
+	align 8
+	dq os_parse_ip_addr
+
+	align 8			; 0x0510
+	jmp os_ip_addr_to_str
+	align 8
+	dq os_ip_addr_to_str
+
+	align 8			; 0x0520
+	jmp os_get_mac_addr
+	align 8
+	dq os_get_mac_addr
+
+	align 8			; 0x0530
+	jmp os_mac_addr_to_str
+	align 8
+	dq os_mac_addr_to_str
+
+	align 8			; 0x0540
+	jmp os_byte_to_hex_string
+	align 8
+	dq os_byte_to_hex_string
+
+	align 8			; 0x0550
+	jmp os_get_arp_table
+	align 8
+	dq os_get_arp_table
+
+	align 8			; 0x0560
+	jmp os_icmp_send_request
+	align 8
+	dq os_icmp_send_request
+
+
 align 16
 
 start:

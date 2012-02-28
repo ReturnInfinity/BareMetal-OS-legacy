@@ -741,5 +741,52 @@ ret
 ; -----------------------------------------------------------------------------
 
 
+
+; -----------------------------------------------------------------------------
+; os_byte_to_hex_string -- Converts the value of AL to hex string
+; IN:  AL  = Value to be converted to hex string
+;      RDI = Location to store the hex string
+; All registers are preserved
+os_byte_to_hex_string:
+	push rdi
+	push rax
+
+	mov ah, al
+
+	and al, 0xf0
+	shr al, 4
+	cmp al, 9
+	jg os_byte_to_hex_string_high_hex
+	add al, '0'
+	stosb
+	jmp os_byte_to_hex_string_low
+os_byte_to_hex_string_high_hex:
+	sub al, 10
+	add al, 'A'
+	stosb
+
+os_byte_to_hex_string_low:
+	mov al, ah
+	and al, 0x0f
+	cmp al, 9
+	jg os_byte_to_hex_string_low_hex
+	add al, '0'
+	stosb
+	jmp os_byte_to_hex_string_finish
+os_byte_to_hex_string_low_hex:
+	sub al, 10
+	add al, 'A'
+	stosb
+
+os_byte_to_hex_string_finish:
+	xor al, al
+	stosb
+
+	pop rax
+	pop rdi
+	ret
+; -----------------------------------------------------------------------------
+
+
 ; =============================================================================
 ; EOF

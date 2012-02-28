@@ -11,6 +11,18 @@ align 16
 
 
 init_net:
+	; Initialize the ARP table to zero
+	push rdi
+	push rcx
+	push rax
+	mov rdi, arp_table
+	mov rcx, 256
+	xor rax, rax
+	rep stosq
+	pop rax
+	pop rcx
+	pop rdi
+
 	; Search for a supported NIC
 	mov rsi, NIC_DeviceVendor_ID
 
@@ -37,6 +49,9 @@ init_net_probe_found:
 
 init_net_probe_found_rtl8169:
 	call os_net_rtl8169_init
+	mov rdi, NIC_name_ptr
+	mov rax, device_name_rtl8169
+	mov [rdi], rax
 	mov rdi, os_net_transmit
 	mov rax, os_net_rtl8169_transmit
 	stosq
@@ -48,6 +63,9 @@ init_net_probe_found_rtl8169:
 
 init_net_probe_found_i8254x:
 	call os_net_i8254x_init
+	mov rdi, NIC_name_ptr
+	mov rax, device_name_i8254x
+	stosq
 	mov rdi, os_net_transmit
 	mov rax, os_net_i8254x_transmit
 	stosq
