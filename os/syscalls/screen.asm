@@ -140,36 +140,12 @@ os_print_newline_done:
 ;  IN:	RSI = message location (zero-terminated string)
 ; OUT:	All registers perserved
 os_print_string:
-	push rdi
-	push rsi
-	push rax
+	push rcx
 
-	cld				; Clear the direction flag.. we want to increment through the string
-	mov ah, 0x07			; Store the attribute into AH so STOSW can be used later on
+	call os_string_length
+	call os_print_chars
 
-os_print_string_nextchar:
-	lodsb				; Get char from string and store in AL
-	cmp al, 0			; Strings are Zero terminated.
-	je os_print_string_done		; If char is Zero then it is the end of the string
-	cmp al, 10			; Check if there was a newline character in the string
-	je os_print_string_newline	; If so then we print a new line
-	cmp al, 13			; Check if there was a newline character in the string
-	je os_print_string_newline	; If so then we print a new line
-	mov rdi, [screen_cursor_offset]
-	stosw				; Write the character and attribute with one call
-	call os_inc_cursor
-	jmp os_print_string_nextchar
-
-os_print_string_newline:
-	call os_print_newline
-	jmp os_print_string_nextchar
-
-os_print_string_done:
-	call os_screen_update
-
-	pop rax
-	pop rsi
-	pop rdi
+	pop rcx
 	ret
 ; -----------------------------------------------------------------------------
 
@@ -181,14 +157,13 @@ os_print_string_done:
 ; OUT:	All registers perserved
 ; This function uses the the os_print_string function to do the actual printing
 os_print_string_with_color:
-	push rdi
-	push rsi
-	push rax
+	push rcx
 
-	cld					; Clear the direction flag.. we want to increment through the string
-	mov ah, bl				; Copy the attribute into AH so STOSW can be used later on
+	call os_string_length
+	call os_print_chars_with_color
 
-	jmp os_print_string_nextchar		; Use the logic from os_print_string
+	pop rcx
+	ret
 ; -----------------------------------------------------------------------------
 
 
