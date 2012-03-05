@@ -176,10 +176,11 @@ os_print_char:
 	push rsi
 	push rax
 
-	mov rdi, [screen_cursor_offset]
 	mov ah, 0x07		; Store the attribute into AH so STOSW can be used later on
-	stosw			; Write the character and attribute with one call
 
+os_print_char_worker:
+	mov rdi, [screen_cursor_offset]
+	stosw			; Write the character and attribute with one call
 	call os_inc_cursor
 	sub rdi, 2
 	mov rsi, rdi
@@ -202,22 +203,10 @@ os_print_char:
 os_print_char_with_color:
 	push rdi
 	push rsi
+	push rax
 
-	mov rdi, [screen_cursor_offset]
-	stosb			; Store the character to video memory
-	xchg al, bl		; Swap AL and BL as stosb uses AL
-	stosb			; Store the color attribute to video memory
-	xchg al, bl		; Swap AL and BL back again
-	call os_inc_cursor
-	sub rdi, 2
-	mov rsi, rdi
-	sub rdi, os_screen
-	add rdi, 0xB8000	; Offset to video text memory
-	movsw
-
-	pop rsi
-	pop rdi
-	ret
+	mov ah, bl			; Copy the color attribute into AH
+	jmp os_print_char_worker
 ; -----------------------------------------------------------------------------
 
 
