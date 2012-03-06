@@ -9,7 +9,7 @@
 USE64
 ORG 0x0000000000100000
 
-%DEFINE BAREMETALOS_VER 'v0.5.2 (June 29, 2011)', 13, 'Copyright (C) 2008-2011 Return Infinity', 13, 0
+%DEFINE BAREMETALOS_VER 'v0.5.3 (February 23, 2012)', 13, 'Copyright (C) 2008-2012 Return Infinity', 13, 0
 %DEFINE BAREMETALOS_API_VER 1
 
 kernel_start:
