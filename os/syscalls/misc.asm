@@ -22,23 +22,18 @@ system_status:
 
 	; Display the dark grey bar
 	mov ax, 0x8720			; 0x87 for dark grey background/white foreground, 0x20 for space (blank) character
-	mov rdi, os_screen ;0x00000000000B8000
+	mov rdi, os_screen
+	push rdi
 	mov rcx, 80
 	rep stosw
+	pop rdi
 
 	; Display CPU status
-	mov rdi, os_screen ; 0x00000000000B8000
 	mov al, '['
 	stosb
 	add rdi, 1			; Skip the attribute byte
-	mov ax, 0x8F63			; 'c'
-	stosw
-	mov ax, 0x8F70			; 'p'
-	stosw
-	mov ax, 0x8F75			; 'u'
-	stosw
-	mov ax, 0x8F3A			; ':'
-	stosw	
+	mov rax, 0x8F3A8F758F708F63	; ':upc'
+	stosq
 	add rdi, 2			; Skip to the next char
 
 	xor ecx, ecx
@@ -81,14 +76,8 @@ system_status_cpu_done:
 	mov al, '['
 	stosb
 	add rdi, 1			; Skip the attribute byte
-	mov ax, 0x8F6D			; 'm'
-	stosw
-	mov ax, 0x8F65			; 'e'
-	stosw
-	mov ax, 0x8F6D			; 'm'
-	stosw
-	mov ax, 0x8F3A			; ':'
-	stosw	
+	mov rax, 0x8F3A8F6D8F658F6D	; ':mem'
+	stosq
 	add rdi, 2			; Skip to the next char
 
 	call os_mem_get_free		; Store number of free 2 MiB pages in RCX
@@ -144,14 +133,8 @@ system_status_mem_finish:
 	mov al, '['
 	stosb
 	add rdi, 1
-	mov ax, 0x8F6E			; 'n'
-	stosw
-	mov ax, 0x8F65			; 'e'
-	stosw
-	mov ax, 0x8F74			; 't'
-	stosw
-	mov ax, 0x8F3A			; ':'
-	stosw
+	mov rax, 0x8F3A8F748F658F6E	; ':ten'
+	stosq
 	add rdi, 2
 	mov al, 'T'
 	stosb
@@ -187,14 +170,8 @@ system_status_no_network:
 	mov al, '['
 	stosb
 	add rdi, 1
-	mov ax, 0x8F72			; 'r'
-	stosw
-	mov ax, 0x8F74			; 't'
-	stosw
-	mov ax, 0x8F63			; 'c'
-	stosw
-	mov ax, 0x8F3A			; ':'
-	stosw
+	mov rax, 0x8F3A8F638F748F72	; ':ctr'
+	stosq
 	add rdi, 2
 	mov al, 0xFE			; Ascii block character
 	stosb				; Put the block character on the screen
@@ -212,7 +189,7 @@ system_status_rtc_flash_lo:
 	add rdi, 1
 
 	; Display header text
-	mov rdi, os_screen ;0x00000000000B8080
+	mov rdi, os_screen
 	add rdi, 0x80
 	mov rsi, system_status_header
 	mov rcx, 16
