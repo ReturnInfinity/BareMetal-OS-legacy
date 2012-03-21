@@ -80,6 +80,15 @@ b_hide_statusbar		equ 0x0000000000100480	; Hide the system status bar
 b_screen_update			equ 0x0000000000100490	; Manually refresh the screen from the frame buffer
 b_print_chars			equ 0x00000000001004A0	; Displays text. IN: RSI = message location (A string, not zero-terminated), RCX = number of chars to print
 b_print_chars_with_color	equ 0x00000000001004B0	; Displays text with color. IN: RSI = message location (A string, not zero-terminated), BL = color, RCX = number of chars to print
+b_get_ip_config			equ 0x00000000001004E0	;
+b_set_ip_config			equ 0x00000000001004F0	;
+b_parse_ip_addr			equ 0x0000000000100500	;
+b_ip_addr_to_str		equ 0x0000000000100510	;
+b_get_mac_addr			equ 0x0000000000100520	;
+b_mac_addr_to_str		equ 0x0000000000100530	;
+b_byte_to_hex_string		equ 0x0000000000100540	;
+b_get_arp_table			equ 0x0000000000100550	;
+b_icmp_send_request		equ 0x0000000000100560	;
 
 
 ; =============================================================================
