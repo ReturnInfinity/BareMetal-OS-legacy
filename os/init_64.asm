@@ -59,9 +59,6 @@ make_exception_gates:
 	mov rdi, 0x21
 	mov rax, keyboard
 	call create_gate
-	mov rdi, 0x22
-	mov rax, timer
-	call create_gate
 	mov rdi, 0x28
 	mov rax, rtc
 	call create_gate
@@ -71,43 +68,6 @@ make_exception_gates:
 	mov rdi, 0x81
 	mov rax, ap_reset
 	call create_gate
-
-	; Set up the HPET
-	mov rsi, [os_HPETAddress]
-	cmp rsi, 0
-	je noHPET
-
-	mov rax, [rsi+0x10]		; General Configuration Register
-	call os_print_newline
-	call os_debug_dump_rax
-	btc rax, 0			; ENABLE_CNF - Disable the HPET
-;	btc rax, 1			; LEG_RT_CNF - Disable legacy routing
-	mov [rsi+0x10], rax
-
-	xor eax, eax
-	mov [rsi+0xF0], rax		; Clear the Main Counter Register
-
-	; Configure and enable Timer 0 (n = 0)
-	mov rax, [rsi+0x100]
-	call os_print_newline
-	call os_debug_dump_rax
-	bts rax, 1			; Tn_INT_TYPE_CNF - Interrupt Type Level
-	bts rax, 2			; Tn_INT_ENB_CNF - Interrupt Enable
-	bts rax, 3			; Tn_TYPE_CNF - Periodic Enable
-	bts rax, 6			; Tn_VAL_SET_CNF
-	mov [rsi+0x100], rax
-;	call os_print_newline
-;	call os_debug_dump_rax	
-
-	xor eax, eax
-	mov [rsi+0x108], rax		; Clear the Timer 0 Comparator Register
-
-;	mov rax, [rsi+0x10]		; General Configuration Register
-;	bts rax, 0			; ENABLE_CNF - Enable the HPET
-;	bts rax, 1			; LEG_RT_CNF - Enable legacy routing
-;	mov [rsi+0x10], rax
-
-noHPET:
 
 	; Set up RTC
 	; Rate defines how often the RTC interrupt is triggered
@@ -124,6 +84,15 @@ rtc_poll:
 	out 0x70, al
 	mov al, 00101101b		; RTC@32.768KHz (0010), Rate@8Hz (1101)
 	out 0x71, al
+	mov al, 0x0B			; Status Register B
+	out 0x70, al			; Select the address
+	in al, 0x71			; Read the current settings
+	push rax
+	mov al, 0x0B			; Status Register B
+	out 0x70, al			; Select the address
+	pop rax
+	bts ax, 6			; Set Periodic(6)
+	out 0x71, al			; Write the new settings
 	mov al, 0x0C			; Acknowledge the RTC
 	out 0x70, al
 	in al, 0x71
@@ -227,16 +196,42 @@ no_more_aps:
 	mov rax, 0x21
 	call ioapic_entry_write
 
-;	mov rcx, 2			; Enable Timer
-;	mov rax, 0x22
-;	bts rax, 13			; 1=Low active
-;	bts rax, 15			; 1=Level sensitive
-;	call ioapic_entry_write	
-
 	mov rcx, 8			; Enable RTC
 	mov rax, 0x0100000000000928	; Lowest priority
 ;	mov rax, 0x28			; Handled by APIC ID 0 (BSP)
 	call ioapic_entry_write
+
+	; Set up the HPET (if it exists)
+	mov rsi, [os_HPETAddress]
+	cmp rsi, 0
+	je noHPET
+
+	mov rax, [rsi]			; General Capabilities and ID Register
+	shr rax, 32
+	mov [os_HPETRate], eax		; Period at which the counter increments in femptoseconds (10^-15 seconds)
+
+	mov rax, [rsi+0x10]		; General Configuration Register
+	btc rax, 0			; ENABLE_CNF - Disable the HPET
+	mov [rsi+0x10], rax
+
+	xor eax, eax
+	mov [rsi+0xF0], rax		; Clear the Main Counter Register
+
+	; Configure and enable Timer 0 (n = 0)
+	mov rax, [rsi+0x100]
+	bts rax, 1			; Tn_INT_TYPE_CNF - Interrupt Type Level
+	bts rax, 3			; Tn_TYPE_CNF - Periodic Enable
+	bts rax, 6			; Tn_VAL_SET_CNF
+	mov [rsi+0x100], rax
+
+	xor eax, eax
+	mov [rsi+0x108], rax		; Clear the Timer 0 Comparator Register
+
+	mov rax, [rsi+0x10]		; General Configuration Register
+	bts rax, 0			; ENABLE_CNF - Enable the HPET
+	mov [rsi+0x10], rax
+
+noHPET:
 
 	call os_seed_random		; Seed the RNG
 

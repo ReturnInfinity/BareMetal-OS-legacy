@@ -237,25 +237,25 @@ testzone:
 ;	call os_print_newline
 
 
-	call os_mem_get_free
-	mov rax, rcx
-	call os_debug_dump_rax
-	call os_print_newline
+;	call os_mem_get_free
+;	mov rax, rcx
+;	call os_debug_dump_rax
+;	call os_print_newline
 
-	mov rcx, 16
-	call os_mem_allocate
-	push rax
-	call os_mem_get_free
-	mov rax, rcx
-	call os_debug_dump_rax
-	call os_print_newline
+;	mov rcx, 16
+;	call os_mem_allocate
+;	push rax
+;	call os_mem_get_free
+;	mov rax, rcx
+;	call os_debug_dump_rax
+;	call os_print_newline
 
-	pop rax
-	mov rcx, 16
-	call os_mem_release
-	call os_mem_get_free
-	mov rax, rcx
-	call os_debug_dump_rax
+;	pop rax
+;	mov rcx, 16
+;	call os_mem_release
+;	call os_mem_get_free
+;	mov rax, rcx
+;	call os_debug_dump_rax
 ;	mov al, ' '
 ;	call os_print_char
 ;	mov rax, rcx
@@ -278,6 +278,10 @@ testzone:
 
 ;	mov rax, 0x400000
 ;	call os_get_time_data
+
+	mov rax, [os_HPETAddress + 0xF0]
+	call os_debug_dump_rax
+	call os_print_newline
 
 
 ;	ud2

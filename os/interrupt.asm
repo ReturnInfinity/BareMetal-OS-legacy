@@ -103,39 +103,6 @@ keyboard_done:
 
 
 ; -----------------------------------------------------------------------------
-; Timer. IRQ 0x02, INT 0x22
-align 16
-timer:
-	push rdi
-	push rax
-
-	add qword [os_TimerCounter], 1	; 64-bit counter started at bootup
-
-	; Debug
-	mov al, 'T'
-	mov [0x000B808C], al
-	mov rax, [os_TimerCounter]
-	and al, 1			; Clear all but lowest bit (Can only be 0 or 1)
-	add al, 48
-	mov [0x000B808E], al
-
-	mov rdi, [os_HPETAddress]	; Acknowledge the interrupt on the HPET
-	xor eax, eax
-	bts eax, 0			; Set bit 0 to 1 for Timer 0
-	mov [rdi+0x20], rax
-
-	mov rdi, [os_LocalAPICAddress]	; Acknowledge the IRQ on APIC
-	add rdi, 0xB0
-	xor eax, eax
-	stosd
-
-	pop rax
-	pop rdi
-	iretq
-; -----------------------------------------------------------------------------
-
-
-; -----------------------------------------------------------------------------
 ; Real-time clock interrupt. IRQ 0x08, INT 0x28
 ; Currently this IRQ runs 8 times per second (As defined in init_64.asm)
 ; The supervisor lives here

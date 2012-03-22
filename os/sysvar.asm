@@ -67,7 +67,6 @@ os_net_ack_int:		equ os_SystemVariables + 0x48
 os_NetIOBaseMem:	equ os_SystemVariables + 0x50
 os_NetMAC:		equ os_SystemVariables + 0x58
 os_HPETAddress:		equ os_SystemVariables + 0x60
-os_TimerCounter:	equ os_SystemVariables + 0x68
 
 ; DD - Starting at offset 128, increments by 4
 cpu_speed:		equ os_SystemVariables + 128	; in MHz
@@ -75,6 +74,7 @@ hd1_size:		equ os_SystemVariables + 132	; Size in MiB
 ip:			equ os_SystemVariables + 136	; IPv4 Address
 sn:			equ os_SystemVariables + 140	; IPv4 Subnet
 gw:			equ os_SystemVariables + 144	; IPv4 Gateway
+os_HPETRate:		equ os_SystemVariables + 148
 
 ; DW - Starting at offset 256, increments by 2
 os_MemAmount:		equ os_SystemVariables + 256	; in MiB
