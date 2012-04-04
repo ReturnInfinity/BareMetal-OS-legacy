@@ -16,7 +16,7 @@ Building Details
 
 You will need the following Linux packages:
 
-	autoconf libtool sed gawk bison flex m4 texinfo texi2html subversion
+	autoconf libtool sed gawk bison flex m4 texinfo texi2html unzip make
 
 Create a Newlib directory and download the latest Newlib:
 
@@ -75,7 +75,7 @@ In `newlib-1.20.0/newlib/libc/sys` create a directory called `baremetal`:
 
 	mkdir newlib-1.20.0/newlib/libc/sys/baremetal
 
-Copy the contents of the `newlib/baremetal` directory from the BareMetal OS SVN into the `newlib/libc/sys/baremetal` directory.
+Copy the contents of the `newlib/baremetal` directory from the BareMetal OS code into the `newlib/libc/sys/baremetal` directory.
 
 Refresh the configuration files:
 
