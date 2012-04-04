@@ -28,9 +28,13 @@ Extract it:
 
 	tar xf newlib-1.20.0.tar.gz
 
-Download the latest BareMetal OS SVN:
+Download the latest BareMetal OS source code from GitHub:
 
-	svn checkout http://baremetal.googlecode.com/svn/trunk/ baremetal
+	wget https://github.com/ReturnInfinity/BareMetal-OS/zipball/master
+
+Extract it:
+
+	unzip master
 
 Create a build folder alongside the extracted `newlib-1.20.0` directory:
 
