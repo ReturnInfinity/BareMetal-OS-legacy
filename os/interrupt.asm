@@ -449,12 +449,12 @@ exception_gate_main:
 	call os_int_to_string
 	call os_print_string_with_color
 	mov rsi, int_string01
-	call os_print_string
+	call os_print_string_with_color
 	mov rsi, exc_string00
 	pop rax
 	and rax, 0x00000000000000FF	; Clear out everything in RAX except for AL
 	push rax
-	mov bl, 52
+	mov bl, 32			; Length of each message
 	mul bl				; AX = AL x BL
 	add rsi, rax			; Use the value in RAX as an offset to get to the right message
 	pop rax
@@ -501,29 +501,29 @@ next_stack:
 
 
 int_string00 db 'BareMetal OS - CPU ', 0
-int_string01 db ' - ', 0
+int_string01 db ' - Interrupt ', 0
 ; Strings for the error messages
 exc_string db 'Unknown Fatal Exception!', 0
-exc_string00 db 'Interrupt 00 - Divide Error Exception (#DE)        ', 0
-exc_string01 db 'Interrupt 01 - Debug Exception (#DB)               ', 0
-exc_string02 db 'Interrupt 02 - NMI Interrupt                       ', 0
-exc_string03 db 'Interrupt 03 - Breakpoint Exception (#BP)          ', 0
-exc_string04 db 'Interrupt 04 - Overflow Exception (#OF)            ', 0
-exc_string05 db 'Interrupt 05 - BOUND Range Exceeded Exception (#BR)', 0
-exc_string06 db 'Interrupt 06 - Invalid Opcode Exception (#UD)      ', 0
-exc_string07 db 'Interrupt 07 - Device Not Available Exception (#NM)', 0
-exc_string08 db 'Interrupt 08 - Double Fault Exception (#DF)        ', 0
-exc_string09 db 'Interrupt 09 - Coprocessor Segment Overrun         ', 0	; No longer generated on new CPU's
-exc_string10 db 'Interrupt 10 - Invalid TSS Exception (#TS)         ', 0
-exc_string11 db 'Interrupt 11 - Segment Not Present (#NP)           ', 0
-exc_string12 db 'Interrupt 12 - Stack Fault Exception (#SS)         ', 0
-exc_string13 db 'Interrupt 13 - General Protection Exception (#GP)  ', 0
-exc_string14 db 'Interrupt 14 - Page-Fault Exception (#PF)          ', 0
-exc_string15 db 'Interrupt 15 - Undefined                           ', 0
-exc_string16 db 'Interrupt 16 - x87 FPU Floating-Point Error (#MF)  ', 0
-exc_string17 db 'Interrupt 17 - Alignment Check Exception (#AC)     ', 0
-exc_string18 db 'Interrupt 18 - Machine-Check Exception (#MC)       ', 0
-exc_string19 db 'Interrupt 19 - SIMD Floating-Point Exception (#XM) ', 0
+exc_string00 db '00 - Divide Error (#DE)        ', 0
+exc_string01 db '01 - Debug (#DB)               ', 0
+exc_string02 db '02 - NMI Interrupt             ', 0
+exc_string03 db '03 - Breakpoint (#BP)          ', 0
+exc_string04 db '04 - Overflow (#OF)            ', 0
+exc_string05 db '05 - BOUND Range Exceeded (#BR)', 0
+exc_string06 db '06 - Invalid Opcode (#UD)      ', 0
+exc_string07 db '07 - Device Not Available (#NM)', 0
+exc_string08 db '08 - Double Fault (#DF)        ', 0
+exc_string09 db '09 - Coprocessor Segment Over  ', 0	; No longer generated on new CPU's
+exc_string10 db '10 - Invalid TSS (#TS)         ', 0
+exc_string11 db '11 - Segment Not Present (#NP) ', 0
+exc_string12 db '12 - Stack Fault (#SS)         ', 0
+exc_string13 db '13 - General Protection (#GP)  ', 0
+exc_string14 db '14 - Page-Fault (#PF)          ', 0
+exc_string15 db '15 - Undefined                 ', 0
+exc_string16 db '16 - x87 FPU Error (#MF)       ', 0
+exc_string17 db '17 - Alignment Check (#AC)     ', 0
+exc_string18 db '18 - Machine-Check (#MC)       ', 0
+exc_string19 db '19 - SIMD Floating-Point (#XM) ', 0
 rip_string db ' IP:', 0
 stack_string db ' ST:', 0
 
