@@ -106,8 +106,7 @@ os_smp_enqueue:
 os_smp_enqueue_spin:
 	bt word [os_QueueLock], 0	; Check if the mutex is free
 	jc os_smp_enqueue_spin		; If not check it again
-	lock				; The mutex was free, lock the bus
-	bts word [os_QueueLock], 0	; Try to grab the mutex
+	lock bts word [os_QueueLock], 0	; The mutex was free, lock the bus. Try to grab the mutex
 	jc os_smp_enqueue_spin		; Jump if we were unsuccessful
 
 	cmp word [os_QueueLen], 256	; aka cpuqueuemax
@@ -122,7 +121,7 @@ os_smp_enqueue_spin:
 	stosq				; Store the code address from RAX
 	mov rax, rsi
 	stosq				; Store the variable
-	
+
 	add word [os_QueueLen], 1
 	shr rcx, 4			; Quickly divide RCX by 16
 	add cx, 1
@@ -164,8 +163,7 @@ os_smp_dequeue:
 os_smp_dequeue_spin:
 	bt word [os_QueueLock], 0	; Check if the mutex is free
 	jc os_smp_dequeue_spin		; If not check it again
-	lock				; The mutex was free, lock the bus
-	bts word [os_QueueLock], 0	; Try to grab the mutex
+	lock bts word [os_QueueLock], 0	; The mutex was free, lock the bus. Try to grab the mutex
 	jc os_smp_dequeue_spin		; Jump if we were unsuccessful
 
 	cmp word [os_QueueLen], 0
@@ -287,8 +285,7 @@ skipit:
 os_smp_lock:
 	bt word [rax], 0	; Check if the mutex is free (Bit 0 cleared to 0)
 	jc os_smp_lock		; If not check it again
-	lock			; The mutex was free, lock the bus
-	bts word [rax], 0	; Try to grab the mutex (Bit 0 set to 1)
+	lock bts word [rax], 0	; The mutex was free, lock the bus. Try to grab the mutex
 	jc os_smp_lock		; Jump if we were unsuccessful
 	ret			; Lock acquired. Return to the caller
 ; -----------------------------------------------------------------------------
