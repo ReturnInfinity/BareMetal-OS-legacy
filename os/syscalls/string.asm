@@ -280,52 +280,6 @@ os_string_copy_more:
 
 
 ; -----------------------------------------------------------------------------
-; os_string_truncate -- Chop string down to specified number of characters
-;  IN:	RSI = string location
-;	RAX = number of characters
-; OUT:	All registers preserved
-os_string_truncate:
-	push rsi
-
-	add rsi, rax
-	mov byte [rsi], 0x00
-
-	pop rsi
-	ret
-; -----------------------------------------------------------------------------
-
-
-; -----------------------------------------------------------------------------
-; os_string_join -- Join two strings into a third string
-;  IN:	RAX = string one
-;	RBX = string two
-;	RDI = destination string
-; OUT:	All registers preserved
-; Note:	It is up to the programmer to ensure that there is sufficient space in the destination
-os_string_join:
-	push rsi
-	push rdi
-	push rcx
-	push rbx
-	push rax
-
-	mov rsi, rax		; Copy first string to location in RDI
-	call os_string_copy
-	call os_string_length	; Get length of first string
-	add rdi, rcx		; Position at end of first string
-	mov rsi, rbx		; Add second string onto it
-	call os_string_copy
-
-	pop rax
-	pop rbx
-	pop rcx
-	pop rdi
-	pop rsi
-	ret
-; -----------------------------------------------------------------------------
-
-
-; -----------------------------------------------------------------------------
 ; os_string_append -- Append a string to an existing string
 ;  IN:	RSI = String to be appended
 ;	RDI = Destination string
@@ -401,40 +355,6 @@ os_string_chomp_copy:		; Copy a byte from RSI to RDI one byte at a time until we
 os_string_chomp_done:
 	pop rax
 	pop rcx
-	pop rdi
-	pop rsi
-	ret
-; -----------------------------------------------------------------------------
-
-
-; -----------------------------------------------------------------------------
-; os_string_strip -- Removes specified character from a string
-;  IN:	RSI = string location
-;	AL  = character to remove
-; OUT:	All registers preserved
-os_string_strip:
-	push rsi
-	push rdi
-	push rbx
-	push rax
-
-	mov rdi, rsi
-	mov bl, al			; copy the char into BL since LODSB and STOSB use AL
-os_string_strip_nextchar:
-	lodsb
-	stosb
-	cmp al, 0x00			; check if we reached the end of the string
-	je os_string_strip_done		; if so bail out
-	cmp al, bl			; check to see if the character we read is the interesting char
-	jne os_string_strip_nextchar	; if not skip to the next character
-
-os_string_strip_skip:			; if so the fall through to here
-	dec rdi				; decrement RDI so we overwrite on the next pass
-	jmp os_string_strip_nextchar
-
-os_string_strip_done:
-	pop rax
-	pop rbx
 	pop rdi
 	pop rsi
 	ret
@@ -660,40 +580,6 @@ os_get_date_string_wait:
 
 
 ; -----------------------------------------------------------------------------
-; os_is_digit -- Check if character is a digit
-;  IN:	AL  = ASCII char
-; OUT:	EQ flag set if numeric
-; Note:	JE (Jump if Equal) can be used after this function is called
-os_is_digit:
-	cmp al, '0'
-	jb os_is_digit_not_digit
-	cmp al, '9'
-	ja os_is_digit_not_digit
-	cmp al, al			; To set the equal flag
-
-os_is_digit_not_digit:
-	ret
-; -----------------------------------------------------------------------------
-
-
-; -----------------------------------------------------------------------------
-; os_is_alpha -- Check if character is a letter
-;  IN:	AL  = ASCII char
-; OUT:	EQ flag set if alpha
-; Note:	JE (Jump if Equal) can be used after this function is called
-os_is_alpha:
-	cmp al, ' '
-	jb os_is_alpha_not_alpha
-	cmp al, 0x7E
-	ja os_is_alpha_not_alpha
-	cmp al, al			; To set the equal flag
-
-os_is_alpha_not_alpha:
-	ret
-; -----------------------------------------------------------------------------
-
-
-; -----------------------------------------------------------------------------
 ; os_string_parse -- Parse a string into individual words
 ;  IN:	RSI = Address of string
 ; OUT:	RCX = word count
@@ -738,53 +624,6 @@ os_string_parse_done:
 	pop rdi
 	pop rsi
 ret
-; -----------------------------------------------------------------------------
-
-
-
-; -----------------------------------------------------------------------------
-; os_byte_to_hex_string -- Converts the value of AL to hex string
-; IN:  AL  = Value to be converted to hex string
-;      RDI = Location to store the hex string
-; All registers are preserved
-os_byte_to_hex_string:
-	push rdi
-	push rax
-
-	mov ah, al
-
-	and al, 0xf0
-	shr al, 4
-	cmp al, 9
-	jg os_byte_to_hex_string_high_hex
-	add al, '0'
-	stosb
-	jmp os_byte_to_hex_string_low
-os_byte_to_hex_string_high_hex:
-	sub al, 10
-	add al, 'A'
-	stosb
-
-os_byte_to_hex_string_low:
-	mov al, ah
-	and al, 0x0f
-	cmp al, 9
-	jg os_byte_to_hex_string_low_hex
-	add al, '0'
-	stosb
-	jmp os_byte_to_hex_string_finish
-os_byte_to_hex_string_low_hex:
-	sub al, 10
-	add al, 'A'
-	stosb
-
-os_byte_to_hex_string_finish:
-	xor al, al
-	stosb
-
-	pop rax
-	pop rdi
-	ret
 ; -----------------------------------------------------------------------------
 
 

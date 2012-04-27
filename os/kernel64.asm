@@ -342,16 +342,6 @@ kernel_start:
 ;	align 8
 ;	dq os_screen_clear
 
-	align 8			; 0x0450
-	jmp os_show_cursor
-	align 8
-	dq os_show_cursor
-
-	align 8			; 0x0460
-	jmp os_hide_cursor
-	align 8
-	dq os_hide_cursor
-
 	align 8			; 0x0470
 	jmp os_show_statusbar
 	align 8
@@ -408,7 +398,6 @@ start_no_network:
 
 	mov ax, 0x0018			; Set the hardware cursor to the bottom left-hand corner
 	call os_move_cursor
-	call os_hide_cursor
 	
 	mov rsi, startupapp		; Look for a file called startup.app
 	mov rdi, programlocation	; We load the program to this location in memory (currently 0x00200000 : at the 2MB mark)
