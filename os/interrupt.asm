@@ -195,17 +195,6 @@ network_rx_as_well:
 	xor al, al
 network_rx_buffer_nowrap:
 	mov byte [os_EthernetBuffer_C2], al
-
-	; Check the packet type
-	mov ax, [rdi+12]		; Grab the EtherType/Length
-	xchg al, ah			; Convert big endian to little endian
-	cmp ax, 0x0800			; IPv4
-	je network_IPv4_handler
-	cmp ax, 0x0806			; ARP
-	je network_ARP_handler
-	cmp ax, 0x86DD			; IPv6
-	je network_IPv6_handler
-
 	jmp network_end
 
 network_tx:
@@ -225,55 +214,6 @@ network_end:
 	pop rsi
 	pop rdi
 	iretq
-
-network_ARP_handler:			; Copy the packet and call the handler
-	mov rsi, rdi			; Copy the packet location
-	mov rdi, os_eth_temp_buffer	; and copy it here
-	push rsi
-	push rcx
-	rep movsb
-	pop rcx
-	pop rsi
-
-	; Remove the ARP packet from the ring buffer
-;	mov al, byte [os_EthernetBuffer_C2]
-
-	call os_arp_handler		; Handle the packet
-	jmp network_end
-
-network_IPv4_handler:
-	mov rsi, rdi			; Copy the packet location
-	mov rdi, os_eth_temp_buffer	; and copy it here
-	push rsi
-	push rcx
-	rep movsb
-	pop rcx
-	pop rsi
-
-	mov al, [rsi+0x17]
-	cmp al, 0x01			; ICMP
-	je network_IPv4_ICMP_handler
-	cmp al, 0x06			; TCP
-	je network_IPv4_TCP_handler
-	cmp al, 0x11			; UDP
-	je network_end
-	jmp network_end
-
-network_IPv4_ICMP_handler:
-	call os_icmp_handler
-	jmp network_end
-
-network_IPv4_TCP_handler:
-	call os_tcp_handler
-	jmp network_end
-
-network_IPv6_handler:
-	jmp network_end
-
-network_string01 db 'ARP!', 0
-network_string02 db 'ICMP!', 0
-network_string03 db 'TCP!', 0
-network_string04 db 'UDP!', 0
 ; -----------------------------------------------------------------------------
 
 
