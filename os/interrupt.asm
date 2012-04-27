@@ -119,8 +119,8 @@ rtc:
 	je rtc_no_sysstatus
 	call system_status		; Show System Status information on screen
 rtc_no_sysstatus:
-	
-;	Check to make sure that at least one core is running something
+
+	; Check to make sure that at least one core is running something
 	cmp word [os_QueueLen], 0	; Check the length of the Queue
 	jne rtc_end			; If it is greater than 0 then skip to the end
 	mov rcx, 256

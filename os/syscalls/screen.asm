@@ -16,44 +16,26 @@ align 16
 ;	AL  = column
 ; OUT:	All registers preserved
 os_move_cursor:
-	push rdx
 	push rcx
 	push rbx
 	push rax
 
+	xor rbx, rbx
 	mov [screen_cursor_x], ah
 	mov [screen_cursor_y], al
-	push rax
 	and rax, 0x000000000000FFFF	; only keep the low 16 bits
 	;calculate the new offset
-	mov cl, 80
+	mov cl, 80			; 80 columns per row
 	mul cl				; AX = AL * CL
-	xor rbx, rbx
 	mov bl, [screen_cursor_x]
 	add ax, bx
 	shl ax, 1			; multiply by 2
-	add rax, os_screen ;0x00000000000B8000
+	add rax, os_screen		; Address of the screen buffer
 	mov [screen_cursor_offset], rax
-	pop rax				; Move the hardware cursor
-	mov bh, ah
-	mov bl, al
-	xor ax, ax
-	mov al, 0x50
-	mul bl				; bl * al = ax
-	movzx bx, bh
-	add bx, ax
-	mov al, 0x0E
-	mov ah, bh
-	mov dx, 0x03D4
-	out dx, ax
-	inc ax
-	mov ah, bl
-	out dx, ax	
 
 	pop rax
 	pop rbx
 	pop rcx
-	pop rdx
 	ret
 ; -----------------------------------------------------------------------------
 
@@ -417,69 +399,7 @@ os_screen_clear:
 
 
 ; -----------------------------------------------------------------------------
-; os_hide_cursor -- Turns off cursor in text mode
-;  IN:	Nothing
-; OUT:	All registers perserved
-os_hide_cursor:
-	push rdx
-	push rbx
-	push rax
-
-	mov dx, 0x03d4
-	mov ax, 0x000a		; Cursor Start Register
-	out dx, ax
-	inc dx
-	xor ax, ax
-	in al, dx
-	mov bl, al
-	or bl, 00100000b	; Bit 5 set to 1 to disable cursor
-	dec dx
-	mov ax, 0x000a		; Cursor Start Register
-	out dx, ax
-	inc dx
-	mov al, bl
-	out dx, al
-
-	pop rax
-	pop rbx
-	pop rdx
-	ret
-; -----------------------------------------------------------------------------
-
-
-; -----------------------------------------------------------------------------
-; os_show_cursor -- Turns on cursor in text mode
-;  IN:	Nothing
-; OUT:	All registers perserved
-os_show_cursor:
-	push rdx
-	push rbx
-	push rax
-
-	mov dx, 0x03d4
-	mov ax, 0x000a		; Cursor Start Register
-	out dx, ax
-	inc dx
-	xor ax, ax
-	in al, dx
-	mov bl, al
-	and bl, 11011111b	; Bit 5 set to 0 to enable cursor
-	dec dx
-	mov ax, 0x000a		; Cursor Start Register
-	out dx, ax
-	inc dx
-	mov al, bl
-	out dx, al
-
-	pop rax
-	pop rbx
-	pop rdx
-	ret
-; -----------------------------------------------------------------------------
-
-
-; -----------------------------------------------------------------------------
-; os_show_cursor -- Manually refresh the screen from the frame buffer
+; os_screen_update -- Manually refresh the screen from the frame buffer
 ;  IN:	Nothing
 ; OUT:	All registers perserved
 os_screen_update:
