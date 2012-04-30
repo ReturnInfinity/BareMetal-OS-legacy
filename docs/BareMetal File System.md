@@ -73,7 +73,7 @@ The following system calls should be available:
 
 The create function accepts two parameters:
 
-	Name = A null-terminated string no more that 63 characters
+	Name = A null-terminated string no more that 31 characters
 	Reserved = The number of blocks to reserve for the file
 
 
