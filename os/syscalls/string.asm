@@ -11,7 +11,7 @@ align 16
 
 
 ; -----------------------------------------------------------------------------
-; os_int_to_string -- Convert a binary interger into an string
+; os_int_to_string -- Convert a binary integer into an string
 ;  IN:	RAX = binary integer
 ;	RDI = location to store string
 ; OUT:	RDI = points to end of string
@@ -53,7 +53,7 @@ os_int_to_string_next_digit:
 
 
 ; -----------------------------------------------------------------------------
-; os_string_to_int -- Convert a string into a binary interger
+; os_string_to_int -- Convert a string into a binary integer
 ;  IN:	RSI = location of string
 ; OUT:	RAX = integer value
 ;	All other registers preserved
