@@ -165,8 +165,8 @@ nexttritone:
 	mov [os_NumCores], ax
 
 	mov rsi, 0x5020
-	lodsw
-	mov [os_MemAmount], ax		; In MiB's
+	lodsd
+	mov [os_MemAmount], eax		; In MiB's
 
 	mov rsi, 0x5040
 	lodsq

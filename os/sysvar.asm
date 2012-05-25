@@ -75,9 +75,9 @@ ip:			equ os_SystemVariables + 136	; IPv4 Address
 sn:			equ os_SystemVariables + 140	; IPv4 Subnet
 gw:			equ os_SystemVariables + 144	; IPv4 Gateway
 os_HPETRate:		equ os_SystemVariables + 148
+os_MemAmount:		equ os_SystemVariables + 152	; in MiB
 
 ; DW - Starting at offset 256, increments by 2
-os_MemAmount:		equ os_SystemVariables + 256	; in MiB
 os_NumCores:		equ os_SystemVariables + 258
 cpuqueuestart:		equ os_SystemVariables + 260
 cpuqueuefinish:		equ os_SystemVariables + 262
