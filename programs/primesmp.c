@@ -1,9 +1,9 @@
-// Prime SMP Test Program (v1.2, September 7 2010)
-// Written by Ian Seyler
+// Prime SMP Test Program (v1.3, June 2 2012)
+// Written by Ian Seyler @ Return Infinity
 //
 // This program checks all odd numbers between 3 and 'maxn' and determines if they are prime.
 // On exit the program will display the execution time and how many prime numbers were found.
-// Useful for testing runtime performance between Linux and BareMetal OS.
+// Useful for testing runtime performance between Linux/BSD and BareMetal OS.
 //
 // BareMetal compile using GCC (Tested with 4.5.0)
 // gcc -c -m64 -nostdlib -nostartfiles -nodefaultlibs -mno-red-zone -o primesmp.o primesmp.c -DBAREMETAL
@@ -12,8 +12,8 @@
 // objcopy --remove-section .eh_frame --remove-section .rel.eh_frame --remove-section .rela.eh_frame libBareMetal.o
 // ld -T app.ld -o primesmp.app primesmp.o libBareMetal.o
 //
-// Linux compile using GCC (Tested with 4.5.0)
-// gcc -m64 -lpthread -o primesmp primesmp.c -DLINUX
+// Linux/BSD compile using GCC (Tested with 4.5.0)
+// gcc -m64 -lpthread -o primesmp primesmp.c
 // strip primesmp
 //
 // maxn = 500000	primes = 41538
@@ -24,90 +24,117 @@
 
 #ifdef BAREMETAL
 #include "libBareMetal.h"
-#endif
-
-#ifdef LINUX
+#else
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <pthread.h>
 #include <time.h>
 #endif
 
-void prime_process();
+void *prime_process(void *param);
 
 // primes is set to 1 since we don't calculate for '2' as it is a known prime number
-unsigned long maxn=1000000, primes=1, local=0, lock=0, process_stage=0, processes=8;
+unsigned long max_number=0, primes=1, local=0, lock=0, process_stage=0, processes=0, max_processes=0, singletime=0;
 unsigned char tstring[25];
-#ifdef LINUX
+float speedup;
+
+#ifndef BAREMETAL
 pthread_mutex_t mutex1 = PTHREAD_MUTEX_INITIALIZER;
 #endif
 
 
-int main()
+int main(int argc, char *argv[])
 {
+	if ((argc == 1) || (argc >= 4))
+	{
+		printf("usage: %s max_processes max_number\n", argv[0]);
+		exit(1);
+	}
+	else
+	{
+		max_processes = atoi(argv[1]);
+		max_number = atoi(argv[2]);
+	}
+
+	if ((max_processes == 0) || (max_number == 0))
+	{
+		printf("Invalid argument(s).\n");
+		printf("usage: %s max_processes max_number\n", argv[0]);
+		exit(1);
+	}
+
+	printf("PrimeSMP v1.0. Using a maximum of %ld processes. Searching up to %ld.\n", max_processes, max_number);
+
 	unsigned long k;
-	
-	process_stage = processes;
 
-#ifdef BAREMETAL
-	unsigned long start, finish;
-	start = b_get_timercounter();		// Grab the starting time
-#endif
-
-#ifdef LINUX
-	time_t start, finish;
-	time(&start);				// Grab the starting time
-	pthread_t worker[processes];
-#endif
-
-// Spawn the worker processes
-	for (k=0; k<processes; k++)
+	for (processes=1; processes <= max_processes; processes*=2)
 	{
-#ifdef BAREMETAL
-		b_smp_enqueue(&prime_process);
-#endif
-
-#ifdef LINUX
-		pthread_create(&worker[k], NULL, prime_process, NULL);
-#endif
-	}
+		primes = 1;
+		process_stage = processes;
 
 #ifdef BAREMETAL
-// Attempt to run a process on this CPU Core
-	while (b_smp_queuelen() != 0)		// Check the length of the queue. If greater than 0 then try to run a queued job.
-	{
-		local = b_smp_dequeue();	// Grab a job from the queue. b_smp_dequeue returns the memory address of the code
-		if (local != 0)			// If it was set to 0 then the queue was empty
-			b_smp_run(local);	// Run the code
-	}
-
-// No more jobs in the queue
-	b_smp_wait();				// Wait for all CPU cores to finish
+		unsigned long start, finish;
+		start = b_get_timercounter();		// Grab the starting time
+#else
+		time_t start, finish;
+		time(&start);				// Grab the starting time
+		pthread_t worker[processes];
 #endif
 
-#ifdef LINUX
-	for (k=0; k<processes; k++)
-	{
-		pthread_join(worker[k], NULL);
-	}
-#endif
-
-// Print the results
+		// Spawn the worker processes
+		for (k=0; k<processes; k++)
+		{
 #ifdef BAREMETAL
-	finish = b_get_timercounter();
-	b_int_to_string(primes, tstring);
-	b_print_string(tstring);
-	b_print_string(" in ");
-	finish = (finish - start) / 8;
-	b_int_to_string(finish, tstring);
-	b_print_string(tstring);
-	b_print_string(" seconds\n");
+			b_smp_enqueue(&prime_process);
+#else
+			pthread_create(&worker[k], NULL, prime_process, NULL);
 #endif
-	
-#ifdef LINUX
-	time(&finish);
-	printf("%u in %.0lf seconds\n", primes, difftime(finish, start));
+		}
+
+		printf("Processing with %ld process(es)...\n", processes);
+
+#ifdef BAREMETAL
+		// Attempt to run a process on this CPU Core
+		while (b_smp_queuelen() != 0)		// Check the length of the queue. If greater than 0 then try to run a queued job.
+		{
+			local = b_smp_dequeue();	// Grab a job from the queue. b_smp_dequeue returns the memory address of the code
+			if (local != 0)			// If it was set to 0 then the queue was empty
+				b_smp_run(local);	// Run the code
+		}
+		b_smp_wait();				// Wait for all CPU cores to finish
+#else
+		for (k=0; k<processes; k++)
+		{
+			pthread_join(worker[k], NULL);
+		}
 #endif
+
+		// Print the results
+#ifdef BAREMETAL
+		finish = b_get_timercounter();
+		b_int_to_string(primes, tstring);
+		b_print_string(tstring);
+		b_print_string(" in ");
+		finish = (finish - start) / 8;
+		b_int_to_string(finish, tstring);
+		b_print_string(tstring);
+		b_print_string(" seconds\n");
+#else
+		time(&finish);
+		if (processes == 1)
+		{
+			singletime = difftime(finish, start);
+			speedup = 1;
+		}
+		else
+		{
+			speedup = singletime / difftime(finish, start);
+		}
+		printf("%ld in %.0lf seconds. Speedup over 1 process: %.2lfX of maximum %ld.00X\n", primes, difftime(finish, start), speedup, processes);
+#endif
+
+	}
 
 	return 0;
 }
@@ -121,15 +148,14 @@ int main()
 // 4 processes	1: 3 11 19 ...	2: 5 13 21 ...	3: 7 15 23 ...	4: 9 17 25...
 // And so on.
 
-void prime_process()
+void *prime_process(void *param)
 {
 	register unsigned long h, i, j, tprimes=0;
 
 	// Lock process_stage, copy it to local var, subtract 1 from process_stage, unlock it.
 #ifdef BAREMETAL
 	b_smp_lock(lock);
-#endif
-#ifdef LINUX
+#else
 	pthread_mutex_lock( &mutex1 );
 #endif
 
@@ -138,15 +164,14 @@ void prime_process()
 
 #ifdef BAREMETAL
 	b_smp_unlock(lock);
-#endif
-#ifdef LINUX
+#else
 	pthread_mutex_unlock( &mutex1 );
 #endif
 
 	h = processes * 2;
 
 	// Process
-	for(; i<=maxn; i+=h)
+	for(; i<=max_number; i+=h)
 	{
 		for(j=2; j<=i-1; j++)
 		{
@@ -161,16 +186,15 @@ void prime_process()
 	// Add tprimes to primes.
 #ifdef BAREMETAL
 	b_smp_lock(lock);
-#endif
-#ifdef LINUX
+#else
 	pthread_mutex_lock( &mutex1 );
 #endif
+
 	primes = primes + tprimes;
 
 #ifdef BAREMETAL
 	b_smp_unlock(lock);
-#endif
-#ifdef LINUX
+#else
 	pthread_mutex_unlock( &mutex1 );
 #endif
 }
