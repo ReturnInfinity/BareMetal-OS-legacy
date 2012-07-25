@@ -168,6 +168,18 @@ nexttritone:
 	lodsd
 	mov [os_MemAmount], eax		; In MiB's
 
+	mov rsi, 0x5032
+	lodsw
+	mov [ata_port], ax
+
+	mov rsi, 0x5034
+	lodsd
+	mov [sata_port], eax
+
+	mov rsi, 0x5038
+	lodsq
+	mov [ahci_base], rax
+
 	mov rsi, 0x5040
 	lodsq
 	mov [os_HPETAddress], rax

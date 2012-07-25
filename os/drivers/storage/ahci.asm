@@ -35,7 +35,7 @@ readsectors:
 	shl rdx, 7			; Quick multiply by 0x80
 	add rdx, 0x100			; Offset to port 0
 
-	mov rsi, [sata_base]
+	mov rsi, [ahci_base]
 
 	mov rdi, 0x70000		; command list (1K with 32 entries, 32 bytes each)
 	xor eax, eax
@@ -100,10 +100,10 @@ readsectors:
 	mov eax, 0x00000001		; Execute Command Slot 0
 	stosd
 
-readblock_poll:
+.poll:
 	mov eax, [rsi+0x38]
 	cmp eax, 0
-	jne readblock_poll
+	jne .poll
 
 	mov rdi, rsi
 	add rdi, 0x18			; Offset to port 0
@@ -150,7 +150,7 @@ writesectors:
 	shl rdx, 7			; Quick multiply by 0x80
 	add rdx, 0x100			; Offset to port 0
 
-	mov rsi, [sata_base]
+	mov rsi, [ahci_base]
 
 	mov rdi, 0x70000		; command list (1K with 32 entries, 32 bytes each)
 	xor eax, eax
@@ -215,10 +215,10 @@ writesectors:
 	mov eax, 0x00000001		; Execute Command Slot 0
 	stosd
 
-writeblock_poll:
+.poll:
 	mov eax, [rsi+0x38]
 	cmp eax, 0
-	jne writeblock_poll
+	jne .poll
 
 	mov rdi, rsi
 	add rdi, 0x18			; Offset to port 0

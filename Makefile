@@ -13,6 +13,8 @@ HDD = PIO
 # FS specifies the supported filesystem.
 # Options: FAT16 or BMFS
 FS = FAT16
+# FLAGS specifies any other flags to pass to NASM
+FLAGS = ""
 
 all: kernel64.sys
 
@@ -20,7 +22,8 @@ _build:
 	mkdir -p build
 
 kernel64.sys: _build
-	${NASM} -Ios/ os/kernel64.asm -o build/kernel64.sys -dHDD=${HDD} -dFS=${FS}
+	${NASM} -Ios/ os/kernel64.asm -o build/kernel64.sys -dHDD=${HDD} \
+		-dFS=${FS} ${FLAGS}
 
 clean:
 	rm -r build

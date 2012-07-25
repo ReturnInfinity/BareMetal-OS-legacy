@@ -32,7 +32,9 @@ os_file_read:
 %ifidn FS,FAT16
 	jmp os_fat16_file_read
 %else ; BMFS
-	jmp os_bmfs_file_read
+	;jmp os_bmfs_file_read
+	stc
+	ret
 %endif
 ; -----------------------------------------------------------------------------
 
@@ -47,7 +49,9 @@ os_file_write:
 %ifidn FS,FAT16
 	jmp os_fat16_file_write
 %else ; BMFS
-	jmp os_bmfs_file_write
+	;jmp os_bmfs_file_write
+	stc
+	ret
 %endif
 ; -----------------------------------------------------------------------------
 
@@ -70,7 +74,9 @@ os_file_delete:
 %ifidn FS,FAT16
 	jmp os_fat16_file_delete
 %else ; BMFS
-	jmp os_bmfs_file_delete
+	;jmp os_bmfs_file_delete
+	stc
+	ret
 %endif
 ; -----------------------------------------------------------------------------
 
@@ -83,7 +89,9 @@ os_file_get_list:
 %ifidn FS,FAT16
 	jmp os_fat16_file_get_list
 %else ; BMFS
-	jmp os_bmfs_file_get_list
+	;jmp os_bmfs_file_get_list
+	stc
+	ret
 %endif
 ; -----------------------------------------------------------------------------
 
@@ -97,7 +105,9 @@ os_file_get_size:
 %ifidn FS,FAT16
 	jmp os_fat16_file_get_size
 %else ; BMFS
-	jmp os_bmfs_file_get_size
+	;jmp os_bmfs_file_get_size
+	stc
+	ret
 %endif
 ; -----------------------------------------------------------------------------
 

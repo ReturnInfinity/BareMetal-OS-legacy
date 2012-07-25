@@ -405,6 +405,18 @@ start_no_network:
 	mov rsi, readymsg
 	call os_print_string
 
+	rdtsc				; Print the time taken to start up (from protected mode)
+	shl rdx, 32
+	add rax, rdx
+	sub rax, [pure64_starttime]
+	mov rdi, os_temp_string
+	mov rsi, os_temp_string
+	call os_int_to_string
+	call os_print_string
+
+	mov rsi, readymsg_end
+	call os_print_string
+
 	mov ax, 0x0018			; Set the hardware cursor to the bottom left-hand corner
 	call os_move_cursor
 

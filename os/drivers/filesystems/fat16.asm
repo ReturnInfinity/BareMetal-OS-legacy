@@ -59,13 +59,6 @@ os_fat16_setup_no_mbr:
 lessthan65536sectors:
 	mov [fat16_TotalSectors], eax
 
-; Calculate the size of the drive in MiB
-	xor rax, rax
-	mov eax, [fat16_TotalSectors]
-	mov [hd1_maxlba], rax
-	shr rax, 11 ; rax = rax * 512 / 1048576
-	mov [hd1_size], eax ; in mebibytes
-
 ; Calculate FAT16 info
 	xor rax, rax
 	xor rbx, rbx

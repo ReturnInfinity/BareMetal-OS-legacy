@@ -14,7 +14,8 @@ hextable: 		db '0123456789ABCDEF'
 
 ; Strings
 system_status_header:	db 'BareMetal v0.5.3', 0
-readymsg:		db 'BareMetal is ready.', 0
+readymsg:		db 'BareMetal is ready (started in ', 0
+readymsg_end:		db ' cycles)', 0
 networkmsg:		db 'Network Address: ', 0
 prompt:			db '> ', 0
 space:			db ' ', 0
@@ -73,6 +74,7 @@ os_net_ack_int:		equ os_SystemVariables + 0x40
 os_NetIOBaseMem:	equ os_SystemVariables + 0x48
 os_NetMAC:		equ os_SystemVariables + 0x50
 os_HPETAddress:		equ os_SystemVariables + 0x58
+ahci_base:		equ os_SystemVariables + 0x62
 
 ; DD - Starting at offset 128, increments by 4
 cpu_speed:		equ os_SystemVariables + 128	; in MHz
@@ -81,6 +83,7 @@ sn:			equ os_SystemVariables + 136	; IPv4 Subnet
 gw:			equ os_SystemVariables + 140	; IPv4 Gateway
 os_HPETRate:		equ os_SystemVariables + 144
 os_MemAmount:		equ os_SystemVariables + 148	; in MiB
+sata_port:		equ os_SystemVariables + 152
 
 ; DW - Starting at offset 256, increments by 2
 os_NumCores:		equ os_SystemVariables + 258
@@ -90,6 +93,7 @@ os_QueueLen:		equ os_SystemVariables + 264
 os_QueueLock:		equ os_SystemVariables + 266	; Bit 0 clear for unlocked, set for locked.
 os_NetIOAddress:	equ os_SystemVariables + 268
 os_EthernetBusyLock:	equ os_SystemVariables + 270
+ata_port:		equ os_SystemVariables + 272
 
 ; DB - Starting at offset 384, increments by 1
 cursorx:		equ os_SystemVariables + 384	; cursor row location
@@ -149,23 +153,8 @@ struc	BMFS_FreeEnt
 endstruc
 %endif
 
-; Pure64 system variables -- avoid redetecting hard disk parameters
-pure64_SystemVariables:		equ 0x0000000000005A00
-
-; DQ
-hd1_maxlba:		equ pure64_SystemVariables + 0x10
-sata_base:		equ pure64_SystemVariables + 0x40
-
-; DD
-hd1_size:		equ pure64_SystemVariables + 128	; in MiB
-drive_port:		equ pure64_SystemVariables + 136
-
-; DW
-ata_base:		equ pure64_SystemVariables + 262
-
-;DB
-hd1_enable:		equ pure64_SystemVariables + 384
-hd1_lba48:		equ pure64_SystemVariables + 385
+; For startup timing
+pure64_starttime:		equ 0x0000000000005A18
 
 
 keylayoutlower:

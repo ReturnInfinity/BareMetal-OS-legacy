@@ -42,7 +42,7 @@ readsectors:
 readsectors_skip:
 
 	push rax			; Save RAX since we are about to overwrite it
-	mov dx, [ata_base]
+	mov dx, [ata_port]
 	add dx, 2
 	mov al, cl			; Read CL sectors
 	out dx, al
@@ -146,7 +146,7 @@ writesectors:
 writesectors_skip:
 
 	push rax		; Save RAX since we are about to overwrite it
-	mov dx, [ata_base]
+	mov dx, [ata_port]
 	add dx, 2		; 0x01F2 - Sector count Port 7:0
 	mov al, cl		; Write CL sectors
 	out dx, al
