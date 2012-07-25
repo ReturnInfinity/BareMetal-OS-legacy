@@ -385,7 +385,7 @@ start:
 
 	call init_net			; Initialize the network
 
-%ifidn (FS,FAT16)
+%ifidn FS,FAT16
 	call os_fat16_setup
 %endif
 
