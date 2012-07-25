@@ -9,6 +9,14 @@
 USE64
 ORG 0x0000000000100000
 
+%IFNDEF FS
+%DEFINE FS FAT16
+%ENDIF
+
+%IFNDEF HDD
+%DEFINE HDD PIO
+%ENDIF
+
 %DEFINE BAREMETALOS_VER 'v0.5.3 (February 23, 2012)', 13, 'Copyright (C) 2008-2012 Return Infinity', 13, 0
 %DEFINE BAREMETALOS_API_VER 1
 
@@ -371,14 +379,15 @@ kernel_start:
 align 16
 
 start:
-
 	call init_64			; After this point we are in a working 64-bit enviroment
 
 	call init_pci
 
 	call init_net			; Initialize the network
 
-	call hdd_setup			; Gather information about the harddrive and set it up
+%ifidn (FS,FAT16)
+	call os_fat16_setup
+%endif
 
 	call os_screen_clear		; Clear screen and display cursor
 
@@ -388,7 +397,7 @@ start:
 	call os_move_cursor
 	mov rsi, networkmsg
 	call os_print_string
-	call os_debug_dump_MAC	
+	call os_debug_dump_MAC
 start_no_network:
 
 	mov ax, 0x0016			; Print the "ready" message
@@ -398,7 +407,7 @@ start_no_network:
 
 	mov ax, 0x0018			; Set the hardware cursor to the bottom left-hand corner
 	call os_move_cursor
-	
+
 	mov rsi, startupapp		; Look for a file called startup.app
 	mov rdi, programlocation	; We load the program to this location in memory (currently 0x00200000 : at the 2MB mark)
 	call os_file_read		; Read the file into memory
@@ -529,7 +538,6 @@ noargs:
 %include "init_64.asm"
 %include "init_pci.asm"
 %include "init_net.asm"
-%include "init_hdd.asm"
 %include "syscalls.asm"
 %include "drivers.asm"
 %include "interrupt.asm"

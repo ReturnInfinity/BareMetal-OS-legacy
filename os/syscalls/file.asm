@@ -12,7 +12,7 @@ align 16
 
 ; This source acts as an abstraction layer between the OS and an actual File
 ; System driver. A check can go here to detect the actual FS used and call the
-; appropriate FS driver.
+; appropriate FS driver. For now, this is defined at build time.
 ;
 ; Example:
 ; os_file_read:
@@ -29,7 +29,11 @@ align 16
 ;	RDI = Memory location where file will be loaded to
 ; OUT:	Carry is set if the file was not found or an error occured
 os_file_read:
+%ifidn FS,FAT16
 	jmp os_fat16_file_read
+%else ; BMFS
+	jmp os_bmfs_file_read
+%endif
 ; -----------------------------------------------------------------------------
 
 
@@ -40,7 +44,11 @@ os_file_read:
 ;	RCX = Number of bytes to write
 ; OUT:	Carry is set if an error occured
 os_file_write:
+%ifidn FS,FAT16
 	jmp os_fat16_file_write
+%else ; BMFS
+	jmp os_bmfs_file_write
+%endif
 ; -----------------------------------------------------------------------------
 
 
@@ -59,7 +67,11 @@ os_file_rename:
 ; IN:	RSI = Memory location of file name to delete
 ; OUT:	Carry is set if the file was not found or an error occured
 os_file_delete:
+%ifidn FS,FAT16
 	jmp os_fat16_file_delete
+%else ; BMFS
+	jmp os_bmfs_file_delete
+%endif
 ; -----------------------------------------------------------------------------
 
 
@@ -68,17 +80,25 @@ os_file_delete:
 ; IN:	RDI = location to store list
 ; OUT:	RDI = pointer to end of list
 os_file_get_list:
-	jmp os_fat16_get_file_list
+%ifidn FS,FAT16
+	jmp os_fat16_file_get_list
+%else ; BMFS
+	jmp os_bmfs_file_get_list
+%endif
 ; -----------------------------------------------------------------------------
 
 
 ; -----------------------------------------------------------------------------
-; os_file_size -- Return the size of a file on disk
+; os_file_get_size -- Return the size of a file on disk
 ; IN:	RSI = Address of filename string
 ; OUT:	RCX = Size in bytes
 ;	Carry is set if the file was not found or an error occured
 os_file_get_size:
-	jmp os_fat16_get_file_size
+%ifidn FS,FAT16
+	jmp os_fat16_file_get_size
+%else ; BMFS
+	jmp os_bmfs_file_get_size
+%endif
 ; -----------------------------------------------------------------------------
 
 

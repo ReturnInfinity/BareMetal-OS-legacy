@@ -9,11 +9,19 @@ align 16
 db 'DEBUG: DRIVERS  '
 align 16
 
+%ifidn HDD,PIO
+%include "drivers/storage/pio.asm"
+%else
+%include "drivers/storage/ahci.asm"
+%endif
 
-%include "drivers/hdd.asm"
-%include "drivers/fat16.asm"
+%ifidn FS,FAT16
+%include "drivers/filesystems/fat16.asm"
+%else
+%include "drivers/filesystems/bmfs.asm"
+%endif
+
 %include "drivers/pci.asm"
-%include "drivers/achi.asm"
 %include "drivers/net/rtl8169.asm"
 %include "drivers/net/i8254x.asm"
 ;%include "drivers/net/bcm57xx.asm"

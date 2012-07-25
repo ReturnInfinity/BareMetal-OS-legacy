@@ -217,6 +217,7 @@ no_more_aps:
 	xor eax, eax
 	mov [rsi+0xF0], rax		; Clear the Main Counter Register
 
+; HPET enable breaks VMware
 	; Configure and enable Timer 0 (n = 0)
 	mov rax, [rsi+0x100]
 	bts rax, 1			; Tn_INT_TYPE_CNF - Interrupt Type Level
@@ -243,7 +244,7 @@ ret
 create_gate:
 	push rdi
 	push rax
-	
+
 	shl rdi, 4	; quickly multiply rdi by 16
 	stosw		; store the low word (15..0)
 	shr rax, 16
@@ -260,7 +261,7 @@ ret
 init_memory_map:	; Build the OS memory table
 	push rax
 	push rcx
-	push rdi 
+	push rdi
 
 	; Build a fresh memory map for the system
 	mov rdi, os_MemoryMap
@@ -305,7 +306,7 @@ ret
 ; -----------------------------------------------------------------------------
 ; ioapic_reg_write -- Write to an I/O APIC register
 ;  IN:	EAX = Value to write
-;	ECX = Index of register 
+;	ECX = Index of register
 ; OUT:	Nothing. All registers preserved
 ioapic_reg_write:
 	push rsi

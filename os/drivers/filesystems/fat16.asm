@@ -9,6 +9,77 @@ align 16
 db 'DEBUG: FAT16    '
 align 16
 
+; -----------------------------------------------------------------------------
+; os_fat16_setup -- Initialize FAT16 data structures
+os_fat16_setup:
+; Read first sector (MBR) into memory
+	xor rax, rax
+	mov rdi, secbuffer0
+	push rdi
+	mov rcx, 1
+	call readsectors
+	pop rdi
+
+	cmp byte [0x0000000000005030], 0x01	; Did we boot from a MBR drive
+	jne os_fat16_setup_no_mbr		; If not then we already have the correct sector
+
+; Grab the partition offset value for the first partition
+	mov eax, [rdi+0x01C6]
+	mov [fat16_PartitionOffset], eax
+
+; Read the first sector of the first partition
+	mov rdi, secbuffer0
+	push rdi
+	mov rcx, 1
+	call readsectors
+	pop rdi
+
+os_fat16_setup_no_mbr:
+; Get the values we need to start using fat16
+	mov ax, [rdi+0x0b]
+	mov [fat16_BytesPerSector], ax		; This will probably be 512
+	mov al, [rdi+0x0d]
+	mov [fat16_SectorsPerCluster], al	; This will be 128 or less (Max cluster size is 64KiB)
+	mov ax, [rdi+0x0e]
+	mov [fat16_ReservedSectors], ax
+	mov [fat16_FatStart], eax
+	mov al, [rdi+0x10]
+	mov [fat16_Fats], al			; This will probably be 2
+	mov ax, [rdi+0x11]
+	mov [fat16_RootDirEnts], ax
+	mov ax, [rdi+0x16]
+	mov [fat16_SectorsPerFat], ax
+
+; Find out how many sectors are on the disk
+	xor eax, eax
+	mov ax, [rdi+0x13]
+	cmp ax, 0x0000
+	jne lessthan65536sectors
+	mov eax, [rdi+0x20]
+lessthan65536sectors:
+	mov [fat16_TotalSectors], eax
+
+; Calculate the size of the drive in MiB
+	xor rax, rax
+	mov eax, [fat16_TotalSectors]
+	mov [hd1_maxlba], rax
+	shr rax, 11 ; rax = rax * 512 / 1048576
+	mov [hd1_size], eax ; in mebibytes
+
+; Calculate FAT16 info
+	xor rax, rax
+	xor rbx, rbx
+	mov ax, [fat16_SectorsPerFat]
+	shl ax, 1	; quick multiply by two
+	add ax, [fat16_ReservedSectors]
+	mov [fat16_RootStart], eax
+	mov bx, [fat16_RootDirEnts]
+	shr ebx, 4	; bx = (bx * 32) / 512
+	add ebx, eax	; BX now holds the datastart sector number
+	mov [fat16_DataStart], ebx
+ret
+; -----------------------------------------------------------------------------
+
 
 ; -----------------------------------------------------------------------------
 ; os_fat16_read_cluster -- Read a cluster from the FAT16 partition
@@ -29,7 +100,7 @@ os_fat16_read_cluster:
 	jl near os_fat16_read_cluster_bailout	; as clusters start at 2
 
 ; Calculate the LBA address --- startingsector = (cluster-2) * clustersize + data_start
-	xor rcx, rcx	
+	xor rcx, rcx
 	mov cl, byte [fat16_SectorsPerCluster]
 	push rcx				; Save the number of sectors per cluster
 	sub ax, 2
@@ -96,7 +167,7 @@ os_fat16_write_cluster:
 	jl near os_fat16_write_cluster_bailout	; as clusters start at 2
 
 ; Calculate the LBA address --- startingsector = (cluster-2) * clustersize + data_start
-	xor rcx, rcx	
+	xor rcx, rcx
 	mov cl, byte [fat16_SectorsPerCluster]
 	push rcx				; Save the number of sectors per cluster
 	sub ax, 2
@@ -169,7 +240,7 @@ os_fat16_find_file_read_sector:
 os_fat16_find_file_next_entry:
 	cmp byte [rdi], 0x00		; end of records
 	je os_fat16_find_file_notfound
-	
+
 	mov rcx, 11
 	push rsi
 	repe cmpsb
@@ -208,10 +279,10 @@ ret
 
 
 ; -----------------------------------------------------------------------------
-; os_fat16_get_file_list -- Generate a list of files on disk
+; os_fat16_file_get_list -- Generate a list of files on disk
 ; IN:	RDI = location to store list
 ; OUT:	RDI = pointer to end of list
-os_fat16_get_file_list:
+os_fat16_file_get_list:
 	push rsi
 	push rdi
 	push rcx
@@ -229,17 +300,17 @@ os_fat16_get_file_list:
 	mov ebx, [fat16_RootStart]		; ebx points to the first sector of the root
 	add ebx, [fat16_PartitionOffset]	; Add the offset to the partition
 
-	jmp os_fat16_get_file_list_read_sector
+	jmp os_fat16_file_get_list_read_sector
 
-os_fat16_get_file_list_next_sector:
+os_fat16_file_get_list_next_sector:
 	add rbx, 1
 
-os_fat16_get_file_list_read_sector:
+os_fat16_file_get_list_read_sector:
 	push rdi
 	mov rdi, hdbuffer1
 	mov rsi, rdi
 	mov rcx, 1
-	mov rax, rbx	
+	mov rax, rbx
 	call readsectors
 	pop rdi
 
@@ -247,30 +318,30 @@ os_fat16_get_file_list_read_sector:
 	; RSI = buffer that contains the cluster
 
 	; start reading
-os_fat16_get_file_list_read:
+os_fat16_file_get_list_read:
 	cmp rsi, hdbuffer1+512
-	je os_fat16_get_file_list_next_sector
+	je os_fat16_file_get_list_next_sector
 	cmp byte [rsi], 0x00		; end of records
-	je os_fat16_get_file_list_done
+	je os_fat16_file_get_list_done
 	cmp byte [rsi], 0xE5		; unused record
-	je os_fat16_get_file_list_skip
+	je os_fat16_file_get_list_skip
 
 	mov al, [rsi + 8]		; Grab the attribute byte
 	bt ax, 5			; check if bit 3 is set (volume label)
-	jc os_fat16_get_file_list_skip	; if so skip the entry
+	jc os_fat16_file_get_list_skip	; if so skip the entry
 	mov al, [rsi + 11]		; Grab the attribute byte
 	cmp al, 0x0F			; Check if it is a LFN entry
-	je os_fat16_get_file_list_skip	; if so skip the entry
+	je os_fat16_file_get_list_skip	; if so skip the entry
 
 	; copy the string
 	xor rcx, rcx
 	xor rax, rax
-os_fat16_get_file_list_copy:
+os_fat16_file_get_list_copy:
 	mov al, [rsi+rcx]
 	stosb				; Store to RDI
 	inc rcx
 	cmp rcx, 8
-	jne os_fat16_get_file_list_copy
+	jne os_fat16_file_get_list_copy
 
 	mov al, ' '			; Store a space as the separtator
 	stosb
@@ -291,11 +362,11 @@ os_fat16_get_file_list_copy:
 	mov al, 13
 	stosb
 
-os_fat16_get_file_list_skip:
+os_fat16_file_get_list_skip:
 	add rsi, 32
-	jmp os_fat16_get_file_list_read
+	jmp os_fat16_file_get_list_read
 
-os_fat16_get_file_list_done:
+os_fat16_file_get_list_done:
 	mov al, 0x00
 	stosb
 
@@ -495,12 +566,12 @@ clusterdone:
 ; At this point we have free cluster ID's on the stack
 
 ;	mov ax, 0xFFFF
-	
+
 
 
 ; At this point we have a sector of FAT in hdbuffer0. A cluster has been marked in use but the sector is not written back to disk yet!
 ; Save the sector # as we will write this to disk later
-	
+
 ; Load the first sector of the file info table
 	xor rax, rax
 	mov eax, [fat16_RootStart]	; eax points to the first sector of the root
@@ -622,7 +693,7 @@ os_fat16_file_delete_read_sector:
 os_fat16_file_delete_next_entry:
 	cmp byte [rdi], 0x00		; end of records
 	je os_fat16_file_delete_error
-	
+
 	mov rcx, 11
 	push rsi
 	repe cmpsb
@@ -692,32 +763,32 @@ ret
 
 
 ; -----------------------------------------------------------------------------
-; os_fat16_get_file_size -- Read a file from disk into memory
+; os_fat16_file_get_size -- Read a file from disk into memory
 ; IN:	RSI = Address of filename string
 ; OUT:	RCX = Size of file in bytes
 ;	Carry clear on success, set if file was not found or error occured
-os_fat16_get_file_size:
+os_fat16_file_get_size:
 	push rsi
 	push rdi
 	push rax
 	xor ecx, ecx
 
 ; Convert the file name to FAT format
-	mov rdi, os_fat16_get_file_size_string
+	mov rdi, os_fat16_file_get_size_string
 	call os_fat16_filename_convert	; Convert the filename to the proper FAT format
 	mov rsi, rdi
-	jc os_fat16_file_read_done	; If Carry is set then the filename could not be converted
+	jc os_fat16_file_get_size_done	; If Carry is set then the filename could not be converted
 
 ; Check to see if the file exists
 	call os_fat16_find_file		; Fuction will return the starting cluster value in AX and size in ECX or carry set if not found
 
-os_fat16_get_file_size_done:
+os_fat16_file_get_size_done:
 	pop rax
 	pop rdi
 	pop rsi
 ret
 
-	os_fat16_get_file_size_string	times 13 db 0
+	os_fat16_file_get_size_string	times 13 db 0
 ; -----------------------------------------------------------------------------
 
 

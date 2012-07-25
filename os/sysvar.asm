@@ -32,8 +32,15 @@ os_icmp_callback	dq 0x00000000000000000	; Point to ICMP reciever call back fundt
 os_ip_rx_buffer		equ 0x000000000004EC00	; 2048 bytes
 os_ip_tx_buffer		equ 0x000000000006F400	; 2048 butes
 arp_table		equ 0x000000000006FC00  ; 1024 bytes	0x06FC00 -> 0x06FFFF
+%ifidn FS,FAT16
 hdbuffer0:		equ 0x0000000000070000	; 32768 bytes	0x070000 -> 0x077FFF
 hdbuffer1:		equ 0x0000000000078000	; 32768 bytes	0x078000 -> 0x07FFFF
+%endif
+%ifidn FS,BMFS
+hd_diskinfo:		equ 0x0000000000070000	; 4096 bytes	0x070000 -> 0x070FFF
+hd_directory:		equ 0x0000000000071000	; 4096 bytes	0x071000 -> 0x071FFF
+hd_freelist:		equ 0x0000000000072000	; 2048 bytes	0x072000 -> 0x0728FF
+%endif
 cli_temp_string:	equ 0x0000000000080000	; 1024 bytes	0x080000 -> 0x0803FF
 os_temp_string:		equ 0x0000000000080400	; 1024 bytes	0x080400 -> 0x0807FF
 secbuffer0:		equ 0x0000000000080800	; 512 bytes	0x080800 -> 0x0809FF
@@ -59,23 +66,21 @@ os_IOAPICAddress:	equ os_SystemVariables + 0x08
 os_ClockCounter:	equ os_SystemVariables + 0x10
 os_RandomSeed:		equ os_SystemVariables + 0x18	; Seed for RNG
 screen_cursor_offset:	equ os_SystemVariables + 0x20
-hd1_maxlba:		equ os_SystemVariables + 0x28	; 64-bit value since at most it will hold a 48-bit value
-os_StackBase:		equ os_SystemVariables + 0x30
-os_net_transmit:	equ os_SystemVariables + 0x38
-os_net_poll:		equ os_SystemVariables + 0x40
-os_net_ack_int:		equ os_SystemVariables + 0x48
-os_NetIOBaseMem:	equ os_SystemVariables + 0x50
-os_NetMAC:		equ os_SystemVariables + 0x58
-os_HPETAddress:		equ os_SystemVariables + 0x60
+os_StackBase:		equ os_SystemVariables + 0x28
+os_net_transmit:	equ os_SystemVariables + 0x30
+os_net_poll:		equ os_SystemVariables + 0x38
+os_net_ack_int:		equ os_SystemVariables + 0x40
+os_NetIOBaseMem:	equ os_SystemVariables + 0x48
+os_NetMAC:		equ os_SystemVariables + 0x50
+os_HPETAddress:		equ os_SystemVariables + 0x58
 
 ; DD - Starting at offset 128, increments by 4
 cpu_speed:		equ os_SystemVariables + 128	; in MHz
-hd1_size:		equ os_SystemVariables + 132	; Size in MiB
-ip:			equ os_SystemVariables + 136	; IPv4 Address
-sn:			equ os_SystemVariables + 140	; IPv4 Subnet
-gw:			equ os_SystemVariables + 144	; IPv4 Gateway
-os_HPETRate:		equ os_SystemVariables + 148
-os_MemAmount:		equ os_SystemVariables + 152	; in MiB
+ip:			equ os_SystemVariables + 132	; IPv4 Address
+sn:			equ os_SystemVariables + 136	; IPv4 Subnet
+gw:			equ os_SystemVariables + 140	; IPv4 Gateway
+os_HPETRate:		equ os_SystemVariables + 144
+os_MemAmount:		equ os_SystemVariables + 148	; in MiB
 
 ; DW - Starting at offset 256, increments by 2
 os_NumCores:		equ os_SystemVariables + 258
@@ -94,15 +99,13 @@ key:			equ os_SystemVariables + 387
 key_shift:		equ os_SystemVariables + 388
 screen_cursor_x:	equ os_SystemVariables + 389
 screen_cursor_y:	equ os_SystemVariables + 390
-hd1_enable:		equ os_SystemVariables + 391	; 1 if the drive is there and enabled
-hd1_lba48:		equ os_SystemVariables + 392	; 1 if LBA48 is allowed
-os_PCIEnabled:		equ os_SystemVariables + 393	; 1 if PCI is detected
-os_NetEnabled:		equ os_SystemVariables + 394	; 1 if a supported network card was enabled
-os_NetIRQ:		equ os_SystemVariables + 395	; Set to Interrupt line that NIC is connected to
-os_NetActivity_TX:	equ os_SystemVariables + 396
-os_NetActivity_RX:	equ os_SystemVariables + 397
-os_EthernetBuffer_C1:	equ os_SystemVariables + 398	; Counter 1 for the Ethernet RX Ring Buffer
-os_EthernetBuffer_C2:	equ os_SystemVariables + 399	; Counter 2 for the Ethernet RX Ring Buffer
+os_PCIEnabled:		equ os_SystemVariables + 391	; 1 if PCI is detected
+os_NetEnabled:		equ os_SystemVariables + 392	; 1 if a supported network card was enabled
+os_NetIRQ:		equ os_SystemVariables + 393	; Set to Interrupt line that NIC is connected to
+os_NetActivity_TX:	equ os_SystemVariables + 394
+os_NetActivity_RX:	equ os_SystemVariables + 395
+os_EthernetBuffer_C1:	equ os_SystemVariables + 396	; Counter 1 for the Ethernet RX Ring Buffer
+os_EthernetBuffer_C2:	equ os_SystemVariables + 397	; Counter 2 for the Ethernet RX Ring Buffer
 
 
 cpuqueuemax:		dw 256
@@ -114,6 +117,7 @@ os_show_sysstatus:	db 1
 os_debug_dump_reg_stage:	db 0x00
 
 ; File System
+%ifidn FS,FAT16
 fat16_FatStart:			dd 0x00000000
 fat16_TotalSectors:		dd 0x00000000
 fat16_DataStart:		dd 0x00000000
@@ -125,6 +129,43 @@ fat16_SectorsPerFat:		dw 0x0000
 fat16_BytesPerSector:		dw 0x0000
 fat16_SectorsPerCluster:	db 0x00
 fat16_Fats:			db 0x00
+%else
+; Define the structure of a directory entry
+struc	BMFS_DirEnt
+	.filename		resb 32
+	.start			resq 1	; starting block index
+	.reserved		resq 1	; number of blocks reserved
+	.size			resq 1	; number of bytes
+	.crc32			resw 1
+	.unused			resw 1
+endstruc
+
+; Define the structure of a freelist entry
+struc	BMFS_FreeEnt
+	.start			resq 1	; starting block index
+	.length			resq 1	; number of blocks free
+	.next_ptr		resq 1	; pointer to the next BMFS_FreeEnt (0x0 for none)
+	.unused			resq 1
+endstruc
+%endif
+
+; Pure64 system variables -- avoid redetecting hard disk parameters
+pure64_SystemVariables:		equ 0x0000000000005A00
+
+; DQ
+hd1_maxlba:		equ pure64_SystemVariables + 0x10
+sata_base:		equ pure64_SystemVariables + 0x40
+
+; DD
+hd1_size:		equ pure64_SystemVariables + 128	; in MiB
+drive_port:		equ pure64_SystemVariables + 136
+
+; DW
+ata_base:		equ pure64_SystemVariables + 262
+
+;DB
+hd1_enable:		equ pure64_SystemVariables + 384
+hd1_lba48:		equ pure64_SystemVariables + 385
 
 
 keylayoutlower:
