@@ -398,7 +398,7 @@ start_no_network:
 
 	mov ax, 0x0018			; Set the hardware cursor to the bottom left-hand corner
 	call os_move_cursor
-	
+
 	mov rsi, startupapp		; Look for a file called startup.app
 	mov rdi, programlocation	; We load the program to this location in memory (currently 0x00200000 : at the 2MB mark)
 	call os_file_read		; Read the file into memory
