@@ -40,7 +40,6 @@ hdbuffer1:		equ 0x0000000000078000	; 32768 bytes	0x078000 -> 0x07FFFF
 %ifidn FS,BMFS
 hd_diskinfo:		equ 0x0000000000070000	; 4096 bytes	0x070000 -> 0x070FFF
 hd_directory:		equ 0x0000000000071000	; 4096 bytes	0x071000 -> 0x071FFF
-hd_freelist:		equ 0x0000000000072000	; 2048 bytes	0x072000 -> 0x0728FF
 %endif
 cli_temp_string:	equ 0x0000000000080000	; 1024 bytes	0x080000 -> 0x0803FF
 os_temp_string:		equ 0x0000000000080400	; 1024 bytes	0x080400 -> 0x0807FF
@@ -142,14 +141,6 @@ struc	BMFS_DirEnt
 	.size			resq 1	; number of bytes
 	.crc32			resw 1
 	.unused			resw 1
-endstruc
-
-; Define the structure of a freelist entry
-struc	BMFS_FreeEnt
-	.start			resq 1	; starting block index
-	.length			resq 1	; number of blocks free
-	.next_ptr		resq 1	; pointer to the next BMFS_FreeEnt (0x0 for none)
-	.unused			resq 1
 endstruc
 %endif
 
