@@ -11,34 +11,45 @@ align 16
 
 
 init_net:
-	; Initialize the ARP table to zero
-	push rdi
-	push rcx
-	push rax
-	mov rdi, arp_table
-	mov rcx, 256
-	xor rax, rax
-	rep stosq
-	pop rax
-	pop rcx
-	pop rdi
-
 	; Search for a supported NIC
-	mov rsi, NIC_DeviceVendor_ID
+	xor ebx, ebx			; Clear the Bus number
+	xor ecx, ecx			; Clear the Device/Slot number
+	mov edx, 2			; Register 2 for Class code/Subclass
 
 init_net_probe_next:
+	call os_pci_read_reg
+	shr eax, 24			; Move the Class code to AL
+	cmp al, 0x02			; Network Controller Class Code
+	je init_net_probe_find_driver	; Found a Network Controller... now search for a driver
+	add ecx, 1
+	cmp ecx, 32			; Maximum 32 devices per bus
+	je init_net_probe_next_bus
+	jmp init_net_probe_next
+
+init_net_probe_next_bus:
+	xor ecx, ecx
+	add ebx, 1
+	cmp ebx, 256			; Maximum 256 buses
+	je init_net_probe_not_found
+	jmp init_net_probe_next
+
+init_net_probe_find_driver:
+	xor edx, edx				; Register 0 for Device/Vendor ID
+	call os_pci_read_reg			; Read the Device/Vendor ID from the PCI device
+	mov r8d, eax				; Save the Device/Vendor ID in R8D
+	mov rsi, NIC_DeviceVendor_ID
 	lodsd					; Load a driver ID - Low half must be 0xFFFF
-init_net_probe_next_driver:
+init_net_probe_find_next_driver:
 	mov rdx, rax				; Save the driver ID
-init_net_probe_next_device:
+init_net_probe_find_next_device:
 	lodsd					; Load a device and vendor ID from our list of supported NICs
 	cmp eax, 0x00000000			; 0x00000000 means we have reached the end of the list
 	je init_net_probe_not_found		; No suported NIC found
 	cmp ax, 0xFFFF				; New driver ID?
-	je init_net_probe_next_driver		; We found the next driver type
-	call os_pci_find_device			; Returns BL = Bus number (8-bit value) and CL = Device/Slot number (5-bit value) if NIC was found
-	jnc init_net_probe_found		; If Carry is clear then we found a supported NIC
-	jmp init_net_probe_next_device		; Check the next device
+	je init_net_probe_find_next_driver	; We found the next driver type
+	cmp eax, r8d
+	je init_net_probe_found			; If Carry is clear then we found a supported NIC
+	jmp init_net_probe_find_next_device	; Check the next device
 
 init_net_probe_found:
 %ifndef DISABLE_RTL8169
@@ -54,9 +65,6 @@ init_net_probe_found:
 %ifndef DISABLE_RTL8169
 init_net_probe_found_rtl8169:
 	call os_net_rtl8169_init
-	mov rdi, NIC_name_ptr
-	mov rax, device_name_rtl8169
-	mov [rdi], rax
 	mov rdi, os_net_transmit
 	mov rax, os_net_rtl8169_transmit
 	stosq
@@ -70,9 +78,6 @@ init_net_probe_found_rtl8169:
 %ifndef DISABLE_I8254X
 init_net_probe_found_i8254x:
 	call os_net_i8254x_init
-	mov rdi, NIC_name_ptr
-	mov rax, device_name_i8254x
-	stosq
 	mov rdi, os_net_transmit
 	mov rax, os_net_i8254x_transmit
 	stosq

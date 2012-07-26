@@ -237,8 +237,8 @@ no_more_aps:
 	bts rax, 6			; Tn_VAL_SET_CNF
 	mov [rsi+0x100], rax
 
-	xor eax, eax
-	mov [rsi+0x108], rax		; Clear the Timer 0 Comparator Register
+	mov rax, 0xFFFFFFFFFFFFFFFF	; Set the Timer 0 Comparator Register
+	mov [rsi+0x108], rax
 
 	mov rax, [rsi+0x10]		; General Configuration Register
 	bts rax, 0			; ENABLE_CNF - Enable the HPET

@@ -43,57 +43,6 @@ ret
 
 
 ; -----------------------------------------------------------------------------
-; os_pci_find_device -- Finds a PCI device based on the Device and Vendor ID provided
-;  IN:	EAX = Device and Vendor ID (ie: 0x70008086)
-; OUT:	BL  = Bus number (8-bit value)
-;	CL  = Device/Slot number (5-bit value)
-;	Carry set if no matching device was found
-;	All other registers preserved
-os_pci_find_device:
-	push rdx
-
-	mov rbx, rax			; Save device and vendor IDs to RBX
-	xor rcx, rcx
-	xor rax, rax
-	
-	mov ecx, 0x80000000		; Bit 31 must be set
-
-os_pci_find_device_check_next:
-	mov eax, ecx
-	mov dx, PCI_CONFIG_ADDRESS
-	out dx, eax
-	mov dx, PCI_CONFIG_DATA
-	in eax, dx			; EAX now holds the Device and Vendor ID
-	cmp eax, ebx
-	je os_pci_find_device_found
-	add ecx, 0x800
-	cmp ecx, 0x81000000		; The end has been reached (already looked at 8192 devices)
-	jne os_pci_find_device_check_next
-
-os_pci_find_device_not_found:
-	stc				; Set carry (failure)
-	jmp os_pci_find_device_end
-
-os_pci_find_device_found:		; ECX bits 23 - 16 is the Bus # and bits 15 - 11 is the Device/Slot #
-	xor rax, rax
-	xor rbx, rbx
-	shr ecx, 11			; Device/Slot number is now bits 4 - 0
-	mov bl, cl			; BL contains Device/Slot number
-	and bl, 00011111b		; Clear the top 3 bits, BL contains the Device/Slot number
-	shr ecx, 5			; Bus number is now bits 7 - 0
-	mov al, cl			; AL contains the Bus number
-	xor ecx, ecx
-	mov cl, bl
-	mov bl, al
-	clc				; Clear carry (success)
-
-os_pci_find_device_end:
-	pop rdx
-	ret
-; -----------------------------------------------------------------------------
-
-
-; -----------------------------------------------------------------------------
 ; os_pci_dump_devices -- Dump all Device and Vendor ID's to the screen
 ;  IN:	Nothing
 ; OUT:	Nothing, All registers preserved
