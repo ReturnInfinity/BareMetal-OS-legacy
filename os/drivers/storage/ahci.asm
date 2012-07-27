@@ -37,13 +37,13 @@ readsectors:
 
 	mov rsi, [ahci_base]
 
-	mov rdi, 0x70000		; command list (1K with 32 entries, 32 bytes each)
+	mov rdi, ahci_cmdlist		; command list (1K with 32 entries, 32 bytes each)
 	xor eax, eax
 	mov eax, 0x00010005 ;4		; 1 PRDTL Entry, Command FIS Length = 16 bytes
 	stosd				; DW 0 - Description Information
 	xor eax, eax
 	stosd				; DW 1 - Command Status
-	mov eax, 0x72000
+	mov eax, ahci_cmdtable
 	stosd				; DW 2 - Command Table Base Address
 	xor eax, eax
 	stosd				; DW 3 - Command Table Base Address Upper
@@ -54,7 +54,7 @@ readsectors:
 	; DW 4 - 7 are reserved
 
 	; command table
-	mov rdi, 0x72000		; Build a command table for Port 0
+	mov rdi, ahci_cmdtable		; Build a command table for Port 0
 	mov eax, 0x00258027		; 25 READ DMA EXT, bit 15 set, fis 27 H2D
 	stosd				; feature 7:0, command, c, fis
 	pop rax				; Restore the start sector number
@@ -69,7 +69,7 @@ readsectors:
 	stosd				; control, ICC, count 15:8, count 7:0
 	mov rax, 0x00000000
 	stosd				; reserved
-	mov rdi, 0x72080
+	mov rdi, ahci_cmdtable + 0x80
 	pop rax				; Restore the destination memory address
 	stosd				; Data Base Address
 	shr rax, 32
@@ -152,13 +152,13 @@ writesectors:
 
 	mov rsi, [ahci_base]
 
-	mov rdi, 0x70000		; command list (1K with 32 entries, 32 bytes each)
+	mov rdi, ahci_cmdlist		; command list (1K with 32 entries, 32 bytes each)
 	xor eax, eax
 	mov eax, 0x00010045 ;4		; 1 PRDTL Entry, write flag, Command FIS Length = 16 bytes
 	stosd				; DW 0 - Description Information
 	xor eax, eax
 	stosd				; DW 1 - Command Status
-	mov eax, 0x72000
+	mov eax, ahci_cmdtable
 	stosd				; DW 2 - Command Table Base Address
 	xor eax, eax
 	stosd				; DW 3 - Command Table Base Address Upper
@@ -169,7 +169,7 @@ writesectors:
 	; DW 4 - 7 are reserved
 
 	; command table
-	mov rdi, 0x72000		; Build a command table for Port 0
+	mov rdi, ahci_cmdtable		; Build a command table for Port 0
 	mov eax, 0x00358027		; 35 WRITE DMA EXT, bit 15 set, fis 27 H2D
 	stosd				; feature 7:0, command, c, fis
 	pop rax				; Restore the start sector number
@@ -184,7 +184,7 @@ writesectors:
 	stosd				; control, ICC, count 15:8, count 7:0
 	mov rax, 0x00000000
 	stosd				; reserved
-	mov rdi, 0x72080
+	mov rdi, ahci_cmdtable + 0x80
 	pop rax				; Restore the destination memory address
 	stosd				; Data Base Address
 	shr rax, 32

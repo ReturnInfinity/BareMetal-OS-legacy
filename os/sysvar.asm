@@ -33,19 +33,23 @@ os_icmp_callback	dq 0x00000000000000000	; Point to ICMP reciever call back fundt
 os_ip_rx_buffer		equ 0x000000000004EC00	; 2048 bytes
 os_ip_tx_buffer		equ 0x000000000006F400	; 2048 butes
 arp_table		equ 0x000000000006FC00  ; 1024 bytes	0x06FC00 -> 0x06FFFF
-%ifidn FS,FAT16
-hdbuffer0:		equ 0x0000000000070000	; 32768 bytes	0x070000 -> 0x077FFF
-hdbuffer1:		equ 0x0000000000078000	; 32768 bytes	0x078000 -> 0x07FFFF
-%endif
-%ifidn FS,BMFS
-hd_diskinfo:		equ 0x0000000000070000	; 4096 bytes	0x070000 -> 0x070FFF
-hd_directory:		equ 0x0000000000071000	; 4096 bytes	0x071000 -> 0x071FFF
+%ifidn HDD,AHCI
+ahci_cmdlist:		equ 0x0000000000070000	; 4096 bytes	0x070000 -> 0x071FFF
+ahci_cmdtable:		equ 0x0000000000072000	; 57344 bytes	0x072000 -> 0x07FFFF
 %endif
 cli_temp_string:	equ 0x0000000000080000	; 1024 bytes	0x080000 -> 0x0803FF
 os_temp_string:		equ 0x0000000000080400	; 1024 bytes	0x080400 -> 0x0807FF
 secbuffer0:		equ 0x0000000000080800	; 512 bytes	0x080800 -> 0x0809FF
 secbuffer1:		equ 0x0000000000080A00	; 512 bytes	0x080A00 -> 0x080BFF
 os_args:		equ 0x0000000000080C00
+%ifidn FS,FAT16
+hdbuffer0:		equ 0x0000000000090000	; 32768 bytes	0x090000 -> 0x097FFF
+hdbuffer1:		equ 0x0000000000098000	; 32768 bytes	0x098000 -> 0x09FFFF
+%endif
+%ifidn FS,BMFS
+hd_diskinfo:		equ 0x0000000000090000	; 4096 bytes	0x090000 -> 0x090FFF
+hd_directory:		equ 0x0000000000091000	; 4096 bytes	0x091000 -> 0x091FFF
+%endif
 os_KernelStart:		equ 0x0000000000100000	; 65536 bytes	0x100000 -> 0x10FFFF - Location of Kernel
 os_SystemVariables:	equ 0x0000000000110000	; 65536 bytes	0x110000 -> 0x11FFFF - Location of System Variables
 os_MemoryMap:		equ 0x0000000000120000	; 131072 bytes	0x120000 -> 0x13FFFF - Location of Memory Map - Room to map 256 GiB with 2 MiB pages
@@ -142,6 +146,8 @@ struc	BMFS_DirEnt
 	.crc32			resw 1
 	.unused			resw 1
 endstruc
+
+bmfs_TotalBlocks:		dq 0x0000000000000000
 %endif
 
 ; For startup timing

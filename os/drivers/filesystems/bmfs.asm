@@ -17,12 +17,16 @@ os_bmfs_setup:
 	push rdx
 	push rdi
 
-	; Load the directory -- 4KiB @ sector 8
-	mov rax, 8
+	mov rax, 8			; Load the directory -- 4KiB @ sector 8
 	mov rcx, 8
 	mov rdx, [sata_port]
 	mov rdi, hd_directory
 	call readsectors
+
+	; Get total blocks from Pure64 (hacky)
+	mov dword eax, [0x0000000000005A80]
+	shr rax, 1
+	mov [bmfs_TotalBlocks], rax
 
 	pop rdi
 	pop rdx
@@ -33,17 +37,16 @@ ret
 
 
 ; -----------------------------------------------------------------------------
-; os_bmfs_write_directory -- Rewrite the BMFS directory sectors
+; _bmfs_write_directory -- Rewrite the BMFS directory sectors
 ; TODO: write a copy to the end of the disk as well; add a version marker to
 ; track which version of the block was written
-os_bmfs_write_directory:
+_bmfs_write_directory:
 	push rax
 	push rcx
 	push rdx
 	push rsi
 
-	; Save the directory -- 4KiB @ sector 8
-	mov rax, 8
+	mov rax, 8			; Save the directory -- 4KiB @ sector 8
 	mov rcx, 8
 	mov rdx, [sata_port]
 	mov rsi, hd_directory
@@ -58,11 +61,76 @@ ret
 
 
 ; -----------------------------------------------------------------------------
-; os_bmfs_update_dirent_crc32 -- Update the CRC32 for a directory entry
+; _bmfs_get_space_after -- Get the number of blocks free following a given file
+; IN: RAX = pointer to the start of the directory entry for the file
+; OUT: RCX = number of blocks free after that file
+_bmfs_get_space_after:
+	push rdi
+
+	mov rdi, hd_directory		; beginning of directory structure
+	mov r8, [rax + BMFS_DirEnt.start]
+	add r8, [rax + BMFS_DirEnt.reserved]	; r8 = end of this file
+	mov rcx, [bmfs_TotalBlocks]
+	sub rcx, r8			; rcx = space remaining on drive after file
+	sub rcx, 2			; 2 blocks reserved @ end
+
+.next:
+	cmp byte [rdi], 0x01			; skip unused/deleted files
+	jle .inc
+
+	mov r9, [rdi + BMFS_DirEnt.start]
+	cmp r9, r8			; ignore any files starting < our file end
+	jl .inc
+
+	cmp r9, rcx
+	cmovl rcx, r9			; r9 = min(r9, rcx)
+
+.inc:
+	add rdi, 64			; point to next record
+	cmp rdi, hd_directory + 0x1000	; end of directory
+	je .next
+
+.done:
+	pop rdi
+ret
+; -----------------------------------------------------------------------------
+
+
+; -----------------------------------------------------------------------------
+; _bmfs_get_start_space -- Get the number of blocks free at the start of the disk
+; OUT: RCX = number of blocks free after that file
+_bmfs_get_start_space:
+	push rdi
+
+	mov rdi, hd_directory		; beginning of directory structure
+	mov rcx, [bmfs_TotalBlocks]
+	sub rcx, 4			; 2 blocks reserved @ start and end
+
+.next:
+	cmp byte [rdi], 0x01			; skip unused/deleted files
+	jle .inc
+
+	mov r9, [rdi + BMFS_DirEnt.start]
+	cmp r9, rcx
+	cmovl rcx, r9			; r9 = min(r9, rcx)
+
+.inc:
+	add rdi, 64			; point to next record
+	cmp rdi, hd_directory + 0x1000	; end of directory
+	jne .next
+
+.done:
+	pop rdi
+ret
+; -----------------------------------------------------------------------------
+
+
+; -----------------------------------------------------------------------------
+; _bmfs_update_dirent_crc32 -- Update the CRC32 for a directory entry
 ; IN: RAX = pointer to the start of the directory entry
 ; TODO: This is horrifically inefficient; consider using CRC32 instruction
 ; instead, although it's only available on Core i7 and up.
-os_bmfs_update_dirent_crc32:
+_bmfs_update_dirent_crc32:
 	push rax
 	push rbx
 	push rcx
@@ -116,12 +184,12 @@ ret
 
 
 ; -----------------------------------------------------------------------------
-; os_bmfs_file_get_ptr -- Search for a file name and return its directory
+; _bmfs_file_get_ptr -- Search for a file name and return its directory
 ; entry's address
 ; IN:	RSI = Pointer to file name
 ; OUT:	RAX = Directory entry address
 ;	Carry set if not found. If carry is set then ignore value in RAX
-os_bmfs_file_get_ptr:
+_bmfs_file_get_ptr:
 	push rdi
 
 	clc				; Clear carry
@@ -134,9 +202,8 @@ os_bmfs_file_get_ptr:
 	cmp rdi, hd_directory + 0x1000	; end of directory
 	jne .next
 
-	; Not found
-	stc
 	xor rdi, rdi
+	stc				; Not found
 
 .done:
 	mov rax, rdi
@@ -154,7 +221,7 @@ ret
 os_bmfs_find_file:
 	push rsi
 
-	call os_bmfs_file_get_ptr		; file idx in rax, or carry set
+	call _bmfs_file_get_ptr		; file idx in rax, or carry set
 	jc .notfound
 
 	mov rsi, rax
@@ -180,25 +247,54 @@ ret
 ; OUT:	RDI = pointer to end of list
 os_bmfs_file_get_list:
 	push rsi
-	push rdi
-	push rcx
-	push rbx
 	push rax
+	push rbx
+	push rcx
 
-	; TODO
+	mov rsi, dir_title_string
+	call os_string_length
+	call os_string_copy
+	add rdi, rcx
+
+	mov rbx, hd_directory		; beginning of directory structure
+
+.next:
+	cmp byte [rbx], 0x01
+	jle .inc
+
+	mov rsi, rbx			; copy filename to destination
+	call os_string_length		; get the length before copying
+	call os_string_copy
+	add rdi, rcx			; remove terminator
+
+	sub rcx, 32			; pad out to 32 characters
+	neg rcx
+	mov al, ' '
+	rep stosb
+
+	mov rax, [rbx + BMFS_DirEnt.size]
+	call os_int_to_string
+	dec rdi
+	mov al, 13
+	stosb
+
+.inc:
+	add rbx, 64			; next record
+	cmp rbx, hd_directory + 0x1000	; end of directory
+	jne .next
 
 .done:
 	mov al, 0x00
 	stosb
 
-	pop rax
-	pop rbx
 	pop rcx
-	pop rdi
+	pop rbx
+	pop rax
 	pop rsi
 ret
 
-dir_title_string: db "Name        Size", 13, "====================", 13, 0
+dir_title_string: db "Name                            Size", 13, \
+	"====================================", 13, 0
 ; -----------------------------------------------------------------------------
 
 
@@ -229,16 +325,14 @@ os_bmfs_file_read:
 	mov rax, [rax + BMFS_DirEnt.start]
 
 .loop:
-	; Ensure reads are for no more than 4MiB at a time
-	mov rcx, 8192
+	mov rcx, 8192			; Ensure reads are for no more than 4MiB at a time
 	cmp rbx, rcx
 	jg .read
 
 	mov rcx, rbx
 
 .read:
-	; Read the file to rdi
-	call readsectors
+	call readsectors		; Read the file to rdi
 	jc .error
 
 	sub rbx, rcx
@@ -270,14 +364,13 @@ os_bmfs_file_write:
 	push rdx
 	push rbx
 
-	; Check to see if the file exists
-	mov r8, rsi
+	mov r8, rsi			; Check to see if the file exists
 	mov rsi, rdi
-	call os_bmfs_file_get_ptr
+	call _bmfs_file_get_ptr
 	mov rsi, r8
 	mov r9, rax
 
-	jnc .error	; If not, throw an error
+	jnc .error			; If not, throw an error
 
 	; Ensure the file will fit within its reserved space
 	mov rbx, rcx
@@ -288,42 +381,34 @@ os_bmfs_file_write:
 	cmp rbx, rdx
 	jg .error			; Write too large to fit in file
 
-	mov r8, rcx ; Save byte count for later
+	mov r8, rcx			; Save byte count for later
 
-	; Determine number of sectors to write
-	mov rbx, rcx
+	mov rbx, rcx			; Determine number of sectors to write
 	add rbx, 1
 	shr rbx, 9
 
-	; Set up the write
-	mov rax, [r9 + BMFS_DirEnt.start]
+	mov rax, [r9 + BMFS_DirEnt.start]	; Set up the write
 	mov rdx, [sata_port]
 
 .loop:
-	; Ensure writes are for no more than 4MiB at a time
-	mov rcx, 8192
+	mov rcx, 8192			; Ensure writes are for no more than 4MiB at a time
 	cmp rbx, rcx
 	jg .write
 
 	mov rcx, rbx
 
 .write:
-	; Write the file from rsi
-	call writesectors
+	call writesectors		; Write the file from rsi
 	jc .error
 
 	sub rbx, rcx
 	jnz .loop
 
-	; Update file directory entry with count of bytes written (r8)
-	mov [r9 + BMFS_DirEnt.size], r8
-
-	; Update directory entry CRC32
 	mov rax, r9
-	call os_bmfs_update_dirent_crc32
 
-	; Rewrite the directory table
-	call os_bmfs_write_directory
+	mov [rax + BMFS_DirEnt.size], r8	; Update entry with bytes written (r8)
+	call _bmfs_update_dirent_crc32	; Update directory entry CRC32
+	call _bmfs_write_directory	; Rewrite the directory table
 
 	jmp .done
 
@@ -348,47 +433,80 @@ os_bmfs_file_create:
 	push rax
 	push rdi
 
-	call os_bmfs_file_get_ptr	; Check if file exists, error if so
+	call _bmfs_file_get_ptr	; Check if file exists, error if so
 	jnc .error
 
 	clc
 
 	; Convert bytes reserved to 2MiB blocks, rounding up
-	inc rcx
-	shr rcx, 21
+	mov r11, rcx
+	inc r11
+	shr r11, 21
 
-	; TODO: Look for a free block large enough for this file
+	mov rax, hd_directory		; Point rdi to start of directory
 
-	; Find a free directory entry, set it up for this file
-	mov rdi, 0			; beginning of directory structure
+	; Look for a free block large enough for this file -- r10 holds start
+	; address. Try to allocate only the minimum amount of space we need;
+	; previous minimum is in r12.
+	mov r10, 0xFFFFFFFFFFFFFFFF
+	mov r12, 0xFFFFFFFFFFFFFFFF
 
-.next:
-	cmpb [rdi*64 + hd_directory], 0x01
+	call _bmfs_get_start_space
+	cmp rcx, r11
+	jl .space_next
+
+	mov r10, 2			; If enough space at start, r10 = 2
+	mov r12, rcx
+
+	; Loop over all files and get the space after each one; if that space
+	; is larger than the block allocation, then pick the minimum of that
+	; space and the previous smallest (r12).
+.space_next:
+	call _bmfs_get_space_after
+
+	cmp rcx, r11			; ignore if space is smaller than we need
+	jl .inc
+
+	cmp rcx, r12			; ignore if space is larger than previous min
+	jge .inc
+
+	mov r12, rcx			; set smallest big-enough space to rcx,
+	mov r10, [rax + BMFS_DirEnt.start]	; and set the file start ptr
+	add r10, [rax + BMFS_DirEnt.reserved]	; to right after the file we found
+
+.inc:
+	add rax, 64			; point to next record
+	cmp rax, hd_directory + 0x1000	; end of directory
+	jne .space_next
+
+	cmp r10, 0xFFFFFFFFFFFFFFFF
+	je .error			; Can't find a block large enough
+
+	; Now find a free directory entry, set it up for this file
+	mov rax, 0			; beginning of directory structure
+
+.dir_next:
+	mov r8, [rax*8 + hd_directory]
+	cmp r8, 0x01
 	jle .found
-	inc rdi				; next record
-	cmp rdi, 64			; end of directory
-	jne .next
+	add rax, 8			; next record
+	cmp rax, 64*8			; end of directory
+	jne .dir_next
 
-	; Not found
-	jmp error
+	jmp .error			; Not found
 
 .found:
-	; Copy the file name
-	mov [rax + 0x0], [rsi + 0x0]
-	mov [rax + 0x8], [rsi + 0x8]
-	mov [rax + 0x10], [rsi + 0x10]
-	mov [rax + 0x18], [rsi + 0x18]
+	push rcx			; Copy the file name
+	mov rdi, rax
+	mov rcx, 4
+	rep movsq
+	pop rcx
 
-	; Set file location parameters
-	mov [rax + BMFS_DirEnt.start], r8
-	mov [rax + BMFS_DirEnt.reserved], rcx
-	mov [rax + BMFS_DirEnt.size], 0x0000000000000000
-
-	; Update directory entry CRC32
-	call os_bmfs_update_dirent_crc32
-
-	; Rewrite the directory table
-	call os_bmfs_write_directory
+	mov [rax + BMFS_DirEnt.start], r10	; Set file location parameters
+	mov [rax + BMFS_DirEnt.reserved], r11
+	mov qword [rax + BMFS_DirEnt.size], 0x0000000000000000
+	call _bmfs_update_dirent_crc32	; Update directory entry CRC32
+	call _bmfs_write_directory	; Rewrite the directory table
 
 	jmp .done
 
@@ -409,24 +527,20 @@ ret
 os_bmfs_file_delete:
 	push rax
 
-	call os_bmfs_file_get_ptr	; find the file's directory entry
+	call _bmfs_file_get_ptr		; find the file's directory entry
 	jc .error
 
 	clc
 
-	; Add deleted marker to file name
-	movb [rax + BMFS_DirEnt.filename], 0x01
+	mov byte [rax + BMFS_DirEnt.filename], 0x01 ; Add deleted marker to file name
 
-	; Update directory entry CRC32
-	call os_bmfs_update_dirent_crc32
-
-	; Rewrite the directory table
-	call os_bmfs_write_directory
+	call _bmfs_update_dirent_crc32	; Update directory entry CRC32
+	call _bmfs_write_directory	; Rewrite the directory table
 
 	jmp .done
 
 .error:
-	stc				; Set carry
+	stc
 
 .done:
 	pop rax
@@ -442,8 +556,7 @@ ret
 os_bmfs_file_get_size:
 	push rax
 
-	; Check to see if the file exists
-	call os_bmfs_file_get_ptr
+	call _bmfs_file_get_ptr		; Check to see if the file exists
 	jc .error
 	mov rcx, [rax + BMFS_DirEnt.size]
 
