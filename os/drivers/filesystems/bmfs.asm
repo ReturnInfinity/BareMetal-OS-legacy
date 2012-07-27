@@ -203,9 +203,13 @@ _bmfs_file_get_ptr:
 	jne .next
 
 	xor rdi, rdi
-	stc				; Not found
+	mov rax, rdi
+	stc
+	pop rdi				; Not found
+ret
 
 .done:
+	clc
 	mov rax, rdi
 	pop rdi
 ret
@@ -219,24 +223,16 @@ ret
 ;	RCX = File size in bytes
 ;	Carry set if not found. If carry is set then ignore value in RAX
 os_bmfs_find_file:
-	push rsi
+	xor rax, rax
+	xor rcx, rcx
 
 	call _bmfs_file_get_ptr		; file idx in rax, or carry set
 	jc .notfound
 
-	mov rsi, rax
-
-	mov rax, [rsi + BMFS_DirEnt.start]	; Starting block number
-	mov rcx, [rsi + BMFS_DirEnt.size]	; Size in bytes
-	jmp .done
+	mov rcx, [rax + BMFS_DirEnt.size]	; Size in bytes
+	mov rax, [rax + BMFS_DirEnt.start]	; Starting block number
 
 .notfound:
-	xor rax, rax
-	xor rcx, rcx
-	stc
-
-.done:
-	pop rsi
 ret
 ; -----------------------------------------------------------------------------
 
@@ -315,14 +311,12 @@ os_bmfs_file_read:
 	call os_bmfs_find_file		; Fuction will return the starting cluster value in RAX or carry set if not found
 	jc .error			; Does not exist, return error
 
-	clc
-
 	add rcx, 1			; Convert byte count to the number of sectors required to fit
 	shr rcx, 9
 
+	shl rax, 12			; Multiply block start count by 4096 to get sector start count
 	mov rbx, rcx
 	mov rdx, [sata_port]
-	mov rax, [rax + BMFS_DirEnt.start]
 
 .loop:
 	mov rcx, 8192			; Ensure reads are for no more than 4MiB at a time
@@ -370,7 +364,7 @@ os_bmfs_file_write:
 	mov rsi, r8
 	mov r9, rax
 
-	jnc .error			; If not, throw an error
+	jc .error			; If not, throw an error
 
 	; Ensure the file will fit within its reserved space
 	mov rbx, rcx
@@ -434,7 +428,7 @@ os_bmfs_file_create:
 	push rdi
 
 	call _bmfs_file_get_ptr	; Check if file exists, error if so
-	jnc .error
+	jc .error
 
 	clc
 
@@ -528,9 +522,7 @@ os_bmfs_file_delete:
 	push rax
 
 	call _bmfs_file_get_ptr		; find the file's directory entry
-	jc .error
-
-	clc
+	jc .done
 
 	mov byte [rax + BMFS_DirEnt.filename], 0x01 ; Add deleted marker to file name
 
@@ -538,9 +530,6 @@ os_bmfs_file_delete:
 	call _bmfs_write_directory	; Rewrite the directory table
 
 	jmp .done
-
-.error:
-	stc
 
 .done:
 	pop rax
@@ -563,7 +552,6 @@ os_bmfs_file_get_size:
 	jmp .done
 
 .error:
-	stc
 	xor rcx, rcx
 
 .done:

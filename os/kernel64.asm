@@ -388,6 +388,9 @@ start:
 %ifidn FS,FAT16
 	call os_fat16_setup
 %endif
+%ifidn FS,BMFS
+	call os_bmfs_setup
+%endif
 
 	call os_screen_clear		; Clear screen and display cursor
 
