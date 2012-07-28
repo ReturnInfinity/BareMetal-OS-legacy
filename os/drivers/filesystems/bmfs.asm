@@ -82,6 +82,7 @@ _bmfs_get_space_after:
 	cmp r9, r8			; ignore any files starting < our file end
 	jl .inc
 
+	sub r9, r8
 	cmp r9, rcx
 	cmovl rcx, r9			; r9 = min(r9, rcx)
 
@@ -138,6 +139,7 @@ _bmfs_update_dirent_crc32:
 	push rdi
 	push rsi
 
+	push rax
 	mov rsi, rax
 	mov rdi, 56			; 32 bytes filename + 8 start + 8 reserved + 8 size
 
@@ -171,6 +173,7 @@ _bmfs_update_dirent_crc32:
 	rol eax, 16
 	mov ax, cx
 
+	pop rsi				; contains the original value of rax
 	mov [rsi + BMFS_DirEnt.crc32], eax	;crc32 result is in eax
 .done:
 	pop rsi
@@ -311,7 +314,7 @@ os_bmfs_file_read:
 	call os_bmfs_find_file		; Fuction will return the starting cluster value in RAX or carry set if not found
 	jc .error			; Does not exist, return error
 
-	add rcx, 1			; Convert byte count to the number of sectors required to fit
+	add rcx, 511			; Convert byte count to the number of sectors required to fit
 	shr rcx, 9
 
 	shl rax, 12			; Multiply block start count by 4096 to get sector start count
@@ -368,7 +371,7 @@ os_bmfs_file_write:
 
 	; Ensure the file will fit within its reserved space
 	mov rbx, rcx
-	add rbx, 1			; Convert byte count to the number of 2MiB blocks
+	add rbx, 2097151		; Convert byte count to the number of 2MiB blocks
 	shr rbx, 21
 
 	mov rdx, [r9 + BMFS_DirEnt.reserved]
@@ -378,10 +381,11 @@ os_bmfs_file_write:
 	mov r8, rcx			; Save byte count for later
 
 	mov rbx, rcx			; Determine number of sectors to write
-	add rbx, 1
+	add rbx, 511
 	shr rbx, 9
 
 	mov rax, [r9 + BMFS_DirEnt.start]	; Set up the write
+	shl rax, 12			; 4096 sectors per block
 	mov rdx, [sata_port]
 
 .loop:
@@ -399,7 +403,6 @@ os_bmfs_file_write:
 	jnz .loop
 
 	mov rax, r9
-
 	mov [rax + BMFS_DirEnt.size], r8	; Update entry with bytes written (r8)
 	call _bmfs_update_dirent_crc32	; Update directory entry CRC32
 	call _bmfs_write_directory	; Rewrite the directory table
@@ -427,15 +430,17 @@ os_bmfs_file_create:
 	push rax
 	push rdi
 
-	call _bmfs_file_get_ptr	; Check if file exists, error if so
-	jc .error
+	call _bmfs_file_get_ptr		; Check if file exists, error if so
+	jnc .error
 
 	clc
 
 	; Convert bytes reserved to 2MiB blocks, rounding up
 	mov r11, rcx
-	inc r11
+	add r11, 2097151
 	shr r11, 21
+
+	jz .error			; Don't allow zero-length reservations
 
 	mov rax, hd_directory		; Point rdi to start of directory
 
@@ -456,6 +461,10 @@ os_bmfs_file_create:
 	; is larger than the block allocation, then pick the minimum of that
 	; space and the previous smallest (r12).
 .space_next:
+	mov r8, [rax]
+	cmp r8, 0x01
+	jle .inc
+
 	call _bmfs_get_space_after
 
 	cmp rcx, r11			; ignore if space is smaller than we need
@@ -477,14 +486,14 @@ os_bmfs_file_create:
 	je .error			; Can't find a block large enough
 
 	; Now find a free directory entry, set it up for this file
-	mov rax, 0			; beginning of directory structure
+	mov rax, hd_directory		; beginning of directory structure
 
 .dir_next:
-	mov r8, [rax*8 + hd_directory]
+	mov r8, [rax]
 	cmp r8, 0x01
 	jle .found
-	add rax, 8			; next record
-	cmp rax, 64*8			; end of directory
+	add rax, 64			; next record
+	cmp rax, hd_directory + 0x1000	; end of directory
 	jne .dir_next
 
 	jmp .error			; Not found

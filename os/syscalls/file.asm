@@ -63,6 +63,23 @@ os_file_rename:
 
 
 ; -----------------------------------------------------------------------------
+; os_file_create -- Create a file on disk
+; IN:	RSI = Memory location of file name to create
+;	RCX = Size in bytes of the space to reserve for this file (will be
+;		rounded up to the nearest 2MiB)
+; OUT:	Carry is set if the file already exists or an error occured
+os_file_create:
+%ifidn FS,FAT16
+	; jmp os_fat16_file_create
+	stc
+	ret
+%else ; BMFS
+	jmp os_bmfs_file_create
+%endif
+; -----------------------------------------------------------------------------
+
+
+; -----------------------------------------------------------------------------
 ; os_file_delete -- Delete a file from disk
 ; IN:	RSI = Memory location of file name to delete
 ; OUT:	Carry is set if the file was not found or an error occured

@@ -37,9 +37,10 @@ readsectors:
 
 	mov rsi, [ahci_base]
 
+	; Command list setup
 	mov rdi, ahci_cmdlist		; command list (1K with 32 entries, 32 bytes each)
 	xor eax, eax
-	mov eax, 0x00010005 ;4		; 1 PRDTL Entry, Command FIS Length = 16 bytes
+	mov eax, 0x00010005		; 1 PRDTL Entry, Command FIS Length = 20 bytes
 	stosd				; DW 0 - Description Information
 	xor eax, eax
 	stosd				; DW 1 - Command Status
@@ -53,7 +54,7 @@ readsectors:
 	stosd
 	; DW 4 - 7 are reserved
 
-	; command table
+	; Command FIS setup
 	mov rdi, ahci_cmdtable		; Build a command table for Port 0
 	mov eax, 0x00258027		; 25 READ DMA EXT, bit 15 set, fis 27 H2D
 	stosd				; feature 7:0, command, c, fis
@@ -69,6 +70,8 @@ readsectors:
 	stosd				; control, ICC, count 15:8, count 7:0
 	mov rax, 0x00000000
 	stosd				; reserved
+
+	; PRDT setup
 	mov rdi, ahci_cmdtable + 0x80
 	pop rax				; Restore the destination memory address
 	stosd				; Data Base Address
@@ -77,8 +80,7 @@ readsectors:
 	stosd				; Reserved
 	pop rax				; Restore the sector count
 	shl rax, 9			; multiply by 512 for bytes
-	add rax, -1			; subtract 1 because of AHCI weirdness
-					; (4.2.3.3, DBC is number of bytes - 1)
+	add rax, -1			; subtract 1 (4.2.3.3, DBC is number of bytes - 1)
 	stosd				; Description Information
 
 	add rsi, rdx
@@ -143,7 +145,7 @@ writesectors:
 	push rax
 
 	push rcx			; Save the sector count
-	push rdi			; Save the destination memory address
+	push rsi			; Save the source memory address
 	push rax			; Save the block number
 	push rax
 
@@ -152,9 +154,10 @@ writesectors:
 
 	mov rsi, [ahci_base]
 
+	; Command list setup
 	mov rdi, ahci_cmdlist		; command list (1K with 32 entries, 32 bytes each)
 	xor eax, eax
-	mov eax, 0x00010045 ;4		; 1 PRDTL Entry, write flag, Command FIS Length = 16 bytes
+	mov eax, 0x00010045		; 1 PRDTL Entry, write flag, Command FIS Length = 20 bytes
 	stosd				; DW 0 - Description Information
 	xor eax, eax
 	stosd				; DW 1 - Command Status
@@ -168,7 +171,7 @@ writesectors:
 	stosd
 	; DW 4 - 7 are reserved
 
-	; command table
+	; Command FIS setup
 	mov rdi, ahci_cmdtable		; Build a command table for Port 0
 	mov eax, 0x00358027		; 35 WRITE DMA EXT, bit 15 set, fis 27 H2D
 	stosd				; feature 7:0, command, c, fis
@@ -184,16 +187,18 @@ writesectors:
 	stosd				; control, ICC, count 15:8, count 7:0
 	mov rax, 0x00000000
 	stosd				; reserved
+
+	; PRDT setup
 	mov rdi, ahci_cmdtable + 0x80
-	pop rax				; Restore the destination memory address
+	pop rax				; Restore the source memory address
+
 	stosd				; Data Base Address
 	shr rax, 32
 	stosd				; Data Base Address Upper
 	stosd				; Reserved
 	pop rax				; Restore the sector count
 	shl rax, 9			; multiply by 512 for bytes
-	add rax, -1			; subtract 1 because of AHCI weirdness
-					; (4.2.3.3, DBC is number of bytes - 1)
+	add rax, -1			; subtract 1 (4.2.3.3, DBC is number of bytes - 1)
 	stosd				; Description Information
 
 	add rsi, rdx

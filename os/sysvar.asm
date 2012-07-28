@@ -35,6 +35,7 @@ os_ip_tx_buffer		equ 0x000000000006F400	; 2048 butes
 arp_table		equ 0x000000000006FC00  ; 1024 bytes	0x06FC00 -> 0x06FFFF
 %ifidn HDD,AHCI
 ahci_cmdlist:		equ 0x0000000000070000	; 4096 bytes	0x070000 -> 0x071FFF
+ahci_receivedfis:	equ 0x0000000000071000	; 4096 bytes	0x071000 -> 0x072FFF
 ahci_cmdtable:		equ 0x0000000000072000	; 57344 bytes	0x072000 -> 0x07FFFF
 %endif
 cli_temp_string:	equ 0x0000000000080000	; 1024 bytes	0x080000 -> 0x0803FF

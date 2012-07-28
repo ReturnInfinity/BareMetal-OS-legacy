@@ -159,7 +159,7 @@ tx_idle:
 	mov al, 0x8F
 	mov byte [os_NetActivity_RX], 0
 rx_idle:
-	stosb	
+	stosb
 	mov al, ']'
 	stosb
 	add rdi, 1
@@ -365,7 +365,7 @@ os_get_argv_nextchar:
 	dec cl
 	cmp cl, 0
 	jne os_get_argv_nextchar
-	
+
 os_get_argv_end:
 	pop rax
 	pop rcx
@@ -386,7 +386,7 @@ os_get_timecounter:
 
 ; -----------------------------------------------------------------------------
 ; os_hide_statusbar -- Hide the system status bar
-; IN:	
+; IN:
 os_hide_statusbar:
 	mov byte [os_show_sysstatus], 0
 	ret
@@ -395,12 +395,12 @@ os_hide_statusbar:
 
 ; -----------------------------------------------------------------------------
 ; os_show_statusbar -- Show the system status bar
-; IN:	
+; IN:
 os_show_statusbar:
 	mov byte [os_show_sysstatus], 1
 	ret
 ; -----------------------------------------------------------------------------
 
-	
+
 ; =============================================================================
 ; EOF
