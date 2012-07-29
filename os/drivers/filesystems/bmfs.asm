@@ -67,12 +67,13 @@ ret
 _bmfs_get_space_after:
 	push rdi
 
-	mov rdi, hd_directory		; beginning of directory structure
 	mov r8, [rax + BMFS_DirEnt.start]
 	add r8, [rax + BMFS_DirEnt.reserved]	; r8 = end of this file
 	mov rcx, [bmfs_TotalBlocks]
 	sub rcx, r8			; rcx = space remaining on drive after file
 	sub rcx, 2			; 2 blocks reserved @ end
+
+	mov rdi, hd_directory		; beginning of directory structure
 
 .next:
 	cmp byte [rdi], 0x01			; skip unused/deleted files
@@ -89,7 +90,7 @@ _bmfs_get_space_after:
 .inc:
 	add rdi, 64			; point to next record
 	cmp rdi, hd_directory + 0x1000	; end of directory
-	je .next
+	jne .next
 
 .done:
 	pop rdi
@@ -112,6 +113,7 @@ _bmfs_get_start_space:
 	jle .inc
 
 	mov r9, [rdi + BMFS_DirEnt.start]
+	sub r9, 2			; 2 blocks allocated at start
 	cmp r9, rcx
 	cmovl rcx, r9			; r9 = min(r9, rcx)
 
@@ -447,10 +449,11 @@ os_bmfs_file_create:
 	; Look for a free block large enough for this file -- r10 holds start
 	; address. Try to allocate only the minimum amount of space we need;
 	; previous minimum is in r12.
-	mov r10, 0xFFFFFFFFFFFFFFFF
-	mov r12, 0xFFFFFFFFFFFFFFFF
+	mov r10, 0x7FFFFFFFFFFFFFFF
+	mov r12, 0x7FFFFFFFFFFFFFFF
 
 	call _bmfs_get_start_space
+
 	cmp rcx, r11
 	jl .space_next
 
@@ -482,14 +485,15 @@ os_bmfs_file_create:
 	cmp rax, hd_directory + 0x1000	; end of directory
 	jne .space_next
 
-	cmp r10, 0xFFFFFFFFFFFFFFFF
+	cmp r10, 0x7FFFFFFFFFFFFFFF
 	je .error			; Can't find a block large enough
 
 	; Now find a free directory entry, set it up for this file
 	mov rax, hd_directory		; beginning of directory structure
 
 .dir_next:
-	mov r8, [rax]
+	mov byte r8, [rax]
+
 	cmp r8, 0x01
 	jle .found
 	add rax, 64			; next record
