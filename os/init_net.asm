@@ -52,12 +52,17 @@ init_net_probe_find_next_device:
 	jmp init_net_probe_find_next_device	; Check the next device
 
 init_net_probe_found:
+%ifndef DISABLE_RTL8169
 	cmp edx, 0x8169FFFF
 	je init_net_probe_found_rtl8169
+%endif
+%ifndef DISABLE_I8254X
 	cmp edx, 0x8254FFFF
 	je init_net_probe_found_i8254x
+%endif
 	jmp init_net_probe_not_found
 
+%ifndef DISABLE_RTL8169
 init_net_probe_found_rtl8169:
 	call os_net_rtl8169_init
 	mov rdi, os_net_transmit
@@ -68,7 +73,9 @@ init_net_probe_found_rtl8169:
 	mov rax, os_net_rtl8169_ack_int
 	stosq
 	jmp init_net_probe_found_finish
+%endif
 
+%ifndef DISABLE_I8254X
 init_net_probe_found_i8254x:
 	call os_net_i8254x_init
 	mov rdi, os_net_transmit
@@ -79,6 +86,7 @@ init_net_probe_found_i8254x:
 	mov rax, os_net_i8254x_ack_int
 	stosq
 	jmp init_net_probe_found_finish
+%endif
 
 init_net_probe_found_finish:
 	xor eax, eax

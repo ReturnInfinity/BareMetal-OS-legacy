@@ -168,6 +168,18 @@ nexttritone:
 	lodsd
 	mov [os_MemAmount], eax		; In MiB's
 
+	mov rsi, 0x5032
+	lodsw
+	mov [ata_port], ax
+
+	mov rsi, 0x5034
+	lodsd
+	mov [sata_port], eax
+
+	mov rsi, 0x5038
+	lodsq
+	mov [ahci_base], rax
+
 	mov rsi, 0x5040
 	lodsq
 	mov [os_HPETAddress], rax
@@ -217,6 +229,7 @@ no_more_aps:
 	xor eax, eax
 	mov [rsi+0xF0], rax		; Clear the Main Counter Register
 
+; HPET enable breaks qemu
 	; Configure and enable Timer 0 (n = 0)
 	mov rax, [rsi+0x100]
 	bts rax, 1			; Tn_INT_TYPE_CNF - Interrupt Type Level
