@@ -9,6 +9,14 @@
 USE64
 ORG 0x0000000000100000
 
+%IFNDEF FS
+%DEFINE FS FAT16
+%ENDIF
+
+%IFNDEF HDD
+%DEFINE HDD PIO
+%ENDIF
+
 %DEFINE BAREMETALOS_VER 'v0.5.3 (February 23, 2012)', 13, 'Copyright (C) 2008-2012 Return Infinity', 13, 0
 %DEFINE BAREMETALOS_API_VER 1
 
@@ -37,332 +45,162 @@ kernel_start:
 	align 8
 	dq os_input_key
 
-	align 8			; 0x0080
+	align 8			; 0x0050
+	jmp os_file_create
+	align 8
+	dq os_file_create
+
+	align 8			; 0x0060
 	jmp os_delay
 	align 8
 	dq os_delay
 
-;	align 8			; 0x0090
-;	jmp os_speaker_tone
-;	align 8
-;	dq os_speaker_tone
-
-;	align 8			; 0x00A0
-;	jmp os_speaker_off
-;	align 8
-;	dq os_speaker_off
-
-;	align 8			; 0x00B0
-;	jmp os_speaker_beep
-;	align 8
-;	dq os_speaker_beep
-
-	align 8			; 0x00C0
+	align 8			; 0x0070
 	jmp os_move_cursor
 	align 8
 	dq os_move_cursor
 
-;	align 8			; 0x00D0
-;	jmp os_string_length
-;	align 8
-;	dq os_string_length
-
-;	align 8			; 0x00E0
-;	jmp os_string_find_char
-;	align 8
-;	dq os_string_find_char
-
-;	align 8			; 0x00F0
-;	jmp os_string_copy
-;	align 8
-;	dq os_string_copy
-
-;	align 8			; 0x0100
-;	jmp os_string_truncate
-;	align 8
-;	dq os_string_truncate
-
-;	align 8			; 0x0110
-;	jmp os_string_join
-;	align 8
-;	dq os_string_join
-
-;	align 8			; 0x0120
-;	jmp os_string_chomp
-;	align 8
-;	dq os_string_chomp
-
-;	align 8			; 0x0130
-;	jmp os_string_strip
-;	align 8
-;	dq os_string_strip
-
-;	align 8			; 0x0140
-;	jmp os_string_compare
-;	align 8
-;	dq os_string_compare
-
-;	align 8			; 0x0150
-;	jmp os_string_uppercase
-;	align 8
-;	dq os_string_uppercase
-
-;	align 8			; 0x0160
-;	jmp os_string_lowercase
-;	align 8
-;	dq os_string_lowercase
-
-;	align 8			; 0x0170
-;	jmp os_int_to_string
-;	align 8
-;	dq os_int_to_string
-
-;	align 8			; 0x0180
-;	jmp os_string_to_int
-;	align 8
-;	dq os_string_to_int
-
-;	align 8			; 0x0190
-;	jmp os_debug_dump_reg
-;	align 8
-;	dq os_debug_dump_reg
-
-;	align 8			; 0x01A0
-;	jmp os_debug_dump_mem
-;	align 8
-;	dq os_debug_dump_mem
-
-;	align 8			; 0x01B0
-;	jmp os_debug_dump_rax
-;	align 8
-;	dq os_debug_dump_rax
-
-;	align 8			; 0x01C0
-;	jmp os_debug_dump_eax
-;	align 8
-;	dq os_debug_dump_eax
-
-;	align 8			; 0x01D0
-;	jmp os_debug_dump_ax
-;	align 8
-;	dq os_debug_dump_ax
-
-;	align 8			; 0x01E0
-;	jmp os_debug_dump_al
-;	align 8
-;	dq os_debug_dump_al
-
-	align 8			; 0x01F0
+	align 8			; 0x0080
 	jmp os_smp_reset
 	align 8
 	dq os_smp_reset
 
-	align 8			; 0x0200
+	align 8			; 0x0090
 	jmp os_smp_get_id
 	align 8
 	dq os_smp_get_id
 
-	align 8			; 0x0210
+	align 8			; 0x00A0
 	jmp os_smp_enqueue
 	align 8
 	dq os_smp_enqueue
 
-	align 8			; 0x0220
+	align 8			; 0x00B0
 	jmp os_smp_dequeue
 	align 8
 	dq os_smp_dequeue
 
-	align 8			; 0x0230
+	align 8			; 0x00C0
 	jmp os_serial_send
 	align 8
 	dq os_serial_send
 
-	align 8			; 0x0240
+	align 8			; 0x00D0
 	jmp os_serial_recv
 	align 8
 	dq os_serial_recv
 
-;	align 8			; 0x0250
-;	jmp os_string_parse
-;	align 8
-;	dq os_string_parse
-
-;	align 8			; 0x0260
-;	jmp os_get_argc
-;	align 8
-;	dq os_get_argc
-
-;	align 8			; 0x0270
-;	jmp os_get_argv
-;	align 8
-;	dq os_get_argv
-
-	align 8			; 0x0280
+	align 8			; 0x00E0
 	jmp os_smp_queuelen
 	align 8
 	dq os_smp_queuelen
 
-	align 8			; 0x0290
+	align 8			; 0x00F0
 	jmp os_smp_wait
 	align 8
 	dq os_smp_wait
 
-;	align 8			; 0x02A0
-;	jmp os_get_timecounter
-;	align 8
-;	dq os_get_timecounter
-
-;	align 8			; 0x02B0
-;	jmp os_string_append
-;	align 8
-;	dq os_string_append
-
-;	align 8			; 0x02C0
-;	jmp os_int_to_hex_string
-;	align 8
-;	dq os_int_to_hex_string
-
-;	align 8			; 0x02D0
-;	jmp os_hex_string_to_int
-;	align 8
-;	dq os_hex_string_to_int
-
-;	align 8			; 0x02E0
-;	jmp os_string_change_char
-;	align 8
-;	dq os_string_change_char
-
-;	align 8			; 0x02F0
-;	jmp os_is_digit
-;	align 8
-;	dq os_is_digit
-
-;	align 8			; 0x0300
-;	jmp os_is_alpha
-;	align 8
-;	dq os_is_alpha
-
-	align 8			; 0x0310
+	align 8			; 0x0100
 	jmp os_file_read
 	align 8
 	dq os_file_read
 
-	align 8			; 0x0320
+	align 8			; 0x0110
 	jmp os_file_write
 	align 8
 	dq os_file_write
 
-	align 8			; 0x0330
+	align 8			; 0x0120
 	jmp os_file_delete
 	align 8
 	dq os_file_delete
 
-	align 8			; 0x0340
+	align 8			; 0x0130
 	jmp os_file_get_list
 	align 8
 	dq os_file_get_list
 
-	align 8			; 0x0350
+	align 8			; 0x0140
 	jmp os_smp_run
 	align 8
 	dq os_smp_run
 
-	align 8			; 0x0360
+	align 8			; 0x0150
 	jmp os_smp_lock
 	align 8
 	dq os_smp_lock
 
-	align 8			; 0x0370
+	align 8			; 0x0160
 	jmp os_smp_unlock
 	align 8
 	dq os_smp_unlock
 
-;	align 8			; 0x0380
-;	jmp os_print_string_with_color
-;	align 8
-;	dq os_print_string_with_color
-
-;	align 8			; 0x0390
-;	jmp os_print_char_with_color
-;	align 8
-;	dq os_print_char_with_color
-
-	align 8			; 0x03A0
+	align 8			; 0x0170
 	jmp os_ethernet_tx
 	align 8
 	dq os_ethernet_tx
 
-	align 8			; 0x03B0
+	align 8			; 0x0180
 	jmp os_ethernet_rx
 	align 8
 	dq os_ethernet_rx
 
-	align 8			; 0x03C0
+	align 8			; 0x0190
 	jmp os_mem_allocate
 	align 8
 	dq os_mem_allocate
 
-	align 8			; 0x03D0
+	align 8			; 0x01A0
 	jmp os_mem_release
 	align 8
 	dq os_mem_release
 
-	align 8			; 0x03E0
+	align 8			; 0x01B0
 	jmp os_mem_get_free
 	align 8
 	dq os_mem_get_free
 
-	align 8			; 0x03F0
+	align 8			; 0x01C0
 	jmp os_smp_numcores
 	align 8
 	dq os_smp_numcores
 
-	align 8			; 0x0400
+	align 8			; 0x01D0
 	jmp os_file_get_size
 	align 8
 	dq os_file_get_size
 
-	align 8			; 0x0410
+	align 8			; 0x01E0
 	jmp os_ethernet_avail
 	align 8
 	dq os_ethernet_avail
 
-;	align 8			; 0x0420
-;	jmp os_print_char_hex_with_color
-;	align 8
-;	dq os_print_char_hex_with_color
-
-	align 8			; 0x0430
+	align 8			; 0x01F0
 	jmp os_ethernet_tx_raw
 	align 8
 	dq os_ethernet_tx_raw
 
-;	align 8			; 0x0440
-;	jmp os_screen_clear
-;	align 8
-;	dq os_screen_clear
-
-	align 8			; 0x0470
+	align 8			; 0x0200
 	jmp os_show_statusbar
 	align 8
 	dq os_show_statusbar
 
-	align 8			; 0x0480
+	align 8			; 0x0210
 	jmp os_hide_statusbar
 	align 8
 	dq os_hide_statusbar
 
-	align 8			; 0x0490
+	align 8			; 0x0220
 	jmp os_screen_update
 	align 8
 	dq os_screen_update
 
-	align 8			; 0x04A0
+	align 8			; 0x0230
 	jmp os_print_chars
 	align 8
 	dq os_print_chars
 
-	align 8			; 0x04B0
+	align 8			; 0x0240
 	jmp os_print_chars_with_color
 	align 8
 	dq os_print_chars_with_color
@@ -371,14 +209,18 @@ kernel_start:
 align 16
 
 start:
-
 	call init_64			; After this point we are in a working 64-bit enviroment
 
 	call init_pci
 
 	call init_net			; Initialize the network
 
-	call hdd_setup			; Gather information about the harddrive and set it up
+%ifidn FS,FAT16
+	call os_fat16_setup
+%endif
+%ifidn FS,BMFS
+	call os_bmfs_setup
+%endif
 
 	call os_screen_clear		; Clear screen and display cursor
 
@@ -388,12 +230,24 @@ start:
 	call os_move_cursor
 	mov rsi, networkmsg
 	call os_print_string
-	call os_debug_dump_MAC	
+	call os_debug_dump_MAC
 start_no_network:
 
 	mov ax, 0x0016			; Print the "ready" message
 	call os_move_cursor
 	mov rsi, readymsg
+	call os_print_string
+
+	rdtsc				; Print the time taken to start up (from protected mode)
+	shl rdx, 32
+	add rax, rdx
+	sub rax, [pure64_starttime]
+	mov rdi, os_temp_string
+	mov rsi, os_temp_string
+	call os_int_to_string
+	call os_print_string
+
+	mov rsi, readymsg_end
 	call os_print_string
 
 	mov ax, 0x0018			; Set the hardware cursor to the bottom left-hand corner
@@ -529,7 +383,6 @@ noargs:
 %include "init_64.asm"
 %include "init_pci.asm"
 %include "init_net.asm"
-%include "init_hdd.asm"
 %include "syscalls.asm"
 %include "drivers.asm"
 %include "interrupt.asm"
