@@ -231,7 +231,7 @@ void b_print_chars(const char *str, unsigned long len)
 
 void b_print_chars_with_color(const char *str, unsigned long len, unsigned char clr)
 {
-	asm volatile ("call *0x00100238" : : "S"(str), "c"(len), "b"(clr));
+	asm volatile ("call *0x00100248" : : "S"(str), "c"(len), "b"(clr));
 }
 
 // =============================================================================
