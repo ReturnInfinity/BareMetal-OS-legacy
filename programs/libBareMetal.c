@@ -62,7 +62,7 @@ void b_delay(unsigned long nbr)
 
 void b_move_cursor(unsigned char col, unsigned char row)
 {
-	asm volatile ("call *0x00100078" : : "a"(col + row<<8))
+	asm volatile ("call *0x00100078" : : "a"(col + row<<8));
 }
 
 void b_smp_reset(void)
@@ -226,12 +226,12 @@ void b_screen_update(void)
 
 void b_print_chars(const char *str, unsigned long len)
 {
-	asm volatile ("call *0x00100238" : : "S"(str), "c"(nbr));
+	asm volatile ("call *0x00100238" : : "S"(str), "c"(len));
 }
 
 void b_print_chars_with_color(const char *str, unsigned long len, unsigned char clr)
 {
-	asm volatile ("call *0x00100238" : : "S"(str), "c"(nbr), "b"(clr));
+	asm volatile ("call *0x00100238" : : "S"(str), "c"(len), "b"(clr));
 }
 
 // =============================================================================
