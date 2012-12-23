@@ -32,7 +32,7 @@ The first and last disk blocks are reserved for file system usage. All other dis
 	Block 1 .. n-1:
 	Data
 
-	Block n-1:
+	Block n (last block on disk):
 	Copy of Block 0
 
 **Directory**
