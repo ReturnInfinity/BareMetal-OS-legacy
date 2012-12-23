@@ -25,7 +25,7 @@ The first and last disk blocks are reserved for file system usage. All other dis
 
 	Block 0:
 	4KiB - Legacy MBR Boot sector (512B)
-	     - Free space (1536B)
+	     - Free space (3584B)
 	4KiB - Directory (Max 64 files, 64-bytes for each record)
 	Free space (2040KiB)
 	
