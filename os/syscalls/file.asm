@@ -1,6 +1,6 @@
 ; =============================================================================
 ; BareMetal -- a 64-bit OS written in Assembly for x86-64 systems
-; Copyright (C) 2008-2012 Return Infinity -- see LICENSE.TXT
+; Copyright (C) 2008-2013 Return Infinity -- see LICENSE.TXT
 ;
 ; File System Functions
 ; =============================================================================
@@ -29,11 +29,7 @@ align 16
 ;	RDI = Memory location where file will be loaded to
 ; OUT:	Carry is set if the file was not found or an error occured
 os_file_read:
-%ifidn FS,FAT16
-	jmp os_fat16_file_read
-%else ; BMFS
 	jmp os_bmfs_file_read
-%endif
 ; -----------------------------------------------------------------------------
 
 
@@ -44,11 +40,7 @@ os_file_read:
 ;	RCX = Number of bytes to write
 ; OUT:	Carry is set if an error occured
 os_file_write:
-%ifidn FS,FAT16
-	jmp os_fat16_file_write
-%else ; BMFS
 	jmp os_bmfs_file_write
-%endif
 ; -----------------------------------------------------------------------------
 
 
@@ -58,7 +50,8 @@ os_file_write:
 ;	RDI = Memory location of new file name
 ; OUT:	Carry is set if the file was not found or an error occured
 os_file_rename:
-	jmp $
+;	jmp $
+	ret
 ; -----------------------------------------------------------------------------
 
 
@@ -69,13 +62,7 @@ os_file_rename:
 ;		rounded up to the nearest 2MiB)
 ; OUT:	Carry is set if the file already exists or an error occured
 os_file_create:
-%ifidn FS,FAT16
-	; jmp os_fat16_file_create
-	stc
-	ret
-%else ; BMFS
 	jmp os_bmfs_file_create
-%endif
 ; -----------------------------------------------------------------------------
 
 
@@ -84,11 +71,7 @@ os_file_create:
 ; IN:	RSI = Memory location of file name to delete
 ; OUT:	Carry is set if the file was not found or an error occured
 os_file_delete:
-%ifidn FS,FAT16
-	jmp os_fat16_file_delete
-%else ; BMFS
 	jmp os_bmfs_file_delete
-%endif
 ; -----------------------------------------------------------------------------
 
 
@@ -97,25 +80,17 @@ os_file_delete:
 ; IN:	RDI = location to store list
 ; OUT:	RDI = pointer to end of list
 os_file_get_list:
-%ifidn FS,FAT16
-	jmp os_fat16_file_get_list
-%else ; BMFS
 	jmp os_bmfs_file_get_list
-%endif
 ; -----------------------------------------------------------------------------
 
 
 ; -----------------------------------------------------------------------------
-; os_file_get_size -- Return the size of a file on disk
+; os_file_query -- Query the existance of a file
 ; IN:	RSI = Address of filename string
 ; OUT:	RCX = Size in bytes
 ;	Carry is set if the file was not found or an error occured
-os_file_get_size:
-%ifidn FS,FAT16
-	jmp os_fat16_file_get_size
-%else ; BMFS
-	jmp os_bmfs_file_get_size
-%endif
+os_file_query:
+	jmp os_bmfs_file_query
 ; -----------------------------------------------------------------------------
 
 

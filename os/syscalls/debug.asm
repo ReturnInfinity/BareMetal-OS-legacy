@@ -1,6 +1,6 @@
 ; =============================================================================
 ; BareMetal -- a 64-bit OS written in Assembly for x86-64 systems
-; Copyright (C) 2008-2012 Return Infinity -- see LICENSE.TXT
+; Copyright (C) 2008-2013 Return Infinity -- see LICENSE.TXT
 ;
 ; Debug functions
 ; =============================================================================
@@ -53,69 +53,6 @@ os_debug_dump_reg_next:
 	inc byte [os_debug_dump_reg_stage]
 	cmp byte [os_debug_dump_reg_stage], 0x11	; Check to see if all 16 registers as well as the flags are displayed
 	jne os_debug_dump_reg_next
-
-	mov rbx, rax					; Store the flags in RBX
-
-	mov rsi, os_debug_dump_flag_string0		; Print the Carry flag
-	call os_print_string
-	bt rbx, 0
-	jc carry_1
-carry_0:
-	mov al, '0'
-	jmp print_carry
-carry_1:
-	mov al, '1'
-print_carry:
-	call os_print_char
-
-	mov rsi, os_debug_dump_flag_string1		; Print the Zero flag
-	call os_print_string
-	bt rbx, 6
-	jc zero_1
-zero_0:
-	mov al, '0'
-	jmp print_zero
-zero_1:
-	mov al, '1'
-print_zero:
-	call os_print_char	
-
-	mov rsi, os_debug_dump_flag_string2		; Print the Sign flag
-	call os_print_string
-	bt rbx, 7
-	jc sign_1
-sign_0:
-	mov al, '0'
-	jmp print_sign
-sign_1:
-	mov al, '1'
-print_sign:
-	call os_print_char	
-
-	mov rsi, os_debug_dump_flag_string3		; Print the Direction flag
-	call os_print_string
-	bt rbx, 10
-	jc dir_1
-dir_0:
-	mov al, '0'
-	jmp print_dir
-dir_1:
-	mov al, '1'
-print_dir:
-	call os_print_char	
-
-	mov rsi, os_debug_dump_flag_string4		; Print the Overflow flag
-	call os_print_string
-	bt rbx, 11
-	jc over_1
-over_0:
-	mov al, '0'
-	jmp print_over
-over_1:
-	mov al, '1'
-print_over:
-	call os_print_char	
-
 	
 os_debug_dump_reg_done:
 	call os_print_newline

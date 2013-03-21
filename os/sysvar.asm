@@ -1,6 +1,6 @@
 ; =============================================================================
 ; BareMetal -- a 64-bit OS written in Assembly for x86-64 systems
-; Copyright (C) 2008-2012 Return Infinity -- see LICENSE.TXT
+; Copyright (C) 2008-2013 Return Infinity -- see LICENSE.TXT
 ;
 ; System Variables
 ; =============================================================================
@@ -13,9 +13,8 @@ align 16
 hextable: 		db '0123456789ABCDEF'
 
 ; Strings
-system_status_header:	db 'BareMetal v0.5.3', 0
-readymsg:		db 'BareMetal is ready (started in ', 0
-readymsg_end:		db ' cycles)', 0
+system_status_header:	db 'BareMetal v0.6.0', 0
+readymsg:		db 'BareMetal is ready', 0
 networkmsg:		db 'Network Address: ', 0
 prompt:			db '> ', 0
 space:			db ' ', 0
@@ -23,9 +22,6 @@ newline:		db 13, 0
 appextension:		db '.APP', 0
 memory_message:		db 'Not enough system memory for CPU stacks! System halted.', 0
 startupapp:		db 'startup.app', 0
-device_name_rtl8169	db 'rtl8169', 0
-device_name_i8254x	db 'i8254x', 0
-NIC_name_ptr		dq 0x00000000000000000	; Pointer to network interface device name
 ARP_timeout		dd 0x10000000		; After this time, ARP entry must be refreshed
 os_icmp_callback	dq 0x00000000000000000	; Point to ICMP reciever call back fundtion
 
@@ -33,29 +29,20 @@ os_icmp_callback	dq 0x00000000000000000	; Point to ICMP reciever call back fundt
 os_ip_rx_buffer		equ 0x000000000004EC00	; 2048 bytes
 os_ip_tx_buffer		equ 0x000000000006F400	; 2048 butes
 arp_table		equ 0x000000000006FC00  ; 1024 bytes	0x06FC00 -> 0x06FFFF
-%ifidn HDD,AHCI
 ahci_cmdlist:		equ 0x0000000000070000	; 4096 bytes	0x070000 -> 0x071FFF
 ahci_receivedfis:	equ 0x0000000000071000	; 4096 bytes	0x071000 -> 0x072FFF
 ahci_cmdtable:		equ 0x0000000000072000	; 57344 bytes	0x072000 -> 0x07FFFF
-%endif
 cli_temp_string:	equ 0x0000000000080000	; 1024 bytes	0x080000 -> 0x0803FF
 os_temp_string:		equ 0x0000000000080400	; 1024 bytes	0x080400 -> 0x0807FF
-secbuffer0:		equ 0x0000000000080800	; 512 bytes	0x080800 -> 0x0809FF
-secbuffer1:		equ 0x0000000000080A00	; 512 bytes	0x080A00 -> 0x080BFF
 os_args:		equ 0x0000000000080C00
-%ifidn FS,FAT16
-hdbuffer0:		equ 0x0000000000090000	; 32768 bytes	0x090000 -> 0x097FFF
-hdbuffer1:		equ 0x0000000000098000	; 32768 bytes	0x098000 -> 0x09FFFF
-%endif
-%ifidn FS,BMFS
 hd_diskinfo:		equ 0x0000000000090000	; 4096 bytes	0x090000 -> 0x090FFF
 hd_directory:		equ 0x0000000000091000	; 4096 bytes	0x091000 -> 0x091FFF
-%endif
 os_KernelStart:		equ 0x0000000000100000	; 65536 bytes	0x100000 -> 0x10FFFF - Location of Kernel
 os_SystemVariables:	equ 0x0000000000110000	; 65536 bytes	0x110000 -> 0x11FFFF - Location of System Variables
 os_MemoryMap:		equ 0x0000000000120000	; 131072 bytes	0x120000 -> 0x13FFFF - Location of Memory Map - Room to map 256 GiB with 2 MiB pages
 os_EthernetBuffer:	equ 0x0000000000140000	; 262144 bytes	0x140000 -> 0x17FFFF - Location of Ethernet RX Ring Buffer - Room for 170 packets
 os_screen:		equ 0x0000000000180000	; 4096 bytes	80x25x2 = 4000
+os_temp:		equ 0x0000000000190000
 os_ethernet_rx_buffer:	equ 0x00000000001C0000
 os_eth_rx_buffer:	equ 0x00000000001C8000
 os_ethernet_tx_buffer:	equ 0x00000000001D0000
@@ -125,19 +112,6 @@ os_show_sysstatus:	db 1
 os_debug_dump_reg_stage:	db 0x00
 
 ; File System
-%ifidn FS,FAT16
-fat16_FatStart:			dd 0x00000000
-fat16_TotalSectors:		dd 0x00000000
-fat16_DataStart:		dd 0x00000000
-fat16_RootStart:		dd 0x00000000
-fat16_PartitionOffset:		dd 0x00000000
-fat16_ReservedSectors:		dw 0x0000
-fat16_RootDirEnts:		dw 0x0000
-fat16_SectorsPerFat:		dw 0x0000
-fat16_BytesPerSector:		dw 0x0000
-fat16_SectorsPerCluster:	db 0x00
-fat16_Fats:			db 0x00
-%else
 ; Define the structure of a directory entry
 struc	BMFS_DirEnt
 	.filename		resb 32
@@ -149,7 +123,6 @@ struc	BMFS_DirEnt
 endstruc
 
 bmfs_TotalBlocks:		dq 0x0000000000000000
-%endif
 
 ; For startup timing
 pure64_starttime:		equ 0x0000000000005A18

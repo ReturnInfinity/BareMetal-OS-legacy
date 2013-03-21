@@ -1,6 +1,6 @@
 ; =============================================================================
 ; BareMetal -- a 64-bit OS written in Assembly for x86-64 systems
-; Copyright (C) 2008-2012 Return Infinity -- see LICENSE.TXT
+; Copyright (C) 2008-2013 Return Infinity -- see LICENSE.TXT
 ;
 ; Interrupts
 ; =============================================================================
@@ -121,19 +121,19 @@ rtc:
 rtc_no_sysstatus:
 
 	; Check to make sure that at least one core is running something
-	cmp word [os_QueueLen], 0	; Check the length of the Queue
-	jne rtc_end			; If it is greater than 0 then skip to the end
-	mov rcx, 256
-	mov rsi, cpustatus
-nextcpu:
-	lodsb
-	dec rcx
-	bt ax, 1			; Is bit 1 set? If so then the CPU is running a job
-	jc rtc_end
-	cmp rcx, 0
-	jne nextcpu
-	mov rax, os_command_line	; If nothing is running then restart the CLI
-	call os_smp_enqueue
+;	cmp word [os_QueueLen], 0	; Check the length of the Queue
+;	jne rtc_end			; If it is greater than 0 then skip to the end
+;	mov rcx, 256
+;	mov rsi, cpustatus
+;nextcpu:
+;	lodsb
+;	dec rcx
+;	bt ax, 1			; Is bit 1 set? If so then the CPU is running a job
+;	jc rtc_end
+;	cmp rcx, 0
+;	jne nextcpu
+;	mov rax, os_command_line	; If nothing is running then restart the CLI
+;	call os_smp_enqueue
 
 rtc_end:
 	mov al, 0x0C			; Select RTC register C

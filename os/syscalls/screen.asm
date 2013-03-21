@@ -1,6 +1,6 @@
 ; =============================================================================
 ; BareMetal -- a 64-bit OS written in Assembly for x86-64 systems
-; Copyright (C) 2008-2012 Return Infinity -- see LICENSE.TXT
+; Copyright (C) 2008-2013 Return Infinity -- see LICENSE.TXT
 ;
 ; Screen Output Functions
 ; =============================================================================
@@ -384,11 +384,23 @@ os_screen_clear:
 	push rcx
 	push rax
 
+	cmp byte [os_show_sysstatus], 0
+	je os_screen_clear_no_sysstatus
+
+	mov ax, 0x0720		; 0x07 for black background/white foreground, 0x20 for space (black) character
+	mov rdi, os_screen	; Address for start of color video memory
+	add rdi, 160		; Offset to second row
+	mov rcx, 1920		; 80 x 25 - 80
+	rep stosw		; Clear the screen. Store word in AX to RDI, RCX times
+	jmp os_screen_clear_done
+
+os_screen_clear_no_sysstatus:
 	mov ax, 0x0720		; 0x07 for black background/white foreground, 0x20 for space (black) character
 	mov rdi, os_screen	; Address for start of color video memory
 	mov rcx, 2000
 	rep stosw		; Clear the screen. Store word in AX to RDI, RCX times
 
+os_screen_clear_done:
 	call os_screen_update	; Copy the video buffer to video memory
 
 	pop rax

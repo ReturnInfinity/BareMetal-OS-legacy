@@ -2,24 +2,17 @@
 ; BareMetal -- a 64-bit OS written in Assembly for x86-64 systems
 ; Copyright (C) 2008-2013 Return Infinity -- see LICENSE.TXT
 ;
-; System Call Section -- Accessible to user programs
+; INIT HDD
 ; =============================================================================
 
 align 16
-db 'DEBUG: SYSCALLS '
+db 'DEBUG: INIT_HDD '
 align 16
 
 
-%include "syscalls/debug.asm"
-%include "syscalls/ethernet.asm"
-%include "syscalls/file.asm"
-%include "syscalls/input.asm"
-%include "syscalls/memory.asm"
-%include "syscalls/misc.asm"
-%include "syscalls/screen.asm"
-%include "syscalls/serial.asm"
-%include "syscalls/smp.asm"
-%include "syscalls/string.asm"
+hdd_setup:
+
+ret
 
 
 ; =============================================================================

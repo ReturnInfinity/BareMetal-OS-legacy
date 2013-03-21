@@ -1,6 +1,6 @@
 ===============================================================================
 BareMetal OS -- a 64-bit OS written in Assembly for x86-64 systems
-Copyright (C) 2008-2012 Return Infinity -- see LICENSE.TXT
+Copyright (C) 2008-2013 Return Infinity -- see LICENSE.TXT
 ===============================================================================
 
 
@@ -11,6 +11,7 @@ PROJECT ADMIN (MAIN CODE AND DOCUMENTATION)
 
 DEVELOPMENT AND TESTING
 
+ * Ben Dyer (Completion of the ACHI and BMFS drivers)
  * Mike Saunders (and the MikeOS team)
  * Members of OSDev.org
 

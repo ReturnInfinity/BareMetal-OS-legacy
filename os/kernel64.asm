@@ -1,6 +1,6 @@
 ; =============================================================================
 ; BareMetal -- a 64-bit OS written in Assembly for x86-64 systems
-; Copyright (C) 2008-2012 Return Infinity -- see LICENSE.TXT
+; Copyright (C) 2008-2013 Return Infinity -- see LICENSE.TXT
 ;
 ; The BareMetal OS kernel. Assemble with NASM
 ; =============================================================================
@@ -9,16 +9,8 @@
 USE64
 ORG 0x0000000000100000
 
-%IFNDEF FS
-%DEFINE FS FAT16
-%ENDIF
-
-%IFNDEF HDD
-%DEFINE HDD PIO
-%ENDIF
-
-%DEFINE BAREMETALOS_VER 'v0.5.3 (February 23, 2012)', 13, 'Copyright (C) 2008-2012 Return Infinity', 13, 0
-%DEFINE BAREMETALOS_API_VER 1
+%DEFINE BAREMETALOS_VER 'v0.6.0-pre (XXXXXXX XX, 2013)', 13, 'Copyright (C) 2008-2013 Return Infinity', 13, 0
+%DEFINE BAREMETALOS_API_VER 2
 
 kernel_start:
 	jmp start		; Skip over the function call index
@@ -46,59 +38,59 @@ kernel_start:
 	dq os_input_key
 
 	align 8			; 0x0050
-	jmp os_file_create
-	align 8
-	dq os_file_create
-
-	align 8			; 0x0060
-	jmp os_delay
-	align 8
-	dq os_delay
-
-	align 8			; 0x0070
-	jmp os_move_cursor
-	align 8
-	dq os_move_cursor
-
-	align 8			; 0x0080
-	jmp os_smp_reset
-	align 8
-	dq os_smp_reset
-
-	align 8			; 0x0090
-	jmp os_smp_get_id
-	align 8
-	dq os_smp_get_id
-
-	align 8			; 0x00A0
 	jmp os_smp_enqueue
 	align 8
 	dq os_smp_enqueue
 
-	align 8			; 0x00B0
+	align 8			; 0x0060
 	jmp os_smp_dequeue
 	align 8
 	dq os_smp_dequeue
 
+	align 8			; 0x0070
+	jmp os_smp_run
+	align 8
+	dq os_smp_run
+
+	align 8			; 0x0080
+	jmp os_smp_lock
+	align 8
+	dq os_smp_lock
+
+	align 8			; 0x0090
+	jmp os_smp_unlock
+	align 8
+	dq os_smp_unlock
+
+	align 8			; 0x00A0
+	jmp os_smp_reset
+	align 8
+	dq os_smp_reset
+
+	align 8			; 0x00B0
+	jmp os_smp_get_id
+	align 8
+	dq os_smp_get_id
+
 	align 8			; 0x00C0
-	jmp os_serial_send
-	align 8
-	dq os_serial_send
-
-	align 8			; 0x00D0
-	jmp os_serial_recv
-	align 8
-	dq os_serial_recv
-
-	align 8			; 0x00E0
 	jmp os_smp_queuelen
 	align 8
 	dq os_smp_queuelen
 
-	align 8			; 0x00F0
+	align 8			; 0x00D0
 	jmp os_smp_wait
 	align 8
 	dq os_smp_wait
+
+	align 8			; 0x00E0
+	jmp os_serial_send
+	align 8
+	dq os_serial_send
+
+	align 8			; 0x00F0
+	jmp os_serial_recv
+	align 8
+	dq os_serial_recv
 
 	align 8			; 0x0100
 	jmp os_file_read
@@ -111,96 +103,86 @@ kernel_start:
 	dq os_file_write
 
 	align 8			; 0x0120
+	jmp os_file_create
+	align 8
+	dq os_file_create
+
+	align 8			; 0x0130
 	jmp os_file_delete
 	align 8
 	dq os_file_delete
 
-	align 8			; 0x0130
+	align 8			; 0x0140
 	jmp os_file_get_list
 	align 8
 	dq os_file_get_list
 
-	align 8			; 0x0140
-	jmp os_smp_run
-	align 8
-	dq os_smp_run
-
 	align 8			; 0x0150
-	jmp os_smp_lock
+	jmp os_file_query
 	align 8
-	dq os_smp_lock
+	dq os_file_query
 
 	align 8			; 0x0160
-	jmp os_smp_unlock
-	align 8
-	dq os_smp_unlock
-
-	align 8			; 0x0170
-	jmp os_ethernet_tx
-	align 8
-	dq os_ethernet_tx
-
-	align 8			; 0x0180
-	jmp os_ethernet_rx
-	align 8
-	dq os_ethernet_rx
-
-	align 8			; 0x0190
 	jmp os_mem_allocate
 	align 8
 	dq os_mem_allocate
 
-	align 8			; 0x01A0
+	align 8			; 0x0170
 	jmp os_mem_release
 	align 8
 	dq os_mem_release
 
-	align 8			; 0x01B0
+	align 8			; 0x0180
 	jmp os_mem_get_free
 	align 8
 	dq os_mem_get_free
 
-	align 8			; 0x01C0
+	align 8			; 0x0190
 	jmp os_smp_numcores
 	align 8
 	dq os_smp_numcores
 
-	align 8			; 0x01D0
-	jmp os_file_get_size
-	align 8
-	dq os_file_get_size
-
-	align 8			; 0x01E0
+	align 8			; 0x01A0
 	jmp os_ethernet_avail
 	align 8
 	dq os_ethernet_avail
 
-	align 8			; 0x01F0
+	align 8			; 0x01B0
+	jmp os_ethernet_tx
+	align 8
+	dq os_ethernet_tx
+
+	align 8			; 0x01C0
+	jmp os_ethernet_rx
+	align 8
+	dq os_ethernet_rx
+
+	align 8			; 0x01D0
 	jmp os_ethernet_tx_raw
 	align 8
 	dq os_ethernet_tx_raw
 
+	align 8			; 0x01E0
+	jmp os_delay
+	align 8
+	dq os_delay
+
+	align 8			; 0x01F0
+	jmp os_move_cursor
+	align 8
+	dq os_move_cursor
+
 	align 8			; 0x0200
-	jmp os_show_statusbar
-	align 8
-	dq os_show_statusbar
-
-	align 8			; 0x0210
-	jmp os_hide_statusbar
-	align 8
-	dq os_hide_statusbar
-
-	align 8			; 0x0220
 	jmp os_screen_update
 	align 8
 	dq os_screen_update
 
-	align 8			; 0x0230
+	align 8			; 0x0210
 	jmp os_print_chars
 	align 8
 	dq os_print_chars
 
-	align 8			; 0x0240
+	align 8			; 0x0220
 	jmp os_print_chars_with_color
 	align 8
 	dq os_print_chars_with_color
@@ -215,53 +197,15 @@ start:
 
 	call init_net			; Initialize the network
 
-%ifidn FS,FAT16
-	call os_fat16_setup
-%endif
-%ifidn FS,BMFS
-	call os_bmfs_setup
-%endif
-
 	call os_screen_clear		; Clear screen and display cursor
-
-	cmp byte [os_NetEnabled], 1	; Print network details (if a supported NIC was initialized)
-	jne start_no_network
-	mov ax, 0x0013
-	call os_move_cursor
-	mov rsi, networkmsg
-	call os_print_string
-	call os_debug_dump_MAC
-start_no_network:
 
 	mov ax, 0x0016			; Print the "ready" message
 	call os_move_cursor
 	mov rsi, readymsg
 	call os_print_string
 
-	rdtsc				; Print the time taken to start up (from protected mode)
-	shl rdx, 32
-	add rax, rdx
-	sub rax, [pure64_starttime]
-	mov rdi, os_temp_string
-	mov rsi, os_temp_string
-	call os_int_to_string
-	call os_print_string
-
-	mov rsi, readymsg_end
-	call os_print_string
-
 	mov ax, 0x0018			; Set the hardware cursor to the bottom left-hand corner
 	call os_move_cursor
-
-	mov rsi, startupapp		; Look for a file called startup.app
-	mov rdi, programlocation	; We load the program to this location in memory (currently 0x00200000 : at the 2MB mark)
-	call os_file_read		; Read the file into memory
-	jc ap_clear			; If carry is set then the file was not found
-
-	xchg bx, bx
-	mov rax, programlocation	; 0x00200000 : at the 2MB mark
-	xor rbx, rbx			; No arguements required (The app can get them with os_get_argc and os_get_argv)
-	call os_smp_enqueue		; Queue the application to run on the next available core
 
 	; Fall through to ap_clear as align fills the space with No-Ops
 	; At this point the BSP is just like one of the AP's
@@ -318,7 +262,7 @@ ap_spin:				; Spin until there is a workload in the queue
 	call os_smp_dequeue		; Try to pull a workload out of the queue
 	jnc ap_process			; Carry clear if successful, jump to ap_process
 
-ap_halt:				; Halt until a wakup call is received
+ap_halt:				; Halt until a wakeup call is received
 	hlt				; If carry was set we fall through to the HLT
 	jmp ap_spin			; Try again
 
@@ -376,20 +320,20 @@ noargs:
 
 	call rax			; Run the code
 
+	; Check task list and restart CLI if needed
+
 	jmp ap_clear			; Reset the stack, clear the registers, and wait for something else to work on
 
 
 ; Includes
-%include "init_64.asm"
-%include "init_pci.asm"
-%include "init_net.asm"
+%include "init.asm"
 %include "syscalls.asm"
 %include "drivers.asm"
 %include "interrupt.asm"
-%include "cli.asm"
+;%include "cli.asm"
 %include "sysvar.asm"			; Include this last to keep the read/write variables away from the code
 
-;times 16384-($-$$) db 0			; Set the compiled kernel binary to at least this size in bytes
+times 16384-($-$$) db 0			; Set the compiled kernel binary to at least this size in bytes
 
 ; =============================================================================
 ; EOF

@@ -1,6 +1,6 @@
 ; =============================================================================
 ; BareMetal -- a 64-bit OS written in Assembly for x86-64 systems
-; Copyright (C) 2008-2012 Return Infinity -- see LICENSE.TXT
+; Copyright (C) 2008-2013 Return Infinity -- see LICENSE.TXT
 ;
 ; Driver Includes
 ; =============================================================================
@@ -9,42 +9,26 @@ align 16
 db 'DEBUG: DRIVERS  '
 align 16
 
-%ifidn HDD,PIO
-%include "drivers/storage/pio.asm"
-%else
-%include "drivers/storage/ahci.asm"
-%endif
 
-%ifidn FS,FAT16
-%include "drivers/filesystems/fat16.asm"
-%else
+%include "drivers/storage/ahci.asm"
+
 %include "drivers/filesystems/bmfs.asm"
-%endif
 
 %include "drivers/pci.asm"
 
-%ifndef DISABLE_RTL8169
 %include "drivers/net/rtl8169.asm"
-%endif
-
-%ifndef DISABLE_I8254X
 %include "drivers/net/i8254x.asm"
-%endif
-;%include "drivers/net/bcm57xx.asm"
 
 
 NIC_DeviceVendor_ID:			; The supported list of NICs
 ; The ID's are Device/Vendor
 
-%ifndef DISABLE_RTL8169
 ; Realtek 816x/811x Gigabit Ethernet
 dd 0x8169FFFF
 dd 0x816710EC		; 8110SC/8169SC
 dd 0x816810EC		; 8111/8168B
 dd 0x816910EC		; 8169
-%endif
 
-%ifndef DISABLE_I8254X
 ; Intel 8254x Gigabit Ethernet
 dd 0x8254FFFF
 dd 0x10008086		; 82542 (Fiber)
@@ -85,31 +69,9 @@ dd 0x107c8086		; 82541PI
 dd 0x10b58086		; 82546GB (Copper)
 dd 0x11078086		; 82544EI
 dd 0x11128086		; 82544GC
-%endif
-
-%ifndef DISABLE_BCM57XX
-; Broadcom BCM57xx Gigabit Ethernet
-dd 0x5700FFFF
-dd 0x000312AE		; 5700, Broadcom
-dd 0x164514E4		; 5701
-dd 0x16A614E4		; 5702
-dd 0x16A714E4		; 5703C, 5703S
-dd 0x164814E4		; 5704C
-dd 0x164914E4		; 5704S
-dd 0x165D14E4		; 5705M
-dd 0x165314E4		; 5705
-dd 0x03ED173B		; 5788
-dd 0x167714E4		; 5721, 5751
-dd 0x167D14E4		; 5751M
-dd 0x160014E4		; 5752
-dd 0x160114E4		; 5752M
-dd 0x166814E4		; 5714C
-dd 0x166914E4		; 5714S
-dd 0x167814E4		; 5715C
-dd 0x167914E4		; 5715S
-%endif
 
 dq 0x0000000000000000	; End of list
+
 
 ; =============================================================================
 ; EOF

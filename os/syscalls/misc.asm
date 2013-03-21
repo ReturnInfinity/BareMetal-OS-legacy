@@ -1,6 +1,6 @@
 ; =============================================================================
 ; BareMetal -- a 64-bit OS written in Assembly for x86-64 systems
-; Copyright (C) 2008-2012 Return Infinity -- see LICENSE.TXT
+; Copyright (C) 2008-2013 Return Infinity -- see LICENSE.TXT
 ;
 ; Misc Functions
 ; =============================================================================
@@ -22,7 +22,7 @@ system_status:
 
 	; Display the dark grey bar
 	mov ax, 0x8720			; 0x87 for dark grey background/white foreground, 0x20 for space (blank) character
-	mov rdi, os_screen
+	mov rdi, os_screen		; Draw to screen buffer
 	push rdi
 	mov rcx, 80
 	rep stosw
@@ -37,34 +37,33 @@ system_status:
 	add rdi, 2			; Skip to the next char
 
 	xor ecx, ecx
+	xor edx, edx
 	mov rsi, cpustatus
 system_status_cpu_next:
 	cmp cx, 256
-	je system_status_cpu_done
+	je system_status_cpu_calc
 	add rcx, 1
 	lodsb
 	bt ax, 0			; Check to see if the Core is Present
 	jnc system_status_cpu_next	; If not then check the next
-	ror ax, 8			; Exchange AL and AH
-	mov al, 0xFE			; Ascii block character
-	stosb				; Put the block character on the screen
-	rol ax, 8			; Exchange AL and AH
-	bt ax, 1			; Check to see if the Core is Ready or Busy
-	jc system_status_cpu_busy	; Jump if it is Busy.. otherwise fall through for Idle
-	mov al, 0x80			; Black on Dark Gray (Idle Core)
-	jmp system_status_cpu_color
+	bt ax, 1
+	jnc system_status_cpu_next
+	add edx, 1
+	jmp system_status_cpu_next
 
-system_status_cpu_busy:
-	mov rax, [os_ClockCounter]
-	bt rax, 0			; Check bit 0. Store bit 0 in CF
-	jc system_status_cpu_flash_hi
-	mov al, 0x87			; Light Gray on Dark Gray (Active Core Low)
-	jmp system_status_cpu_color
-system_status_cpu_flash_hi:
-	mov al, 0x8F			; White on Dark Gray (Active Core High)
-system_status_cpu_color:
-	stosb				; Store the color (attribute) byte
-	jmp system_status_cpu_next	; Check the next Core
+system_status_cpu_calc:
+	mov rax, rdx			; Cores in use
+
+	call system_status_print_string
+
+	mov al, '/'
+	stosb
+	add rdi, 1
+
+	xor eax, eax
+	mov ax, word [os_NumCores]	; Total system memory in MiBs
+
+	call system_status_print_string
 
 system_status_cpu_done:
 	mov al, ']'
@@ -80,48 +79,37 @@ system_status_cpu_done:
 	stosq
 	add rdi, 2			; Skip to the next char
 
-	call os_mem_get_free		; Store number of free 2 MiB pages in RCX
-	xor rax, rax
-	mov ax, word [os_MemAmount]
-	shr ax, 1			; Divide actual memory by 2 (RAX now holds total pages)
-	push rax
-	sub rax, rcx			; RAX holds inuse pages (ex 6)
-	pop rcx				; RCX holds total pages (ex 512)
-	shr rcx, 3			; Quickly divide RCX by 8, RCX now holds pages/block (ex 64)
-	xor rdx, rdx
-	div rcx				; Divide inuse pages by pages/block
-	mov rcx, rax
-	mov ax, 8
-	cmp cx, 0
-	jne notzero
-	add cx, 1
-notzero:
-	sub ax, cx
-	push rax
+	; Calculate % of memory that is in use
+	call os_mem_get_free		; Free system memory in 2 MiB pages
+	shl rcx, 1			; Quick multiply by 2 to get MiBs
+	xor eax, eax
+	mov eax, dword [os_MemAmount]	; Total system memory in MiBs
+	push rax			; Save total MiBs
+	sub rax, rcx			; Get MiB's in use
 
-system_status_mem_used:
-	mov al, 0xFE			; Ascii block character
-	stosb				; Put the block character on the screen
-	mov al, 0x8F			; Light Gray on Blue
-	stosb				; Put the block character on the screen
-	sub rcx, 1
-	jrcxz system_status_mem_used_finish
-	jmp system_status_mem_used
+	call system_status_print_string
 
-system_status_mem_used_finish:
+	mov al, '/'
+	stosb
+	add rdi, 1
 
-	pop rcx
-system_status_mem_free:
-	jrcxz system_status_mem_finish
-	mov al, 0xFE			; Ascii block character
-	stosb				; Put the block character on the screen
-	mov al, 0x80			; Light Gray on Blue
-	stosb				; Put the block character on the screen
-	sub rcx, 1
-	jrcxz system_status_mem_finish
-	jmp system_status_mem_free
+	pop rax				; Restore total MiBs
+
+	call system_status_print_string
 
 system_status_mem_finish:
+	mov al, ' '
+	stosb
+	add rdi, 1
+	mov al, 'M'
+	stosb
+	add rdi, 1
+	mov al, 'i'
+	stosb
+	add rdi, 1
+	mov al, 'B'
+	stosb
+	add rdi, 1	
 	mov al, ']'
 	stosb
 	add rdi, 1
@@ -213,6 +201,22 @@ headernext:
 	pop rdi
 	pop rsi
 	ret
+
+system_status_print_string:
+	push rdi
+	mov rdi, os_temp
+	mov rsi, rdi
+	call os_int_to_string
+	pop rdi
+system_status_print_string_nextchar:
+	lodsb
+	cmp al, 0
+	je system_status_print_string_finish
+	stosb
+	add rdi, 1
+	jmp system_status_print_string_nextchar
+system_status_print_string_finish:
+	ret
 ; -----------------------------------------------------------------------------
 
 
@@ -234,103 +238,6 @@ os_delay_loop:
 
 	pop rax
 	pop rcx
-	ret
-; -----------------------------------------------------------------------------
-
-
-; -----------------------------------------------------------------------------
-; os_seed_random -- Seed the RNG based on the current date and time
-; IN:	Nothing
-; OUT:	All registers preserved
-os_seed_random:
-	push rdx
-	push rbx
-	push rax
-
-	xor rbx, rbx
-	mov al, 0x09		; year
-	out 0x70, al
-	in al, 0x71
-	mov bl, al
-	shl rbx, 8
-	mov al, 0x08		; month
-	out 0x70, al
-	in al, 0x71
-	mov bl, al
-	shl rbx, 8
-	mov al, 0x07		; day
-	out 0x70, al
-	in al, 0x71
-	mov bl, al
-	shl rbx, 8
-	mov al, 0x04		; hour
-	out 0x70, al
-	in al, 0x71
-	mov bl, al
-	shl rbx, 8
-	mov al, 0x02		; minute
-	out 0x70, al
-	in al, 0x71
-	mov bl, al
-	shl rbx, 8
-	mov al, 0x00		; second
-	out 0x70, al
-	in al, 0x71
-	mov bl, al
-	shl rbx, 16
-	rdtsc			; Read the Time Stamp Counter in EDX:EAX
-	mov bx, ax		; Only use the last 2 bytes
-
-	mov [os_RandomSeed], rbx	; Seed will be something like 0x091229164435F30A
-
-	pop rax
-	pop rbx
-	pop rdx
-	ret
-; -----------------------------------------------------------------------------
-
-
-; -----------------------------------------------------------------------------
-; os_get_random -- Return a random integer
-; IN:	Nothing
-; OUT:	RAX = Random number
-;	All other registers preserved
-os_get_random:
-	push rdx
-	push rbx
-
-	mov rax, [os_RandomSeed]
-	mov rdx, 0x23D8AD1401DE7383	; The magic number (random.org)
-	mul rdx				; RDX:RAX = RAX * RDX
-	mov [os_RandomSeed], rax
-
-	pop rbx
-	pop rdx
-	ret
-; -----------------------------------------------------------------------------
-
-
-; -----------------------------------------------------------------------------
-; os_get_random_integer -- Return a random integer between Low and High (incl)
-; IN:	RAX = Low integer
-;	RBX = High integer
-; OUT:	RCX = Random integer
-os_get_random_integer:
-	push rdx
-	push rbx
-	push rax
-
-	sub rbx, rax		; We want to look for a number between 0 and (High-Low)
-	call os_get_random
-	mov rdx, rbx
-	add rdx, 1
-	mul rdx
-	mov rcx, rdx
-
-	pop rax
-	pop rbx
-	pop rdx
-	add rcx, rax		; Add the low offset back
 	ret
 ; -----------------------------------------------------------------------------
 
@@ -399,6 +306,18 @@ os_hide_statusbar:
 os_show_statusbar:
 	mov byte [os_show_sysstatus], 1
 	ret
+; -----------------------------------------------------------------------------
+
+
+; -----------------------------------------------------------------------------
+; reboot -- Reboot the computer
+reboot:
+	in al, 0x64
+	test al, 00000010b		; Wait for an empty Input Buffer
+	jne reboot
+	mov al, 0xFE
+	out 0x64, al			; Send the reboot call to the keyboard controller
+	jmp reboot
 ; -----------------------------------------------------------------------------
 
 
