@@ -6,8 +6,103 @@
 ; =============================================================================
 
 align 16
-db 'DEBUG: STORAGE_AHCI   '
+db 'DEBUG: AHCI     '
 align 16
+
+
+; -----------------------------------------------------------------------------
+init_ahci:
+
+; Probe for an AHCI hard drive controller
+	xor ebx, ebx
+	xor ecx, ecx
+findcontroller:
+	cmp bx, 256			; Search up to 256 buses
+	je hdd_setup_err_noahci		; No AHCI controller detected
+	cmp cx, 256			; Up to 32 devices per bus
+	jne findcontroller_1
+	add bx, 1			; Next bus
+	xor ecx, ecx
+findcontroller_1:
+	mov dl, 2			; We want the Class/Device code
+	call os_pci_read_reg
+	add cx, 1			; Increment the device number
+	shr rax, 16
+	cmp ax, 0xFFFF			; Non-existant device
+	je findcontroller
+	cmp ax, 0x0106			; Mass storage device, SATA
+	jne findcontroller
+	sub cl, 1
+	mov dl, 9
+	xor eax, eax
+	call os_pci_read_reg		; BAR5 (AHCI Base Address Register)
+	mov [ahci_base], rax
+
+; Basic config of the controller, port 0
+	mov rsi, rax			; RSI holds the ABAR
+	mov rdi, rsi
+
+; Search the implemented ports for a drive
+	mov eax, [rsi+0x0C]		; PI – Ports Implemented
+	mov edx, eax
+	xor ecx, ecx
+	mov ebx, 0x128			; Offset to Port 0 Serial ATA Status
+nextport:
+	bt edx, 0			; Valid port?
+	jnc nodrive
+	mov eax, [rsi+rbx]
+	cmp eax, 0
+	je nodrive
+	jmp founddrive
+
+nodrive:
+	add ecx, 1
+	shr edx, 1
+	add ebx, 0x80			; Each port has a 128 byte memory space
+	cmp ecx, 32
+	je hdd_setup_err_nodisk
+	jmp nextport
+
+; Configure the first port found with a drive attached
+founddrive:
+	mov [ahci_port], ecx
+	mov rdi, rsi
+	add rdi, 0x100			; Offset to port 0
+	push rcx			; Save port number
+	shl rcx, 7			; Quick multiply by 0x80
+	add rdi, rcx
+	pop rcx				; Restore port number
+	mov rax, ahci_cmdlist		; 1024 bytes per port
+	stosd				; Offset 00h: PxCLB – Port x Command List Base Address
+	xor eax, eax
+	stosd				; Offset 04h: PxCLBU – Port x Command List Base Address Upper 32-bits
+	mov rax, ahci_cmdlist + 0x1000	; 256 or 4096 bytes per port
+	stosd				; Offset 08h: PxFB – Port x FIS Base Address
+	xor eax, eax
+	stosd				; Offset 0Ch: PxFBU – Port x FIS Base Address Upper 32-bits
+	stosd				; Offset 10h: PxIS – Port x Interrupt Status
+	stosd				; Offset 14h: PxIE – Port x Interrupt Enable
+
+	; Query drive
+;	mov rdi, 0x200000
+;	call iddrive
+;	mov rsi, 0x200000
+;	mov eax, [rsi+200]		; Max LBA Extended
+;	shr rax, 11			; rax = rax * 512 / 1048576	MiB
+;;	shr rax, 21			; rax = rax * 512 / 1073741824	GiB
+;	mov [hd1_size], eax		; in mebibytes (MiB)
+;	mov rdi, hdtempstring
+;	call os_int_to_string
+;
+;	; Found a bootable drive
+	mov byte [os_DiskEnabled], 0x01
+
+	ret
+
+hdd_setup_err_noahci:
+hdd_setup_err_nodisk:
+	ret
+; -----------------------------------------------------------------------------
 
 
 ; -----------------------------------------------------------------------------

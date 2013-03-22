@@ -74,7 +74,7 @@ sn:			equ os_SystemVariables + 136	; IPv4 Subnet
 gw:			equ os_SystemVariables + 140	; IPv4 Gateway
 os_HPETRate:		equ os_SystemVariables + 144
 os_MemAmount:		equ os_SystemVariables + 148	; in MiB
-sata_port:		equ os_SystemVariables + 152
+ahci_port:		equ os_SystemVariables + 152
 
 ; DW - Starting at offset 256, increments by 2
 os_NumCores:		equ os_SystemVariables + 258
@@ -84,7 +84,6 @@ os_QueueLen:		equ os_SystemVariables + 264
 os_QueueLock:		equ os_SystemVariables + 266	; Bit 0 clear for unlocked, set for locked.
 os_NetIOAddress:	equ os_SystemVariables + 268
 os_EthernetBusyLock:	equ os_SystemVariables + 270
-ata_port:		equ os_SystemVariables + 272
 
 ; DB - Starting at offset 384, increments by 1
 cursorx:		equ os_SystemVariables + 384	; cursor row location
@@ -101,6 +100,7 @@ os_NetActivity_TX:	equ os_SystemVariables + 394
 os_NetActivity_RX:	equ os_SystemVariables + 395
 os_EthernetBuffer_C1:	equ os_SystemVariables + 396	; Counter 1 for the Ethernet RX Ring Buffer
 os_EthernetBuffer_C2:	equ os_SystemVariables + 397	; Counter 2 for the Ethernet RX Ring Buffer
+os_DiskEnabled:		equ os_SystemVariables + 398
 
 
 cpuqueuemax:		dw 256

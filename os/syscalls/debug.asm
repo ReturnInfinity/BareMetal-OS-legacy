@@ -47,7 +47,7 @@ os_debug_dump_reg_next:
 	mov bl, 5					; Each string is 5 bytes
 	mul bl						; AX = BL x AL
 	add rsi, rax					; Add the offset to get to the correct string
-	call os_print_string				; Print the register name
+	call os_output					; Print the register name
 	pop rax						; Pop the register from the stack
 	call os_debug_dump_rax				; Print the hex string value of RAX
 	inc byte [os_debug_dump_reg_stage]
@@ -73,9 +73,7 @@ os_debug_dump_mem:
 	push rsi
 	push rcx		; counter
 	push rdx		; total number of bytes to display
-	push rbx		; color attribute
 	push rax
-	mov bl, 0x07		; Default of light grey on black
 
 	cmp rcx, 0
 	je os_debug_dump_mem_done
@@ -96,29 +94,27 @@ os_debug_dump_mem_print_address:
 	call os_debug_dump_rax
 	push rsi
 	mov rsi, divider
-	call os_print_string
+	call os_output
 	pop rsi
 	xor rcx, rcx		; Clear the counter
 
 os_debug_dump_mem_next_byte_hex:
 	lodsb
-	call os_print_char_hex_with_color
-	xor bl, 10000000b	; Toggle between light grey on black and light grey on dark grey
+	call os_debug_dump_al
 	add rcx, 1
 	cmp rcx, 16
 	jne os_debug_dump_mem_next_byte_hex
 
 	push rsi
 	mov rsi, divider
-	call os_print_string
+	call os_output
 	pop rsi
 	sub rsi, 0x10
 	xor rcx, rcx		; Clear the counter
 
 os_debug_dump_mem_next_byte_ascii:
 	lodsb
-	call os_print_char_with_color
-	xor bl, 10000000b	; Toggle between light grey on black and light grey on dark grey
+	call os_output_char
 	add rcx, 1
 	cmp rcx, 16
 	jne os_debug_dump_mem_next_byte_ascii
@@ -131,7 +127,6 @@ os_debug_dump_mem_next_byte_ascii:
 
 os_debug_dump_mem_done:
 	pop rax
-	pop rbx
 	pop rcx
 	pop rdx
 	pop rsi
@@ -147,26 +142,38 @@ divider: db ' | ', 0
 ; OUT:	Nothing, all registers preserved
 os_debug_dump_rax:
 	ror rax, 56
-	call os_print_char_hex
+	call os_debug_dump_al
 	rol rax, 8
-	call os_print_char_hex
+	call os_debug_dump_al
 	rol rax, 8
-	call os_print_char_hex
+	call os_debug_dump_al
 	rol rax, 8
-	call os_print_char_hex
+	call os_debug_dump_al
 	rol rax, 32
 os_debug_dump_eax:
 	ror rax, 24
-	call os_print_char_hex
+	call os_debug_dump_al
 	rol rax, 8
-	call os_print_char_hex
+	call os_debug_dump_al
 	rol rax, 16
 os_debug_dump_ax:
 	ror rax, 8
-	call os_print_char_hex
+	call os_debug_dump_al
 	rol rax, 8
 os_debug_dump_al:
-	call os_print_char_hex
+	push rbx
+	push rax
+	mov rbx, hextable
+	push rax	; save rax for the next part
+	shr al, 4	; we want to work on the high part so shift right by 4 bits
+	xlatb
+	call os_output_char
+	pop rax
+	and al, 0x0f	; we want to work on the low part so clear the high part
+	xlatb
+	call os_output_char
+	pop rax
+	pop rbx
 	ret
 ; -----------------------------------------------------------------------------
 

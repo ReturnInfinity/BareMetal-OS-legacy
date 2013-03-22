@@ -41,7 +41,7 @@ os_move_cursor:
 
 
 ; -----------------------------------------------------------------------------
-; os_inc_cursor -- Increment the hardware cursor by one
+; os_inc_cursor -- Increment the cursor by one
 ;  IN:	Nothing
 ; OUT:	All registers preserved
 os_inc_cursor:
@@ -70,7 +70,7 @@ os_inc_cursor_done:
 
 
 ; -----------------------------------------------------------------------------
-; os_dec_cursor -- Decrement the hardware cursor by one
+; os_dec_cursor -- Decrement the cursor by one
 ;  IN:	Nothing
 ; OUT:	All registers preserved
 os_dec_cursor:
@@ -118,14 +118,14 @@ os_print_newline_done:
 
 
 ; -----------------------------------------------------------------------------
-; os_print_string -- Displays text
+; os_output -- Displays text
 ;  IN:	RSI = message location (zero-terminated string)
 ; OUT:	All registers perserved
-os_print_string:
+os_output:
 	push rcx
 
 	call os_string_length
-	call os_print_chars
+	call os_output_chars
 
 	pop rcx
 	ret
@@ -138,11 +138,11 @@ os_print_string:
 ;	BL  = color
 ; OUT:	All registers perserved
 ; This function uses the the os_print_string function to do the actual printing
-os_print_string_with_color:
+os_output_with_color:
 	push rcx
 
 	call os_string_length
-	call os_print_chars_with_color
+	call os_output_chars_with_color
 
 	pop rcx
 	ret
@@ -153,7 +153,7 @@ os_print_string_with_color:
 ; os_print_char -- Displays a char
 ;  IN:	AL  = char to display
 ; OUT:	All registers perserved
-os_print_char:
+os_output_char:
 	push rdi
 	push rsi
 	push rax
@@ -178,26 +178,11 @@ os_print_char_worker:
 
 
 ; -----------------------------------------------------------------------------
-; os_print_char_with_color -- Displays a char with color
-;  IN:	AL  = char to display
-;	BL  = color
-; OUT:	All registers perserved
-os_print_char_with_color:
-	push rdi
-	push rsi
-	push rax
-
-	mov ah, bl			; Copy the color attribute into AH
-	jmp os_print_char_worker
-; -----------------------------------------------------------------------------
-
-
-; -----------------------------------------------------------------------------
-; os_print_chars -- Displays text
+; os_output_chars -- Displays text
 ;  IN:	RSI = message location (A string, not zero-terminated)
 ;	RCX = number of chars to print
 ; OUT:	All registers perserved
-os_print_chars:
+os_output_chars:
 	push rdi
 	push rsi
 	push rcx
@@ -206,36 +191,36 @@ os_print_chars:
 	cld				; Clear the direction flag.. we want to increment through the string
 	mov ah, 0x07			; Store the attribute into AH so STOSW can be used later on
 
-os_print_chars_nextchar:
-	jrcxz os_print_chars_done
+os_output_chars_nextchar:
+	jrcxz os_output_chars_done
 	sub rcx, 1
 	lodsb				; Get char from string and store in AL
 	cmp al, 13			; Check if there was a newline character in the string
-	je os_print_chars_newline	; If so then we print a new line
+	je os_output_chars_newline	; If so then we print a new line
 	cmp al, 10			; Check if there was a newline character in the string
-	je os_print_chars_newline	; If so then we print a new line
+	je os_output_chars_newline	; If so then we print a new line
 	mov rdi, [screen_cursor_offset]
 	stosw				; Write the character and attribute with one call
 	call os_inc_cursor
-	jmp os_print_chars_nextchar
+	jmp os_output_chars_nextchar
 
-os_print_chars_newline:
+os_output_chars_newline:
 	mov al, [rsi]
 	cmp al, 10
-	je os_print_chars_newline_skip_LF
+	je os_output_chars_newline_skip_LF
 	call os_print_newline
-	jmp os_print_chars_nextchar
+	jmp os_output_chars_nextchar
 
-os_print_chars_newline_skip_LF:
+os_output_chars_newline_skip_LF:
 	cmp rcx, 0
-	je os_print_chars_newline_skip_LF_nosub
+	je os_output_chars_newline_skip_LF_nosub
 	sub rcx, 1
-os_print_chars_newline_skip_LF_nosub:
+os_output_chars_newline_skip_LF_nosub:
 	add rsi, 1
 	call os_print_newline
-	jmp os_print_chars_nextchar	
+	jmp os_output_chars_nextchar	
 
-os_print_chars_done:
+os_output_chars_done:
 	call os_screen_update
 
 	pop rax
@@ -253,7 +238,7 @@ os_print_chars_done:
 ;	RCX = number of chars to print
 ; OUT:	All registers perserved
 ; This function uses the the os_print_chars function to do the actual printing
-os_print_chars_with_color:
+os_output_chars_with_color:
 	push rdi
 	push rsi
 	push rcx
@@ -262,69 +247,7 @@ os_print_chars_with_color:
 	cld				; Clear the direction flag.. we want to increment through the string
 	mov ah, bl			; Store the attribute into AH so STOSW can be used later on
 
-	jmp os_print_chars_nextchar	; Use the logic from os_print_chars
-; -----------------------------------------------------------------------------
-
-
-; -----------------------------------------------------------------------------
-; os_print_char_hex -- Displays a char in hex mode
-;  IN:	AL  = char to display
-; OUT:	All registers perserved
-os_print_char_hex:
-	push rbx
-	push rax
-
-	mov rbx, hextable
-
-	push rax	; save rax for the next part
-	shr al, 4	; we want to work on the high part so shift right by 4 bits
-	xlatb
-	call os_print_char
-
-	pop rax
-	and al, 0x0f	; we want to work on the low part so clear the high part
-	xlatb
-	call os_print_char
-
-	pop rax
-	pop rbx
-	ret
-; -----------------------------------------------------------------------------
-
-
-; -----------------------------------------------------------------------------
-; os_print_char_hex_with_color -- Displays a char in hex mode
-;  IN:	AL  = char to display
-;	BL  = color
-; OUT:	All registers perserved
-os_print_char_hex_with_color:
-	push rcx
-	push rbx
-	push rax
-
-	mov cl, bl
-	mov rbx, hextable
-
-	push rax	; save rax for the next part
-	shr al, 4	; we want to work on the high part so shift right by 4 bits
-	xlatb
-	push rbx
-	mov bl, cl
-	call os_print_char_with_color
-	pop rbx
-
-	pop rax
-	and al, 0x0f	; we want to work on the low part so clear the high part
-	xlatb
-	push rbx
-	mov bl, cl
-	call os_print_char_with_color
-	pop rbx
-
-	pop rax
-	pop rbx
-	pop rcx
-	ret
+	jmp os_output_chars_nextchar	; Use the logic from os_print_chars
 ; -----------------------------------------------------------------------------
 
 

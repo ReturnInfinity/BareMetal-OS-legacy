@@ -26,29 +26,30 @@
 // =============================================================================
 
 
-void b_print_string(const char *str)
+void b_output(const char *str)
 {
 	asm volatile ("call *0x00100018" : : "S"(str)); // Make sure source register (RSI) has the string address (str)
 }
 
-void b_print_char(char chr)
+void b_output_chars(const char *str, unsigned long nbr)
 {
-	asm volatile ("call *0x00100028" : : "a"(chr));
+	asm volatile ("call *0x00100028" : : "S"(chr), "c"(nbr));
 }
 
-unsigned long b_input_string(unsigned char *str, unsigned long nbr)
+unsigned long b_input(unsigned char *str, unsigned long nbr)
 {
 	unsigned long len;
 	asm volatile ("call *0x00100038" : "=c" (len) : "c"(nbr), "D"(str));
 	return len;
 }
 
-unsigned char b_input_get_key(void)
+unsigned char b_input_key(void)
 {
 	unsigned char chr;
 	asm volatile ("call *0x00100048" : "=a" (chr));
 	return chr;
 }
+
 
 void b_file_create(const char *name, unsigned long size)
 {
@@ -192,9 +193,9 @@ unsigned long b_smp_numcores(void)
 
 unsigned long b_file_get_size(const char *name)
 {
-    unsigned long tlong;
-    asm volatile ("call *0x001001D8" : "=c"(tlong) : "S"(name));
-    return tlong;
+	unsigned long tlong;
+	asm volatile ("call *0x001001D8" : "=c"(tlong) : "S"(name));
+	return tlong;
 }
 
 unsigned long b_ethernet_avail()
@@ -224,15 +225,6 @@ void b_screen_update(void)
 	asm volatile ("call *0x00100228");
 }
 
-void b_print_chars(const char *str, unsigned long len)
-{
-	asm volatile ("call *0x00100238" : : "S"(str), "c"(len));
-}
-
-void b_print_chars_with_color(const char *str, unsigned long len, unsigned char clr)
-{
-	asm volatile ("call *0x00100248" : : "S"(str), "c"(len), "b"(clr));
-}
 
 // =============================================================================
 // EOF

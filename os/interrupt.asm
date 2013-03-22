@@ -14,9 +14,9 @@ align 16
 ; Default exception handler
 exception_gate:
 	mov rsi, int_string00
-	call os_print_string
+	call os_output
 	mov rsi, exc_string
-	call os_print_string
+	call os_output
 	jmp $				; Hang
 ; -----------------------------------------------------------------------------
 
@@ -382,14 +382,14 @@ exception_gate_main:
 	call os_print_newline
 	mov bl, 0x0F
 	mov rsi, int_string00
-	call os_print_string_with_color
+	call os_output_with_color
 	call os_smp_get_id		; Get the local CPU ID and print it
 	mov rdi, os_temp_string
 	mov rsi, rdi
 	call os_int_to_string
-	call os_print_string_with_color
+	call os_output_with_color
 	mov rsi, int_string01
-	call os_print_string_with_color
+	call os_output_with_color
 	mov rsi, exc_string00
 	pop rax
 	and rax, 0x00000000000000FF	; Clear out everything in RAX except for AL
@@ -399,7 +399,7 @@ exception_gate_main:
 	add rsi, rax			; Use the value in RAX as an offset to get to the right message
 	pop rax
 	mov bl, 0x0F
-	call os_print_string_with_color
+	call os_output_with_color
 	call os_print_newline
 	pop rsi
 	pop rdi
@@ -408,7 +408,7 @@ exception_gate_main:
 	call os_print_newline
 	call os_debug_dump_reg
 	mov rsi, rip_string
-	call os_print_string
+	call os_output
 	push rax
 	mov rax, [rsp+0x08] 	; RIP of caller
 	call os_debug_dump_rax
@@ -418,7 +418,7 @@ exception_gate_main:
 	push rcx
 	push rsi
 	mov rsi, stack_string
-	call os_print_string
+	call os_output
 	mov rsi, rsp
 	add rsi, 0x18
 	mov rcx, 4
@@ -426,7 +426,7 @@ next_stack:
 	lodsq
 	call os_debug_dump_rax
 	mov al, ' '
-	call os_print_char
+	call os_output_char
 ;	call os_print_char
 ;	call os_print_char
 ;	call os_print_char

@@ -297,7 +297,7 @@ system_failure:
 	call os_move_cursor
 	mov rsi, memory_message
 	mov bl, 0xF0
-	call os_print_string_with_color
+	call os_output_with_color
 system_failure_hang:
 	hlt
 	jmp system_failure_hang

@@ -153,6 +153,20 @@ rx_idle:
 	add rdi, 1
 system_status_no_network:
 
+	; Display disk status
+	cmp byte [os_DiskEnabled], 1	; Show disk activity (if a supported disk was initialized)
+	jne system_status_no_disk
+	add rdi, 4
+	mov al, '['
+	stosb
+	add rdi, 1
+	mov rax, 0x8F3A8F648F648F68	; ':ddh'
+	stosq
+	mov al, ']'
+	stosb
+	add rdi, 1
+system_status_no_disk:
+
 	; Display the RTC pulse
 	add rdi, 4
 	mov al, '['

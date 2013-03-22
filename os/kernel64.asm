@@ -18,19 +18,19 @@ kernel_start:
 	db 'BAREMETAL'
 
 	align 16		; 0x0010
-	jmp os_print_string	; Jump to function
+	jmp os_output		; Jump to function
 	align 8
-	dq os_print_string	; Memory address of function
+	dq os_output		; Memory address of function
 
 	align 8			; 0x0020
-	jmp os_print_char
+	jmp os_output_chars
 	align 8
-	dq os_print_char
+	dq os_output_chars
 
 	align 8			; 0x0030
-	jmp os_input_string
+	jmp os_input
 	align 8
-	dq os_input_string
+	dq os_input
 
 	align 8			; 0x0040
 	jmp os_input_key
@@ -143,9 +143,9 @@ kernel_start:
 	dq os_smp_numcores
 
 	align 8			; 0x01A0
-	jmp os_ethernet_avail
+	jmp os_ethernet_status
 	align 8
-	dq os_ethernet_avail
+	dq os_ethernet_status
 
 	align 8			; 0x01B0
 	jmp os_ethernet_tx
@@ -177,16 +177,6 @@ kernel_start:
 	align 8
 	dq os_screen_update
 
-	align 8			; 0x0210
-	jmp os_print_chars
-	align 8
-	dq os_print_chars
-
-	align 8			; 0x0220
-	jmp os_print_chars_with_color
-	align 8
-	dq os_print_chars_with_color
-
 
 align 16
 
@@ -195,6 +185,8 @@ start:
 
 	call init_pci
 
+	call init_hdd			; Initialize the disk
+
 	call init_net			; Initialize the network
 
 	call os_screen_clear		; Clear screen and display cursor
@@ -202,10 +194,16 @@ start:
 	mov ax, 0x0016			; Print the "ready" message
 	call os_move_cursor
 	mov rsi, readymsg
-	call os_print_string
+	call os_output
 
 	mov ax, 0x0018			; Set the hardware cursor to the bottom left-hand corner
 	call os_move_cursor
+
+; DEV TESTING
+	mov rcx, 256
+	mov rsi, 0
+	call os_debug_dump_mem
+; DEV TESTING
 
 	; Fall through to ap_clear as align fills the space with No-Ops
 	; At this point the BSP is just like one of the AP's

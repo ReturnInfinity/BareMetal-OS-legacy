@@ -10,8 +10,8 @@ db 'DEBUG: INIT_HDD '
 align 16
 
 
-hdd_setup:
-
+init_hdd:
+	call init_ahci
 ret
 
 

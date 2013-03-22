@@ -21,10 +21,10 @@ align 16
 
 
 ; -----------------------------------------------------------------------------
-; os_ethernet_avail -- Check if Ethernet is available
+; os_ethernet_status -- Check if Ethernet is available
 ;  IN:	Nothing
 ; OUT:	RAX = MAC Address if Ethernet is enabled, otherwise 0
-os_ethernet_avail:
+os_ethernet_status:
 	push rsi
 	push rcx
 
