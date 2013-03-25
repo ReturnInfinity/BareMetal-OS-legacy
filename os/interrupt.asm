@@ -109,7 +109,6 @@ keyboard_done:
 align 16
 rtc:
 	push rsi
-	push rcx
 	push rax
 
 	cld				; Clear direction flag
@@ -120,22 +119,6 @@ rtc:
 	call system_status		; Show System Status information on screen
 rtc_no_sysstatus:
 
-	; Check to make sure that at least one core is running something
-;	cmp word [os_QueueLen], 0	; Check the length of the Queue
-;	jne rtc_end			; If it is greater than 0 then skip to the end
-;	mov rcx, 256
-;	mov rsi, cpustatus
-;nextcpu:
-;	lodsb
-;	dec rcx
-;	bt ax, 1			; Is bit 1 set? If so then the CPU is running a job
-;	jc rtc_end
-;	cmp rcx, 0
-;	jne nextcpu
-;	mov rax, os_command_line	; If nothing is running then restart the CLI
-;	call os_smp_enqueue
-
-rtc_end:
 	mov al, 0x0C			; Select RTC register C
 	out 0x70, al			; Port 0x70 is the RTC index, and 0x71 is the RTC data
 	in al, 0x71			; Read the value in register C
@@ -144,7 +127,6 @@ rtc_end:
 	mov dword [rsi+0xB0], eax
 
 	pop rax
-	pop rcx
 	pop rsi
 	iretq
 ; -----------------------------------------------------------------------------
@@ -169,32 +151,6 @@ network:
 	jnc network_end
 network_rx_as_well:
 	mov byte [os_NetActivity_RX], 1
-
-	; Max size of Ethernet packet: 1518
-	; + size: 2 = 1520 = 0x5F0
-	; Set each element size to 0x800 (2048). 262144 byte buffer / 2048 = room for 128 packets
-	; Deal with the received packet
-	; Get current offset in the ring buffer
-	mov rdi, os_EthernetBuffer
-	xor rax, rax
-	mov al, byte [os_EthernetBuffer_C2]
-	push rax			; Save the ring element value
-	shl rax, 11			; Quickly multiply RAX by 2048
-	add rdi, rax
-	push rdi
-	add rdi, 2
-	call os_ethernet_rx_from_interrupt
-	pop rdi
-	mov rax, rcx
-	stosw				; Store the size of the packet
-	; increment the offset in the ring buffer
-	pop rax				; Restore the ring element value
-	add al, 1
-	cmp al, 128			; Max element number is 127
-	jne network_rx_buffer_nowrap
-	xor al, al
-network_rx_buffer_nowrap:
-	mov byte [os_EthernetBuffer_C2], al
 	jmp network_end
 
 network_tx:

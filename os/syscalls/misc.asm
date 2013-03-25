@@ -32,9 +32,8 @@ system_status:
 	mov al, '['
 	stosb
 	add rdi, 1			; Skip the attribute byte
-	mov rax, 0x8F3A8F758F708F63	; ':upc'
+	mov rax, 0x8F208F758F708F63	; ' upc'
 	stosq
-	add rdi, 2			; Skip to the next char
 
 	xor ecx, ecx
 	xor edx, edx
@@ -75,9 +74,8 @@ system_status_cpu_done:
 	mov al, '['
 	stosb
 	add rdi, 1			; Skip the attribute byte
-	mov rax, 0x8F3A8F6D8F658F6D	; ':mem'
+	mov rax, 0x8F208F6D8F658F6D	; ' mem'
 	stosq
-	add rdi, 2			; Skip to the next char
 
 	; Calculate % of memory that is in use
 	call os_mem_get_free		; Free system memory in 2 MiB pages
@@ -98,18 +96,6 @@ system_status_cpu_done:
 	call system_status_print_string
 
 system_status_mem_finish:
-	mov al, ' '
-	stosb
-	add rdi, 1
-	mov al, 'M'
-	stosb
-	add rdi, 1
-	mov al, 'i'
-	stosb
-	add rdi, 1
-	mov al, 'B'
-	stosb
-	add rdi, 1	
 	mov al, ']'
 	stosb
 	add rdi, 1
@@ -121,9 +107,8 @@ system_status_mem_finish:
 	mov al, '['
 	stosb
 	add rdi, 1
-	mov rax, 0x8F3A8F748F658F6E	; ':ten'
+	mov rax, 0x8F208F748F658F6E	; ' ten'
 	stosq
-	add rdi, 2
 	mov al, 'T'
 	stosb
 	add rdi, 1
@@ -160,7 +145,7 @@ system_status_no_network:
 	mov al, '['
 	stosb
 	add rdi, 1
-	mov rax, 0x8F3A8F648F648F68	; ':ddh'
+	mov rax, 0x8F208F648F648F68	; ' ddh'
 	stosq
 	mov al, ']'
 	stosb
@@ -172,9 +157,8 @@ system_status_no_disk:
 	mov al, '['
 	stosb
 	add rdi, 1
-	mov rax, 0x8F3A8F638F748F72	; ':ctr'
+	mov rax, 0x8F208F638F748F72	; ' ctr'
 	stosq
-	add rdi, 2
 	mov al, 0xFE			; Ascii block character
 	stosb				; Put the block character on the screen
 	mov rax, [os_ClockCounter]
