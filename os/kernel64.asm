@@ -150,9 +150,8 @@ start:
 	call os_move_cursor
 
 ; DEV TESTING
-	mov rcx, 256
-	mov rsi, 0
-	call os_debug_dump_mem
+	mov rbx, hellofunc
+	mov [os_NetworkCallback], rbx
 ; DEV TESTING
 
 	; Fall through to ap_clear as align fills the space with No-Ops
@@ -272,6 +271,24 @@ noargs:
 
 	jmp ap_clear			; Reset the stack, clear the registers, and wait for something else to work on
 
+hellofunc:
+	push rsi
+	push rcx
+	push rax
+
+;	mov rsi, readymsg
+;	call os_output	
+	xor eax, eax
+	mov rsi, os_EthernetBuffer
+	lodsw
+	mov rcx, rax
+	call os_debug_dump_mem
+	call os_print_newline
+	
+	pop rax
+	pop rcx
+	pop rsi
+	ret
 
 ; Includes
 %include "init.asm"

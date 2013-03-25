@@ -140,7 +140,6 @@ network:
 	push rsi
 	push rcx
 	push rax
-	pushfq
 
 	cld				; Clear direction flag
 	call os_ethernet_ack_int	; Call the driver function to acknowledge the interrupt internally
@@ -151,6 +150,16 @@ network:
 	jnc network_end
 network_rx_as_well:
 	mov byte [os_NetActivity_RX], 1
+	mov rdi, os_EthernetBuffer	; Raw packet is copied here
+	push rdi
+	add rdi, 2
+	call os_ethernet_rx_from_interrupt
+	pop rdi
+	mov rax, rcx
+	stosw				; Store the size of the packet
+	cmp qword [os_NetworkCallback], 0	; Is it valid?
+	je network_end			; If not then bail out.
+	call [os_NetworkCallback]
 	jmp network_end
 
 network_tx:
@@ -164,7 +173,6 @@ network_end:
 	xor eax, eax
 	stosd
 
-	popfq
 	pop rax
 	pop rcx
 	pop rsi
@@ -180,10 +188,9 @@ ap_wakeup:
 	push rdi
 	push rax
 
-	cld				; Clear direction flag
 	mov rdi, [os_LocalAPICAddress]	; Acknowledge the IPI
 	add rdi, 0xB0
-	xor rax, rax
+	xor eax, eax
 	stosd
 
 	pop rax
@@ -196,12 +203,11 @@ ap_wakeup:
 ; Resets a CPU to execute ap_clear
 align 16
 ap_reset:
-	cld				; Clear direction flag
 	mov rax, ap_clear		; Set RAX to the address of ap_clear
 	mov [rsp], rax			; Overwrite the return address on the CPU's stack
 	mov rdi, [os_LocalAPICAddress]	; Acknowledge the IPI
 	add rdi, 0xB0
-	xor rax, rax
+	xor eax, eax
 	stosd
 	iretq				; Return from the IPI. CPU will execute code at ap_clear
 ; -----------------------------------------------------------------------------

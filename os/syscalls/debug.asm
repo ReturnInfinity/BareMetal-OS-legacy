@@ -126,6 +126,7 @@ os_debug_dump_mem_next_byte_ascii:
 	jmp os_debug_dump_mem_print_address
 
 os_debug_dump_mem_done:
+	call os_print_newline
 	pop rax
 	pop rcx
 	pop rdx

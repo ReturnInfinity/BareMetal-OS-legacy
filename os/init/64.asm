@@ -97,18 +97,6 @@ rtc_poll:
 	out 0x70, al
 	in al, 0x71
 
-	; Disable blink
-	mov dx, 0x3DA
-	in al, dx
-	mov dx, 0x3C0
-	mov al, 0x30
-	out dx, al
-	add dx, 1
-	in al, dx
-	and al, 0xF7
-	sub dx, 1
-	out dx, al
-
 	; Set color palette
 	xor eax, eax
 	mov dx, 0x03C8		; DAC Address Write Mode Register
