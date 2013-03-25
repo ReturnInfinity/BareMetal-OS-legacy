@@ -70,10 +70,21 @@ os_bmfs_file_query:
 
 
 ; -----------------------------------------------------------------------------
-; os_bmfs_file_get_list -- Generate a list of files on disk
+; os_bmfs_file_rename -- Rename a file on disk
+; IN:	RSI = Pointer to current file name
+;	RDI = Pointer to new file name
+; OUT:	Carry clear on success, set if file was not found or error occured
+os_bmfs_file_rename:
+
+	ret
+; -----------------------------------------------------------------------------
+
+
+; -----------------------------------------------------------------------------
+; os_bmfs_file_list -- Generate a list of files on disk
 ; IN:	RDI = location to store list
 ; OUT:	RDI = pointer to end of list
-os_bmfs_file_get_list:
+os_bmfs_file_list:
 
 	ret
 

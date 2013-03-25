@@ -178,40 +178,5 @@ os_debug_dump_al:
 ; -----------------------------------------------------------------------------
 
 
-; -----------------------------------------------------------------------------
-; os_debug_get_ip -- Dump content of RIP into RAX
-;  IN:	Nothing
-; OUT:	RAX = RIP
-os_debug_get_ip:
-	mov rax, qword [rsp]
-	ret
-; -----------------------------------------------------------------------------
-
-
-; -----------------------------------------------------------------------------
-; os_debug_dump_MAC -- Dump MAC address to screen
-;  IN:	Nothing
-; OUT:	Nothing, all registers preserved
-os_debug_dump_MAC:
-	push rsi
-	push rcx
-	push rax
-
-	mov ecx, 6
-	mov rsi, os_NetMAC
-os_debug_dump_MAC_display:
-	lodsb
-	call os_debug_dump_al
-	sub ecx, 1
-	test ecx, ecx
-	jnz os_debug_dump_MAC_display
-
-	pop rax
-	pop rcx
-	pop rsi
-	ret
-; -----------------------------------------------------------------------------
-
-
 ; =============================================================================
 ; EOF

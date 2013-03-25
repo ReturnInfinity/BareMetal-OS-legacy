@@ -10,16 +10,6 @@ db 'DEBUG: ETHERNET '
 align 16
 
 
-; Ethernet Type II Frame (64 - 1518 bytes)
-; MAC Header (14 bytes)
-;	Destination MAC Address (6 bytes)
-;	Source MAC Address (6 bytes)
-;	EtherType/Length (2 bytes)
-; Payload (46 - 1500 bytes)
-; CRC (4 bytes)
-; Network card handles the Preamble (7 bytes), Start-of-Frame-Delimiter (1 byte), and Interframe Gap (12 bytes) 
-
-
 ; -----------------------------------------------------------------------------
 ; os_ethernet_status -- Check if Ethernet is available
 ;  IN:	Nothing
@@ -31,18 +21,18 @@ os_ethernet_status:
 	cld
 	xor eax, eax
 	cmp byte [os_NetEnabled], 0
-	je os_ethernet_avail_end
+	je os_ethernet_status_end
 
 	mov ecx, 6
 	mov rsi, os_NetMAC
-os_ethernet_avail_loadMAC:
+os_ethernet_status_loadMAC:
 	shl rax, 8
 	lodsb
 	sub ecx, 1
 	test ecx, ecx
-	jnz os_ethernet_avail_loadMAC
+	jnz os_ethernet_status_loadMAC
 
-os_ethernet_avail_end:
+os_ethernet_status_end:
 	pop rcx
 	pop rsi
 	ret
@@ -126,68 +116,6 @@ os_ethernet_tx_nopadding:
 	call os_smp_unlock
 
 os_ethernet_tx_fail:
-
-	pop rax
-	pop rbx
-	pop rcx
-	pop rdx
-	pop rdi
-	pop rsi
-	ret
-; -----------------------------------------------------------------------------
-
-
-; -----------------------------------------------------------------------------
-; os_ethernet_tx_raw -- Transmit a raw frame via Ethernet
-;  IN:	RSI = Memory location where raw frame is stored
-;	 CX = Length of frame
-; OUT:	Nothing. All registers preserved
-os_ethernet_tx_raw:
-	push rsi
-	push rdi
-	push rdx
-	push rcx
-	push rbx
-	push rax
-	
-	cmp byte [os_NetEnabled], 1
-	jne os_ethernet_tx_raw_fail
-	cmp cx, 1500				; Fail if more then 1500 bytes
-	jg os_ethernet_tx_raw_fail
-
-	mov rax, os_EthernetBusyLock		; Lock the Ethernet so only one send can happen at a time
-	call os_smp_lock
-
-	; Copy the packet data
-	mov rdi, os_ethernet_tx_buffer		; Build the packet to transfer at this location
-	mov rax, 0x000000000000FFFF
-	and rcx, rax				; Clear the top 48 bits
-	push rcx
-	rep movsb
-	pop rcx
-
-	; Add padding to the packet data if needed
-	cmp cx, 46				; Data needs to be at least 46 bytes (if not it needs to be padded)
-	jge os_ethernet_tx_raw_nopadding
-	mov ax, 46
-	sub ax, cx				; Padding needed = 46 - CX
-	mov cx, ax
-	xor ax, ax
-	rep stosb				; Store 0x00 CX times
-	mov cx, 46
-os_ethernet_tx_raw_nopadding:
-
-	xor eax, eax
-	stosd					; Store a blank CRC value
-
-; Call the send function of the ethernet card driver
-	mov rsi, os_ethernet_tx_buffer
-	call qword [os_net_transmit]
-
-	mov rax, os_EthernetBusyLock
-	call os_smp_unlock
-
-os_ethernet_tx_raw_fail:
 
 	pop rax
 	pop rbx

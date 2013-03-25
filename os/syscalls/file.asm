@@ -12,7 +12,7 @@ align 16
 
 ; This source acts as an abstraction layer between the OS and an actual File
 ; System driver. A check can go here to detect the actual FS used and call the
-; appropriate FS driver. For now, this is defined at build time.
+; appropriate FS driver.
 ;
 ; Example:
 ; os_file_read:
@@ -45,17 +45,6 @@ os_file_write:
 
 
 ; -----------------------------------------------------------------------------
-; os_file_rename -- Rename a file on disk
-; IN:	RSI = Memory location of file name to change
-;	RDI = Memory location of new file name
-; OUT:	Carry is set if the file was not found or an error occured
-os_file_rename:
-;	jmp $
-	ret
-; -----------------------------------------------------------------------------
-
-
-; -----------------------------------------------------------------------------
 ; os_file_create -- Create a file on disk
 ; IN:	RSI = Memory location of file name to create
 ;	RCX = Size in bytes of the space to reserve for this file (will be
@@ -76,21 +65,31 @@ os_file_delete:
 
 
 ; -----------------------------------------------------------------------------
-; os_file_get_list -- Generate a list of files on disk
-; IN:	RDI = location to store list
-; OUT:	RDI = pointer to end of list
-os_file_get_list:
-	jmp os_bmfs_file_get_list
-; -----------------------------------------------------------------------------
-
-
-; -----------------------------------------------------------------------------
-; os_file_query -- Query the existance of a file
+; os_file_query -- Query the existence of a file
 ; IN:	RSI = Address of filename string
 ; OUT:	RCX = Size in bytes
 ;	Carry is set if the file was not found or an error occured
 os_file_query:
 	jmp os_bmfs_file_query
+; -----------------------------------------------------------------------------
+
+
+; -----------------------------------------------------------------------------
+; os_file_rename -- Rename a file on disk
+; IN:	RSI = Memory location of file name to change
+;	RDI = Memory location of new file name
+; OUT:	Carry is set if the file was not found or an error occured
+os_file_rename:
+	jmp os_bmfs_file_rename
+; -----------------------------------------------------------------------------
+
+
+; -----------------------------------------------------------------------------
+; os_file_list -- Generate a list of files on disk
+; IN:	RDI = location to store list
+; OUT:	RDI = pointer to end of list
+os_file_list:
+	jmp os_bmfs_file_list
 ; -----------------------------------------------------------------------------
 
 

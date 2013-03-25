@@ -17,7 +17,6 @@ align 16
 %include "syscalls/memory.asm"
 %include "syscalls/misc.asm"
 %include "syscalls/screen.asm"
-%include "syscalls/serial.asm"
 %include "syscalls/smp.asm"
 %include "syscalls/string.asm"
 

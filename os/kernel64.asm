@@ -53,129 +53,79 @@ kernel_start:
 	dq os_smp_run
 
 	align 8			; 0x0080
-	jmp os_smp_lock
-	align 8
-	dq os_smp_lock
-
-	align 8			; 0x0090
-	jmp os_smp_unlock
-	align 8
-	dq os_smp_unlock
-
-	align 8			; 0x00A0
-	jmp os_smp_reset
-	align 8
-	dq os_smp_reset
-
-	align 8			; 0x00B0
-	jmp os_smp_get_id
-	align 8
-	dq os_smp_get_id
-
-	align 8			; 0x00C0
-	jmp os_smp_queuelen
-	align 8
-	dq os_smp_queuelen
-
-	align 8			; 0x00D0
 	jmp os_smp_wait
 	align 8
 	dq os_smp_wait
 
-	align 8			; 0x00E0
-	jmp os_serial_send
+	align 8			; 0x0090
+	jmp os_smp_lock
 	align 8
-	dq os_serial_send
+	dq os_smp_lock
 
-	align 8			; 0x00F0
-	jmp os_serial_recv
+	align 8			; 0x00A0
+	jmp os_smp_unlock
 	align 8
-	dq os_serial_recv
+	dq os_smp_unlock
 
-	align 8			; 0x0100
-	jmp os_file_read
-	align 8
-	dq os_file_read
-
-	align 8			; 0x0110
-	jmp os_file_write
-	align 8
-	dq os_file_write
-
-	align 8			; 0x0120
-	jmp os_file_create
-	align 8
-	dq os_file_create
-
-	align 8			; 0x0130
-	jmp os_file_delete
-	align 8
-	dq os_file_delete
-
-	align 8			; 0x0140
-	jmp os_file_get_list
-	align 8
-	dq os_file_get_list
-
-	align 8			; 0x0150
-	jmp os_file_query
-	align 8
-	dq os_file_query
-
-	align 8			; 0x0160
+	align 8			; 0x00B0
 	jmp os_mem_allocate
 	align 8
 	dq os_mem_allocate
 
-	align 8			; 0x0170
+	align 8			; 0x00C0
 	jmp os_mem_release
 	align 8
 	dq os_mem_release
 
-	align 8			; 0x0180
-	jmp os_mem_get_free
-	align 8
-	dq os_mem_get_free
-
-	align 8			; 0x0190
-	jmp os_smp_numcores
-	align 8
-	dq os_smp_numcores
-
-	align 8			; 0x01A0
-	jmp os_ethernet_status
-	align 8
-	dq os_ethernet_status
-
-	align 8			; 0x01B0
+	align 8			; 0x00D0
 	jmp os_ethernet_tx
 	align 8
 	dq os_ethernet_tx
 
-	align 8			; 0x01C0
+	align 8			; 0x00E0
 	jmp os_ethernet_rx
 	align 8
 	dq os_ethernet_rx
 
-	align 8			; 0x01D0
-	jmp os_ethernet_tx_raw
+	align 8			; 0x00F0
+	jmp os_file_read
 	align 8
-	dq os_ethernet_tx_raw
+	dq os_file_read
 
-	align 8			; 0x01E0
-	jmp os_delay
+	align 8			; 0x0100
+	jmp os_file_write
 	align 8
-	dq os_delay
+	dq os_file_write
 
-	align 8			; 0x01F0
-	jmp os_move_cursor
+	align 8			; 0x0110
+	jmp os_file_create
 	align 8
-	dq os_move_cursor
+	dq os_file_create
 
-	align 8			; 0x0200
-	jmp os_screen_update
+	align 8			; 0x0120
+	jmp os_file_delete
 	align 8
-	dq os_screen_update
+	dq os_file_delete
+
+	align 8			; 0x0130
+	jmp os_file_query
+	align 8
+	dq os_file_query
+
+	align 8			; 0x0140
+	jmp os_file_rename
+	align 8
+	dq os_file_rename
+
+	align 8			; 0x0150
+	jmp os_file_list
+	align 8
+	dq os_file_list
+
+	align 8			; 0x0160
+	jmp os_system_config
+	align 8
+	dq os_system_config
 
 
 align 16
