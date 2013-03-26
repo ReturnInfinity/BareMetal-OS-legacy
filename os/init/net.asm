@@ -98,6 +98,19 @@ init_net_probe_found_finish:
 	mov byte [os_NetEnabled], 1	; A supported NIC was found. Signal to the OS that networking is enabled
 	call os_ethernet_ack_int	; Call the driver function to acknowledge the interrupt internally
 
+	mov ax, 0x0014
+	call os_move_cursor
+	mov rsi, networkmsg
+	call os_output
+	mov cl, 6
+	mov rsi, os_NetMAC
+nextbyte:
+	lodsb
+	call os_debug_dump_al
+	sub cl, 1
+	cmp cl, 0
+	jne nextbyte
+	
 init_net_probe_not_found:
 
 ret

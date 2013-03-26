@@ -133,13 +133,13 @@ align 16
 start:
 	call init_64			; After this point we are in a working 64-bit enviroment
 
+	call os_screen_clear		; Clear screen and display cursor
+
 	call init_pci
 
 	call init_hdd			; Initialize the disk
 
 	call init_net			; Initialize the network
-
-	call os_screen_clear		; Clear screen and display cursor
 
 	mov ax, 0x0016			; Print the "ready" message
 	call os_move_cursor
@@ -150,8 +150,8 @@ start:
 	call os_move_cursor
 
 ; DEV TESTING
-	mov rbx, hellofunc
-	mov [os_NetworkCallback], rbx
+;	mov rbx, hellofunc
+;	mov [os_NetworkCallback], rbx
 ; DEV TESTING
 
 	; Fall through to ap_clear as align fills the space with No-Ops
@@ -271,24 +271,24 @@ noargs:
 
 	jmp ap_clear			; Reset the stack, clear the registers, and wait for something else to work on
 
-hellofunc:
-	push rsi
-	push rcx
-	push rax
-
+;hellofunc:
+;	push rsi
+;	push rcx
+;	push rax
+;
 ;	mov rsi, readymsg
 ;	call os_output	
-	xor eax, eax
-	mov rsi, os_EthernetBuffer
-	lodsw
-	mov rcx, rax
-	call os_debug_dump_mem
-	call os_print_newline
-	
-	pop rax
-	pop rcx
-	pop rsi
-	ret
+;	xor eax, eax
+;	mov rsi, os_EthernetBuffer
+;	lodsw
+;	mov rcx, rax
+;	call os_debug_dump_mem
+;	call os_print_newline
+;	
+;	pop rax
+;	pop rcx
+;	pop rsi
+;	ret
 
 ; Includes
 %include "init.asm"

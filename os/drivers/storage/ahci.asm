@@ -83,18 +83,27 @@ founddrive:
 	stosd				; Offset 10h: PxIS – Port x Interrupt Status
 	stosd				; Offset 14h: PxIE – Port x Interrupt Enable
 
+	mov ax, 0x0012
+	call os_move_cursor
+
 	; Query drive
-;	mov rdi, 0x200000
-;	call iddrive
-;	mov rsi, 0x200000
-;	mov eax, [rsi+200]		; Max LBA Extended
-;	shr rax, 11			; rax = rax * 512 / 1048576	MiB
-;;	shr rax, 21			; rax = rax * 512 / 1073741824	GiB
-;	mov [hd1_size], eax		; in mebibytes (MiB)
-;	mov rdi, hdtempstring
-;	call os_int_to_string
-;
-;	; Found a bootable drive
+	mov rdi, 0x200000
+	call iddrive
+	mov rsi, 0x200000
+	mov eax, [rsi+200]		; Max LBA Extended
+	shr rax, 11			; rax = rax * 512 / 1048576	MiB
+;	shr rax, 21			; rax = rax * 512 / 1073741824	GiB
+	mov [hd1_size], eax		; in mebibytes (MiB)
+	mov rsi, diskmsg
+	call os_output
+	mov rdi, os_temp_string
+	mov rsi, rdi
+	call os_int_to_string
+	call os_output
+	mov rsi, diskmibmsg
+	call os_output
+
+	; Found a bootable drive
 	mov byte [os_DiskEnabled], 0x01
 
 	ret
@@ -102,6 +111,102 @@ founddrive:
 hdd_setup_err_noahci:
 hdd_setup_err_nodisk:
 	ret
+; -----------------------------------------------------------------------------
+
+
+; -----------------------------------------------------------------------------
+; iddrive -- Identify a SATA drive
+; IN:	RCX = Port # to query
+;	RDI = memory location to store details (512 bytes)
+; OUT:	Nothing, all registers preserved
+iddrive:
+	push rdi
+	push rsi
+	push rcx
+	push rax
+
+	shl rcx, 7			; Quick multiply by 0x80
+	add rcx, 0x100			; Offset to port 0
+
+	push rdi			; Save the destination memory address
+;	push rax			; Save the block number
+
+	mov rsi, [ahci_base]
+
+	mov rdi, ahci_cmdlist		; command list (1K with 32 entries, 32 bytes each)
+	xor eax, eax
+	mov eax, 0x00010005 ;4		; 1 PRDTL Entry, Command FIS Length = 16 bytes
+	stosd				; DW 0 - Description Information
+	xor eax, eax
+	stosd				; DW 1 - Command Status
+	mov eax, ahci_cmdtable
+	stosd				; DW 2 - Command Table Base Address
+	xor eax, eax
+	stosd				; DW 3 - Command Table Base Address Upper
+	stosd
+	stosd
+	stosd
+	stosd
+	; DW 4 - 7 are reserved
+
+	; command table
+	mov rdi, ahci_cmdtable		; Build a command table for Port 0
+	mov eax, 0x00EC8027		; EC identify, bit 15 set, fis 27 H2D
+	stosd				; feature 7:0, command, c, fis
+	xor eax, eax
+	stosd				; device, lba 23:16, lba 15:8, lba 7:0
+	stosd				; feature 15:8, lba 47:40, lba 39:32, lba 31:24
+	stosd				; control, ICC, count 15:8, count 7:0
+;	stosd				; reserved
+	mov rdi, ahci_cmdtable + 0x80
+	pop rax				; Restore the destination memory address
+	stosd				; Data Base Address
+	shr rax, 32
+	stosd				; Data Base Address Upper
+	xor eax, eax
+	stosd				; Reserved
+	mov eax, 0x000001FF		; 512 - 1
+	stosd				; Description Information
+
+	add rsi, rcx
+
+	mov rdi, rsi
+	add rdi, 0x10			; Port x Interrupt Status
+	xor eax, eax
+	stosd
+
+	mov rdi, rsi
+	add rdi, 0x18			; Offset to port 0 Command and Status
+	mov eax, [rdi]
+	bts eax, 4			; FRE
+	bts eax, 0			; ST
+	stosd
+
+	mov rdi, rsi
+	add rdi, 0x38			; Command Issue
+	mov eax, 0x00000001		; Execute Command Slot 0
+	stosd
+
+iddrive_poll:
+;	mov eax, [rsi+0x10]
+;	call os_debug_dump_eax
+	mov eax, [rsi+0x38]
+;	call os_debug_dump_eax
+	cmp eax, 0
+	jne iddrive_poll
+
+	mov rdi, rsi
+	add rdi, 0x18			; Offset to port 0
+	mov eax, [rdi]
+	btc eax, 4			; FRE
+	btc eax, 0			; ST
+	stosd
+
+	pop rax
+	pop rcx
+	pop rsi
+	pop rdi
+ret
 ; -----------------------------------------------------------------------------
 
 

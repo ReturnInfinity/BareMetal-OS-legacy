@@ -15,7 +15,9 @@ hextable: 		db '0123456789ABCDEF'
 ; Strings
 system_status_header:	db 'BareMetal v0.6.0', 0
 readymsg:		db 'BareMetal is ready', 0
-networkmsg:		db 'Network Address: ', 0
+networkmsg:		db 'net: ', 0
+diskmsg:		db 'hdd: ', 0
+diskmibmsg:		db ' MiB', 0
 prompt:			db '> ', 0
 space:			db ' ', 0
 newline:		db 13, 0
@@ -76,6 +78,7 @@ gw:			equ os_SystemVariables + 140	; IPv4 Gateway
 os_HPETRate:		equ os_SystemVariables + 144
 os_MemAmount:		equ os_SystemVariables + 148	; in MiB
 ahci_port:		equ os_SystemVariables + 152
+hd1_size:		equ os_SystemVariables + 156	; in MiB
 
 ; DW - Starting at offset 256, increments by 2
 os_NumCores:		equ os_SystemVariables + 258
