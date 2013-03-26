@@ -129,7 +129,6 @@ iddrive:
 	add rcx, 0x100			; Offset to port 0
 
 	push rdi			; Save the destination memory address
-;	push rax			; Save the block number
 
 	mov rsi, [ahci_base]
 
@@ -188,10 +187,7 @@ iddrive:
 	stosd
 
 iddrive_poll:
-;	mov eax, [rsi+0x10]
-;	call os_debug_dump_eax
 	mov eax, [rsi+0x38]
-;	call os_debug_dump_eax
 	cmp eax, 0
 	jne iddrive_poll
 
@@ -280,7 +276,7 @@ readsectors:
 	stosd				; Reserved
 	pop rax				; Restore the sector count
 	shl rax, 9			; multiply by 512 for bytes
-	add rax, -1			; subtract 1 (4.2.3.3, DBC is number of bytes - 1)
+	sub rax, 1			; subtract 1 (4.2.3.3, DBC is number of bytes - 1)
 	stosd				; Description Information
 
 	add rsi, rdx

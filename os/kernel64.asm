@@ -137,6 +137,15 @@ start:
 ; DEV TESTING
 ;	mov rbx, hellofunc
 ;	mov [os_NetworkCallback], rbx
+
+;	mov rax, 0
+;	mov rcx, 4192
+;	mov rdx, 0
+;	mov rdi, 0x200000
+;	call readsectors
+;	mov rsi, 0x200000
+;	mov rcx, 512
+;	call os_debug_dump_mem
 ; DEV TESTING
 
 	; Fall through to ap_clear as align fills the space with No-Ops
