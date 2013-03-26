@@ -11,26 +11,6 @@ align 16
 
 
 ; -----------------------------------------------------------------------------
-; os_input_key -- Scans keyboard for input
-;  IN:	Nothing
-; OUT:	AL = 0 if no key pressed, otherwise ASCII code, other regs preserved
-;	Carry flag is set if there was a keystoke, clear if there was not
-;	All other registers preserved
-os_input_key:
-	mov al, [key]
-	cmp al, 0
-	je os_input_key_no_key
-	mov byte [key], 0x00	; clear the variable as the keystroke is in AL now
-	stc			; set the carry flag
-	ret
-
-os_input_key_no_key:
-	clc			; clear the carry flag
-	ret
-; -----------------------------------------------------------------------------
-
-
-; -----------------------------------------------------------------------------
 ; os_input -- Take string from keyboard entry
 ;  IN:	RDI = location where string will be stored
 ;	RCX = maximum number of characters to accept
@@ -98,6 +78,26 @@ os_input_done:
 	pop rax
 	pop rdx
 	pop rdi
+	ret
+; -----------------------------------------------------------------------------
+
+
+; -----------------------------------------------------------------------------
+; os_input_key -- Scans keyboard for input
+;  IN:	Nothing
+; OUT:	AL = 0 if no key pressed, otherwise ASCII code, other regs preserved
+;	Carry flag is set if there was a keystoke, clear if there was not
+;	All other registers preserved
+os_input_key:
+	mov al, [key]
+	cmp al, 0
+	je os_input_key_no_key
+	mov byte [key], 0x00	; clear the variable as the keystroke is in AL now
+	stc			; set the carry flag
+	ret
+
+os_input_key_no_key:
+	clc			; clear the carry flag
 	ret
 ; -----------------------------------------------------------------------------
 
