@@ -148,6 +148,9 @@ start:
 ;	call os_debug_dump_mem
 ; DEV TESTING
 
+	mov rax, os_command_line	; Start the CLI
+	call os_smp_enqueue
+
 	; Fall through to ap_clear as align fills the space with No-Ops
 	; At this point the BSP is just like one of the AP's
 
@@ -289,7 +292,7 @@ noargs:
 %include "syscalls.asm"
 %include "drivers.asm"
 %include "interrupt.asm"
-;%include "cli.asm"
+%include "cli.asm"
 %include "sysvar.asm"			; Include this last to keep the read/write variables away from the code
 
 times 16384-($-$$) db 0			; Set the compiled kernel binary to at least this size in bytes

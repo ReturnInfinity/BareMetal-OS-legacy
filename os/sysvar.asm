@@ -105,6 +105,7 @@ os_NetActivity_RX:	equ os_SystemVariables + 395
 os_EthernetBuffer_C1:	equ os_SystemVariables + 396	; Counter 1 for the Ethernet RX Ring Buffer
 os_EthernetBuffer_C2:	equ os_SystemVariables + 397	; Counter 2 for the Ethernet RX Ring Buffer
 os_DiskEnabled:		equ os_SystemVariables + 398
+os_DiskActivity:	equ os_SystemVariables + 399
 
 
 cpuqueuemax:		dw 256

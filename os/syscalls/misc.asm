@@ -114,7 +114,7 @@ system_status_mem_finish:
 	add rdi, 1
 	mov al, 0xFE			; Ascii block character
 	stosb				; Put the block character on the screen
-	mov al, 0x80			; Black on Dark Gray (No Activity)
+	mov al, 0x87			; Light Gray on Dark Gray (No Activity)
 	cmp byte [os_NetActivity_TX], 1
 	jne tx_idle
 	mov al, 0x8F
@@ -126,7 +126,7 @@ tx_idle:
 	add rdi, 1
 	mov al, 0xFE			; Ascii block character
 	stosb				; Put the block character on the screen
-	mov al, 0x80			; Black on Dark Gray (No Activity)
+	mov al, 0x87			; Light Gray on Dark Gray (No Activity)
 	cmp byte [os_NetActivity_RX], 1
 	jne rx_idle
 	mov al, 0x8F
@@ -147,6 +147,14 @@ system_status_no_network:
 	add rdi, 1
 	mov rax, 0x8F208F648F648F68	; ' ddh'
 	stosq
+	mov al, 0xFE			; Ascii block character
+	stosb				; Put the block character on the screen
+	mov al, 0x87			; Light Gray on Dark Gray
+	cmp byte [os_DiskActivity], 1
+	jne hdd_idle
+	mov al, 0x8F
+hdd_idle:
+	stosb
 	mov al, ']'
 	stosb
 	add rdi, 1
