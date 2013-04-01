@@ -33,7 +33,7 @@ void b_output(const char *str)
 
 void b_output_chars(const char *str, unsigned long nbr)
 {
-	asm volatile ("call *0x00100028" : : "S"(chr), "c"(nbr));
+	asm volatile ("call *0x00100028" : : "S"(str), "c"(nbr));
 }
 
 
