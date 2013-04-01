@@ -35,12 +35,6 @@ Call the code address stored in RAX
 	b_smp_wait
 Wait until all other CPU Cores are finished processing
 
-	b_smp_lock
-Attempt to lock a mutex
-
-	b_smp_unlock
-Unlock a mutex
-
 
 ## Memory ##
 
@@ -77,9 +71,6 @@ Delete a file from disk
 
 	b_file_query
 Query the existence of a file
-
-	b_file_rename
-Rename a file on disk
 
 	b_file_list
 Generate a list of files on disk
