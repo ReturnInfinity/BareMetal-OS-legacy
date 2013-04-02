@@ -5,20 +5,40 @@ Version 0.6.0
 
 ## Output ##
 
-    b_output
+**b_output**
+
 Output text to the screen (The string must be null-terminated)
 
-	b_output_chars
+	 IN:	RSI = message location (zero-terminated string)
+	OUT:	All registers preserved
+
+**b_output_chars**
+
 Output a number of characters to the screen
+
+	 IN:	RSI = message location
+			RCX = number of characters to output
+	OUT:	All registers preserved
 
 
 ## Input ##
 
-	os_input
+**os_input**
+
 Accept a number of keys from the keyboard. The resulting string will automatically be null-terminated
 
-	os_input_key
+	 IN:	RDI = location where string will be stored
+			RCX = number of characters to accept
+	OUT:	RCX = length of string that were input (NULL not counted)
+			All other registers preserved
+
+**os_input_key**
+
 Scans keyboard for input
+
+	 IN:	Nothing
+	OUT:	AL = 0 if no key pressed, otherwise ASCII code, other regs preserved
+			All other registers preserved
 
 
 ## SMP ##
