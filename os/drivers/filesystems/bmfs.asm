@@ -60,21 +60,10 @@ os_bmfs_file_delete:
 ; -----------------------------------------------------------------------------
 ; os_bmfs_find_file -- Search for a file name and return the starting block
 ; IN:	RSI = Pointer to file name
-; OUT:	RAX  = Staring block number
+; OUT:	RAX = Staring block number
 ;	RCX = File size in bytes
 ;	Carry set if not found. If carry is set then ignore value in RAX
 os_bmfs_file_query:
-
-	ret
-; -----------------------------------------------------------------------------
-
-
-; -----------------------------------------------------------------------------
-; os_bmfs_file_rename -- Rename a file on disk
-; IN:	RSI = Pointer to current file name
-;	RDI = Pointer to new file name
-; OUT:	Carry clear on success, set if file was not found or error occured
-os_bmfs_file_rename:
 
 	ret
 ; -----------------------------------------------------------------------------
@@ -85,7 +74,61 @@ os_bmfs_file_rename:
 ; IN:	RDI = location to store list
 ; OUT:	RDI = pointer to end of list
 os_bmfs_file_list:
+	push rsi
+	push rdx
+	push rcx
+	push rbx
+	push rax
 
+	; Read the 4K directory from the drive
+	push rdi
+	mov rax, 8			; Start to read from 4K in
+	mov rcx, 8			; Read 8 sectors (4KiB)
+	xor edx, edx
+	mov rdi, hd_directory
+	mov rbx, rdi
+	call readsectors
+	pop rdi
+
+	mov rsi, dir_title_string	; Copy the header string
+	call os_string_length
+	call os_string_copy
+	add rdi, rcx
+
+os_bmfs_file_list_next:
+	cmp byte [rbx], 0x01
+	jle os_bmfs_file_list_inc
+
+	mov rsi, rbx			; Copy filename to destination
+	call os_string_length		; Get the length before copying
+	call os_string_copy
+	add rdi, rcx			; Remove terminator
+
+	sub rcx, 32			; Pad out to 32 characters
+	neg rcx
+	mov al, ' '
+	rep stosb
+
+	mov rax, [rbx + BMFS_DirEnt.size]
+	call os_int_to_string
+	dec rdi
+	mov al, 13
+	stosb
+
+os_bmfs_file_list_inc:
+	add rbx, 64			; Next record
+	cmp rbx, hd_directory + 0x1000	; End of directory
+	jne os_bmfs_file_list_next
+
+os_bmfs_file_list_done:
+	mov al, 0x00			; Terminate the string
+	stosb
+
+	pop rax
+	pop rbx
+	pop rcx
+	pop rdx
+	pop rsi
 	ret
 
 dir_title_string: db "Name                            Size", 13, \

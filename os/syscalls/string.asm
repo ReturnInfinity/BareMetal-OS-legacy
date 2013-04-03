@@ -111,5 +111,29 @@ os_string_length:
 ; -----------------------------------------------------------------------------
 
 
+; -----------------------------------------------------------------------------
+; os_string_copy -- Copy the contents of one string into another
+;  IN:	RSI = source
+;	RDI = destination
+; OUT:	All registers preserved
+; Note:	It is up to the programmer to ensure that there is sufficient space in the destination
+os_string_copy:
+	push rsi
+	push rdi
+	push rax
+
+os_string_copy_more:
+	lodsb				; Load a character from the source string
+	stosb
+	cmp al, 0			; If source string is empty, quit out
+	jne os_string_copy_more
+
+	pop rax
+	pop rdi
+	pop rsi
+	ret
+; -----------------------------------------------------------------------------
+
+
 ; =============================================================================
 ; EOF

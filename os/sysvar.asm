@@ -123,15 +123,8 @@ struc	BMFS_DirEnt
 	.start			resq 1	; starting block index
 	.reserved		resq 1	; number of blocks reserved
 	.size			resq 1	; number of bytes
-	.crc32			resw 1
-	.unused			resw 1
+	.unused			resq 1
 endstruc
-
-bmfs_TotalBlocks:		dq 0x0000000000000000
-
-; For startup timing
-pure64_starttime:		equ 0x0000000000005A18
-
 
 keylayoutlower:
 db 0x00, 0, '1', '2', '3', '4', '5', '6', '7', '8', '9', '0', '-', '=', 0x0e, 0, 'q', 'w', 'e', 'r', 't', 'y', 'u', 'i', 'o', 'p', '[', ']', 0x1c, 0, 'a', 's', 'd', 'f', 'g', 'h', 'j', 'k', 'l', ';', 0, '`', 0, 0, 'z', 'x', 'c', 'v', 'b', 'n', 'm', ',', '.', '/', 0, 0, 0, ' ', 0
