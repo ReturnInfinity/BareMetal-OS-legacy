@@ -28,6 +28,7 @@ C/C++ Example:
 	...
 	b_output("This is a another test");
 
+
 **b_output_chars**
 
 Output a number of characters to the screen
@@ -42,13 +43,14 @@ Assembly Example:
 
 	mov rsi, Message
 	mov rcx, 4
-	call os_output_chars
+	call os_output_chars					; Only output the word 'This'
 	...
 	Message: db 'This is a test', 0
 
 C/C++ Example:
 
-	b_output_chars("This is a test", 4);
+	b_output_chars("This is a test", 4);	// Output 'This'
+
 
 ## Input ##
 
@@ -56,18 +58,48 @@ C/C++ Example:
 
 Accept a number of keys from the keyboard. The resulting string will automatically be null-terminated
 
+Assembly Registers:
+
 	 IN:	RDI = location where string will be stored
 			RCX = number of characters to accept
 	OUT:	RCX = length of string that were input (NULL not counted)
 			All other registers preserved
 
+Assembly Example:
+
+	mov rdi, Input
+	mov rcx, 20
+	call b_input
+	...
+	Input: db 0 times 21
+
+C/C++ Example:
+
+	char Input[21];
+	b_input(Input, 20);
+
+
 **os_input_key**
 
 Scans keyboard for input
 
+Assembly Registers:
+
 	 IN:	Nothing
 	OUT:	AL = 0 if no key pressed, otherwise ASCII code, other regs preserved
 			All other registers preserved
+
+Assembly Example:
+
+	call b_input_key
+	mov byte [KeyChar], al
+	...
+	KeyChar: db 0
+
+C/C++ Example:
+
+	char KeyChar;
+	KeyChar = b_input_key
 
 
 ## SMP ##
