@@ -9,17 +9,46 @@ Version 0.6.0
 
 Output text to the screen (The string must be null-terminated)
 
+Assembly Registers:
+
 	 IN:	RSI = message location (zero-terminated string)
 	OUT:	All registers preserved
+
+Assembly Example:
+
+	mov rsi, Message
+	call b_output
+	...
+	Message: db 'This is a test', 0
+
+C/C++ Example:
+
+	char Message[] = "This is a test";
+	b_output(Message);
+	...
+	b_output("This is a another test");
 
 **b_output_chars**
 
 Output a number of characters to the screen
 
+Assembly Registers:
+
 	 IN:	RSI = message location
 			RCX = number of characters to output
 	OUT:	All registers preserved
 
+Assembly Example:
+
+	mov rsi, Message
+	mov rcx, 4
+	call os_output_chars
+	...
+	Message: db 'This is a test', 0
+
+C/C++ Example:
+
+	b_output_chars("This is a test", 4);
 
 ## Input ##
 
