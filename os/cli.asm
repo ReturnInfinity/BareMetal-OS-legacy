@@ -55,7 +55,6 @@ endofcommand:
 	call os_string_change_char
 
 	pop rsi				; Pop the command string
-	call os_string_uppercase	; Convert to uppercase for comparison
 
 	mov rdi, cls_string		; 'CLS' entered?
 	call os_string_compare
@@ -89,29 +88,30 @@ endofcommand:
 	call os_string_compare
 	jc near testzone
 
-;; At this point it is not one of the built-in CLI functions. Prepare to check the filesystem.
-;	mov al, '.'
-;	call os_string_find_char	; Check for a '.' in the string
-;	cmp rax, 0
-;	jne full_name			; If there was a '.' then a suffix is present
-;
+; At this point it is not one of the built-in CLI functions. Prepare to check the filesystem.
+	mov al, '.'
+	call os_string_find_char	; Check for a '.' in the string
+	cmp rax, 0
+	jne full_name			; If there was a '.' then a suffix is present
+
 ; No suffix was present so we add the default application suffix of ".APP"
-;add_suffix:
-;	call os_string_length
-;	cmp rcx, 8
-;	jg fail				; If the string is longer than 8 chars we can't add a suffix
-;
-;	mov rdi, cli_command_string
-;	mov rsi, appextension		; '.APP'
-;	call os_string_append		; Append the extension to the command string
-;
-;; cli_command_string now contains a full filename
-;full_name:
-;	mov rsi, cli_command_string
-;	mov rdi, programlocation	; We load the program to this location in memory (currently 0x00100000 : at the 2MB mark)
-;	call os_file_read		; Read the file into memory
-;	jc fail				; If carry is set then the file was not found
-;
+add_suffix:
+	call os_string_length
+	cmp rcx, 8
+	jg fail				; If the string is longer than 8 chars we can't add a suffix
+
+	mov rdi, cli_command_string
+	mov rsi, appextension		; '.APP'
+	call os_string_append		; Append the extension to the command string
+
+; cli_command_string now contains a full filename
+full_name:
+	mov rsi, cli_command_string
+	mov rdi, programlocation	; We load the program to this location in memory (currently 0x00100000 : at the 2MB mark)
+	call os_file_read		; Read the file into memory
+	jc fail				; If carry is set then the file was not found
+
+	jmp os_command_line
 ;	mov rax, programlocation	; 0x00100000 : at the 2MB mark
 ;	xor rbx, rbx			; No arguements required (The app can get them with os_get_argc and os_get_argv)
 ;	call os_smp_enqueue		; Queue the application to run on the next available core
@@ -194,14 +194,14 @@ exit:
 	not_found_msg		db 'Command or program not found', 13, 0
 	version_msg		db 'BareMetal OS ', BAREMETALOS_VER, 13, 0
 
-	cls_string		db 'CLS', 0
-	dir_string		db 'DIR', 0
-	ver_string		db 'VER', 0
-	exit_string		db 'EXIT', 0
-	help_string		db 'HELP', 0
-	debug_string		db 'DEBUG', 0
-	reboot_string		db 'REBOOT', 0
-	testzone_string		db 'TESTZONE', 0
+	cls_string		db 'cls', 0
+	dir_string		db 'dir', 0
+	ver_string		db 'ver', 0
+	exit_string		db 'exit', 0
+	help_string		db 'help', 0
+	debug_string		db 'debug', 0
+	reboot_string		db 'rebot', 0
+	testzone_string		db 'testzone', 0
 
 
 ; -----------------------------------------------------------------------------
@@ -332,34 +332,6 @@ os_string_chomp_done:
 
 
 ; -----------------------------------------------------------------------------
-; os_string_uppercase -- Convert zero-terminated string to uppercase
-;  IN:	RSI = string location
-; OUT:	All registers preserved
-os_string_uppercase:
-	push rsi
-
-os_string_uppercase_more:
-	cmp byte [rsi], 0x00		; Zero-termination of string?
-	je os_string_uppercase_done	; If so, quit
-	cmp byte [rsi], 97		; In the uppercase A to Z range?
-	jl os_string_uppercase_noatoz
-	cmp byte [rsi], 122
-	jg os_string_uppercase_noatoz
-	sub byte [rsi], 0x20		; If so, convert input char to uppercase
-	inc rsi
-	jmp os_string_uppercase_more
-
-os_string_uppercase_noatoz:
-	inc rsi
-	jmp os_string_uppercase_more
-
-os_string_uppercase_done:
-	pop rsi
-	ret
-; -----------------------------------------------------------------------------
-
-
-; -----------------------------------------------------------------------------
 ; os_string_parse -- Parse a string into individual words
 ;  IN:	RSI = Address of string
 ; OUT:	RCX = word count
@@ -408,44 +380,25 @@ ret
 
 
 ; -----------------------------------------------------------------------------
-; os_string_compare -- See if two strings match
-;  IN:	RSI = string one
-;	RDI = string two
-; OUT:	Carry flag set if same
-os_string_compare:
+; os_string_append -- Append a string to an existing string
+;  IN:	RSI = String to be appended
+;	RDI = Destination string
+; OUT:	All registers preserved
+; Note:	It is up to the programmer to ensure that there is sufficient space in the destination
+os_string_append:
 	push rsi
 	push rdi
-	push rbx
-	push rax
+	push rcx
 
-os_string_compare_more:
-	mov al, [rsi]			; Store string contents
-	mov bl, [rdi]
-	cmp al, 0			; End of first string?
-	je os_string_compare_terminated
-	cmp al, bl
-	jne os_string_compare_not_same
-	inc rsi
-	inc rdi
-	jmp os_string_compare_more
+	xchg rsi, rdi
+	call os_string_length
+	xchg rsi, rdi
+	add rdi, rcx
+	call os_string_copy
 
-os_string_compare_not_same:
-	pop rax
-	pop rbx
+	pop rcx
 	pop rdi
 	pop rsi
-	clc
-	ret
-
-os_string_compare_terminated:
-	cmp bl, 0			; End of second string?
-	jne os_string_compare_not_same
-
-	pop rax
-	pop rbx
-	pop rdi
-	pop rsi
-	stc
 	ret
 ; -----------------------------------------------------------------------------
 

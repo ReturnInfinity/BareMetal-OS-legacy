@@ -112,8 +112,7 @@ nextbyte:
 	jne nextbyte
 	
 init_net_probe_not_found:
-
-ret
+	ret
 
 
 ; =============================================================================

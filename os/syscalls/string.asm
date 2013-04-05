@@ -135,5 +135,48 @@ os_string_copy_more:
 ; -----------------------------------------------------------------------------
 
 
+; -----------------------------------------------------------------------------
+; os_string_compare -- See if two strings match
+;  IN:	RSI = string one
+;	RDI = string two
+; OUT:	Carry flag set if same
+os_string_compare:
+	push rsi
+	push rdi
+	push rbx
+	push rax
+
+os_string_compare_more:
+	mov al, [rsi]			; Store string contents
+	mov bl, [rdi]
+	cmp al, 0			; End of first string?
+	je os_string_compare_terminated
+	cmp al, bl
+	jne os_string_compare_not_same
+	inc rsi
+	inc rdi
+	jmp os_string_compare_more
+
+os_string_compare_not_same:
+	pop rax
+	pop rbx
+	pop rdi
+	pop rsi
+	clc
+	ret
+
+os_string_compare_terminated:
+	cmp bl, 0			; End of second string?
+	jne os_string_compare_not_same
+
+	pop rax
+	pop rbx
+	pop rdi
+	pop rsi
+	stc
+	ret
+; -----------------------------------------------------------------------------
+
+
 ; =============================================================================
 ; EOF

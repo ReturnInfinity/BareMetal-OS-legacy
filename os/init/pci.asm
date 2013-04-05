@@ -11,7 +11,6 @@ align 16
 
 
 init_pci:
-	; 
 	mov eax, 0x80000000
 	mov dx, PCI_CONFIG_ADDRESS
 	out dx, eax
@@ -21,8 +20,7 @@ init_pci:
 	mov byte [os_PCIEnabled], 1
 
 init_pci_not_found:
-
-ret
+	ret
 
 
 ; =============================================================================

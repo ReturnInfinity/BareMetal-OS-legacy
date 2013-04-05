@@ -37,8 +37,7 @@ ahci_cmdtable:		equ 0x0000000000072000	; 57344 bytes	0x072000 -> 0x07FFFF
 cli_temp_string:	equ 0x0000000000080000	; 1024 bytes	0x080000 -> 0x0803FF
 os_temp_string:		equ 0x0000000000080400	; 1024 bytes	0x080400 -> 0x0807FF
 os_args:		equ 0x0000000000080C00
-hd_diskinfo:		equ 0x0000000000090000	; 4096 bytes	0x090000 -> 0x090FFF
-hd_directory:		equ 0x0000000000091000	; 4096 bytes	0x091000 -> 0x091FFF
+bmfs_directory:		equ 0x0000000000090000	; 4096 bytes	0x090000 -> 0x090FFF
 os_KernelStart:		equ 0x0000000000100000	; 65536 bytes	0x100000 -> 0x10FFFF - Location of Kernel
 os_SystemVariables:	equ 0x0000000000110000	; 65536 bytes	0x110000 -> 0x11FFFF - Location of System Variables
 os_MemoryMap:		equ 0x0000000000120000	; 131072 bytes	0x120000 -> 0x13FFFF - Location of Memory Map - Room to map 256 GiB with 2 MiB pages
@@ -69,6 +68,7 @@ os_NetMAC:		equ os_SystemVariables + 0x50
 os_HPETAddress:		equ os_SystemVariables + 0x58
 ahci_base:		equ os_SystemVariables + 0x60
 os_NetworkCallback:	equ os_SystemVariables + 0x68
+bmfs_TotalBlocks:	equ os_SystemVariables + 0x70
 
 ; DD - Starting at offset 128, increments by 4
 cpu_speed:		equ os_SystemVariables + 128	; in MHz

@@ -224,7 +224,7 @@ no_more_aps:
 
 ;	call os_seed_random		; Seed the RNG
 
-ret
+	ret
 
 ; create_gate
 ; rax = address of handler
@@ -243,7 +243,7 @@ create_gate:
 
 	pop rax
 	pop rdi
-ret
+	ret
 
 
 init_memory_map:	; Build the OS memory table
@@ -277,7 +277,7 @@ init_memory_map:	; Build the OS memory table
 	pop rdi
 	pop rcx
 	pop rax
-ret
+	ret
 
 
 system_failure:
@@ -289,7 +289,7 @@ system_failure:
 system_failure_hang:
 	hlt
 	jmp system_failure_hang
-ret
+	ret
 
 ; -----------------------------------------------------------------------------
 ; ioapic_reg_write -- Write to an I/O APIC register

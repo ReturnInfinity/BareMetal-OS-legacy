@@ -135,6 +135,12 @@ start:
 	call os_move_cursor
 
 ; DEV TESTING
+;	mov rsi, Filename1
+;	call os_bmfs_file_query
+;	call os_bmfs_file_read
+;	call os_debug_dump_reg
+;	jmp $
+;Filename1: db "Another file.app", 0
 ;	mov rbx, hellofunc
 ;	mov [os_NetworkCallback], rbx
 
