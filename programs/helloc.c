@@ -22,6 +22,6 @@
 
 int main(void)
 {
-	b_print_string("Hello world, from C!\n");
+	b_output("Hello world, from C!\n");
 	return 0;
 }
