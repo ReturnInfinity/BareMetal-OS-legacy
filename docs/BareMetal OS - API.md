@@ -138,11 +138,20 @@ Receive data via Ethernet
 
 ## File ##
 
+	b_file_open
+Open a file
+
+	b_file_close
+Close a file
+
 	b_file_read
-Read a file from disk into memory
+Read a number of bytes from a file to memory
 
 	b_file_write
-Write a file from memory to disk
+Write a number of bytes from memory to a file
+
+	b_file_seek
+Seek to a specific part of a file
 
 	b_file_create
 Create a file on disk
