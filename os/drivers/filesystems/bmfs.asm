@@ -6,7 +6,7 @@
 ; =============================================================================
 
 align 16
-db 'DEBUG: BMFS    '
+db 'DEBUG: BMFS     '
 align 16
 
 
@@ -41,7 +41,7 @@ init_bmfs:
 ; -----------------------------------------------------------------------------
 ; os_file_open -- Open a file on disk
 ; IN:	RSI = File name (zero-terminated string)
-; OUT:	RAX = File I/O handler number, 0 on error
+; OUT:	RAX = File I/O handler, 0 on error
 ;	All other registers preserved
 os_bmfs_file_open:
 	push rdx
@@ -71,7 +71,7 @@ os_bmfs_file_open_done:
 
 ; -----------------------------------------------------------------------------
 ; os_file_close -- Close an open file
-; IN:	RAX = File I/O handler number
+; IN:	RAX = File I/O handler
 ; OUT:	All registers preserved
 os_bmfs_file_close:
 	; Mark as closed
@@ -80,12 +80,12 @@ os_bmfs_file_close:
 
 
 ; -----------------------------------------------------------------------------
-; os_bmfs_file_read -- Read a file from disk into memory. The destination
-; buffer must be large enough to store the entire file, rounded up to the next
-; 2 MiB.
-; IN:	RSI = Address of filename string
-;	RDI = Memory location where file will be loaded to
-; OUT:	Carry clear on success, set if file was not found or error occured
+; os_bmfs_file_read -- Read a number of bytes from a file
+; IN:	RAX = File I/O handler
+;	RCX = Number of bytes to read
+;	RDI = Destination memory address
+; OUT:	RCX = Number of bytes read
+;	All other registers preserved
 os_bmfs_file_read:
 	push rdi
 	push rdx
@@ -124,11 +124,12 @@ os_bmfs_file_read_done:
 
 
 ; -----------------------------------------------------------------------------
-; os_bmfs_file_write -- Write a file to the hard disk
-; IN:	RSI = Address of data in memory
-;	RDI = File name to write
-;	RCX = number of bytes to write
-; OUT:	Carry clear on success, set on failure
+; os_bmfs_file_write -- Write a number of bytes to a file
+; IN:	RAX = File I/O handler
+;	RCX = Number of bytes to write
+;	RSI = Source memory address
+; OUT:	RCX = Number of bytes written
+;	All other registers preserved
 os_bmfs_file_write:
 
 	; Flush directory to disk
@@ -138,41 +139,13 @@ os_bmfs_file_write:
 
 
 ; -----------------------------------------------------------------------------
-; os_bmfs_file_create -- Create a file on the hard disk
-; IN:	RSI = Pointer to file name, must be <= 32 characters
-;	RCX = File size to reserve (rounded up to the nearest 2MiB)
-; OUT:	Carry clear on success, set on failure
-; Note:	This function pre-allocates all blocks required for the file
-os_bmfs_file_create:
+; os_bmfs_file_seek -- Seek to position in a file
+; IN:	RAX = File I/O handler
+;	RCX = Number of bytes to offset from origin.
+;	RDX = Origin
+; OUT:	All registers preserved
+os_bmfs_file_seek:
 
-	; Flush directory to disk
-
-	ret
-; -----------------------------------------------------------------------------
-
-
-; -----------------------------------------------------------------------------
-; os_bmfs_file_delete -- Delete a file from the hard disk
-; IN:	RSI = File name to delete
-; OUT:	Carry clear on success, set on failure
-os_bmfs_file_delete:
-	push rdx
-	push rcx
-	push rbx
-	push rax
-
-	call os_bmfs_file_query
-	jc os_bmfs_file_delete_notfound
-
-	mov byte [rbx + BMFS_DirEnt.filename], 0x01 ; Add deleted marker to file name
-
-	; Flush directory to disk
-
-os_bmfs_file_delete_notfound:
-	pop rax
-	pop rbx
-	pop rcx
-	pop rdx
 	ret
 ; -----------------------------------------------------------------------------
 
@@ -214,62 +187,42 @@ os_bmfs_file_query_found:
 
 
 ; -----------------------------------------------------------------------------
-; os_bmfs_file_list -- Generate a list of files on disk
-; IN:	RDI = location to store list
-; OUT:	RDI = pointer to end of list
-;os_bmfs_file_list:
-;	push rsi
-;	push rdx
-;	push rcx
-;	push rbx
-;	push rax
-;
-;	mov rsi, dir_title_string	; Copy the header string
-;	call os_string_length
-;	call os_string_copy
-;	add rdi, rcx
-;
-;	mov rsi, bmfs_directory
-;	mov rbx, rsi
-;
-;os_bmfs_file_list_next:
-;	cmp byte [rbx], 0x01
-;	jle os_bmfs_file_list_skip
-;
-;	mov rsi, rbx			; Copy filename to destination
-;	call os_string_length		; Get the length before copying
-;	call os_string_copy
-;	add rdi, rcx			; Remove terminator
-;
-;	sub rcx, 32			; Pad out to 32 characters
-;	neg rcx
-;	mov al, ' '
-;	rep stosb
-;
-;	mov rax, [rbx + BMFS_DirEnt.size]
-;	call os_int_to_string
-;	dec rdi
-;	mov al, 13
-;	stosb
-;
-;os_bmfs_file_list_skip:
-;	add rbx, 64			; Next record
-;	cmp rbx, bmfs_directory + 0x1000	; End of directory
-;	jne os_bmfs_file_list_next
-;
-;os_bmfs_file_list_done:
-;	mov al, 0x00			; Terminate the string
-;	stosb
-;
-;	pop rax
-;	pop rbx
-;	pop rcx
-;	pop rdx
-;	pop rsi
-;	ret
-;
-;dir_title_string: db "Name                            Size", 13, \
-;	"====================================", 13, 0
+; os_bmfs_file_create -- Create a file on the hard disk
+; IN:	RSI = Pointer to file name, must be <= 32 characters
+;	RCX = File size to reserve (rounded up to the nearest 2MiB)
+; OUT:	Carry clear on success, set on failure
+; Note:	This function pre-allocates all blocks required for the file
+os_bmfs_file_create:
+
+	; Flush directory to disk
+
+	ret
+; -----------------------------------------------------------------------------
+
+
+; -----------------------------------------------------------------------------
+; os_bmfs_file_delete -- Delete a file from the hard disk
+; IN:	RSI = File name to delete
+; OUT:	Carry clear on success, set on failure
+os_bmfs_file_delete:
+	push rdx
+	push rcx
+	push rbx
+	push rax
+
+	call os_bmfs_file_query
+	jc os_bmfs_file_delete_notfound
+
+	mov byte [rbx + BMFS_DirEnt.filename], 0x01 ; Add deleted marker to file name
+
+	; Flush directory to disk
+
+os_bmfs_file_delete_notfound:
+	pop rax
+	pop rbx
+	pop rcx
+	pop rdx
+	ret
 ; -----------------------------------------------------------------------------
 
 

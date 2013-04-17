@@ -2,7 +2,7 @@
 ; BareMetal -- a 64-bit OS written in Assembly for x86-64 systems
 ; Copyright (C) 2008-2013 Return Infinity -- see LICENSE.TXT
 ;
-; File System Functions
+; File System Abstraction Layer
 ; =============================================================================
 
 align 16
@@ -10,24 +10,10 @@ db 'DEBUG: FILESYS  '
 align 16
 
 
-; This source acts as an abstraction layer between the OS and an actual File
-; System driver. A check can go here to detect the actual FS used and call the
-; appropriate FS driver.
-;
-; Example:
-; os_file_read:
-;	cmp [os_FS], 1	; FAT16
-;	je os_fat16_file_read
-;	cmp [os_FS], 2	; FAT32
-;	je os_fat32_file_read
-;	etc...
-
-
 ; -----------------------------------------------------------------------------
 ; os_file_open -- Open a file on disk
 ; IN:	RSI = File name (zero-terminated string)
-;	RAX = File I/O handler number
-; OUT:	RAX is set to 0 if the file was not found or an error occured
+; OUT:	RAX = File I/O handler number, 0 on error
 ;	All other registers preserved
 os_file_open:
 	jmp os_bmfs_file_open
@@ -36,7 +22,7 @@ os_file_open:
 
 ; -----------------------------------------------------------------------------
 ; os_file_close -- Close an open file
-; IN:	RAX = File I/O handler number
+; IN:	RAX = File I/O handler
 ; OUT:	All registers preserved
 os_file_close:
 	jmp os_bmfs_file_close
@@ -44,8 +30,8 @@ os_file_close:
 
 
 ; -----------------------------------------------------------------------------
-; os_file_read -- Read from a file
-; IN:	RAX = File I/O handler number
+; os_file_read -- Read a number of bytes from a file
+; IN:	RAX = File I/O handler
 ;	RCX = Number of bytes to read
 ;	RDI = Destination memory address
 ; OUT:	RCX = Number of bytes read
@@ -56,8 +42,8 @@ os_file_read:
 
 
 ; -----------------------------------------------------------------------------
-; os_file_write -- Write a file from memory to disk
-; IN:	RAX = File I/O handler number
+; os_file_write -- Write a number of bytes to a file
+; IN:	RAX = File I/O handler
 ;	RCX = Number of bytes to write
 ;	RSI = Source memory address
 ; OUT:	RCX = Number of bytes written
@@ -69,7 +55,7 @@ os_file_write:
 
 ; -----------------------------------------------------------------------------
 ; os_file_seek -- Seek to position in a file
-; IN:	RAX = File I/O handler number
+; IN:	RAX = File I/O handler
 ;	RCX = Number of bytes to offset from origin.
 ;	RDX = Origin
 ; OUT:	All registers preserved
