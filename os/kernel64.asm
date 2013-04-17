@@ -78,36 +78,46 @@ kernel_start:
 	dq os_ethernet_rx
 
 	align 8			; 0x00D0
+	jmp os_file_open
+	align 8
+	dq os_file_open
+
+	align 8			; 0x00E0
+	jmp os_file_close
+	align 8
+	dq os_file_close
+
+	align 8			; 0x00F0
 	jmp os_file_read
 	align 8
 	dq os_file_read
 
-	align 8			; 0x00E0
+	align 8			; 0x0100
 	jmp os_file_write
 	align 8
 	dq os_file_write
 
-	align 8			; 0x00F0
-	jmp os_file_create
-	align 8
-	dq os_file_create
-
-	align 8			; 0x0100
-	jmp os_file_delete
-	align 8
-	dq os_file_delete
-
 	align 8			; 0x0110
+	jmp os_file_seek
+	align 8
+	dq os_file_seek
+
+	align 8			; 0x0120
 	jmp os_file_query
 	align 8
 	dq os_file_query
 
-	align 8			; 0x0120
-	jmp os_file_list
-	align 8
-	dq os_file_list
-
 	align 8			; 0x0130
+	jmp os_file_create
+	align 8
+	dq os_file_create
+
+	align 8			; 0x0140
+	jmp os_file_delete
+	align 8
+	dq os_file_delete
+
+	align 8			; 0x0150
 	jmp os_system_config
 	align 8
 	dq os_system_config

@@ -123,6 +123,7 @@ int read(int file, char *ptr, int len)
 	}
 	else
 	{
+		// File!
 		len = 0;
 	}
 	return len;
@@ -161,7 +162,7 @@ int write(int file, char *ptr, int len)
 	}
 	else
 	{
-	
+		// File!
 	}
 	return 0;
 //	return -1;

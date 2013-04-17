@@ -27,9 +27,9 @@ Version 0.6.0 - April 17, 2013
 	- b\_file\_read
 	- b\_file\_write
 	- b\_file\_seek
+	- b\_file\_query
 	- b\_file\_create
 	- b\_file\_delete
-	- b\_file\_query
 7. Misc
 	- b\_system\_config
 
@@ -183,7 +183,7 @@ Open a file
 Assembly Registers:
 
 	 IN:	RSI = File name (zero-terminated string)
-	OUT:	RAX = File I/O handler number
+	OUT:	RAX = File I/O handler number, 0 on error
 			All other registers preserved
 
 Assembly Example:
@@ -245,6 +245,10 @@ Assembly Registers:
 			RDX = Origin
 	OUT:	All registers preserved
 
+**b\_file\_query**
+
+Query the existence of a file
+
 **b\_file\_create**
 
 Create a file on disk
@@ -263,10 +267,6 @@ Assembly Registers:
 
 	 IN:	RSI = File name (zero-terminated string)
 	OUT:	All registers preserved
-
-**b\_file\_query**
-
-Query the existence of a file
 
 
 ## Misc ##
