@@ -1,11 +1,42 @@
 # BareMetal OS API #
 
-Version 0.6.0
+Version 0.6.0 - April 17, 2013
+
+### Contents ###
+
+1. Output
+	- b\_output
+	- b\_output\_chars
+2. Input
+	- b\_input
+	- b\_input\_key
+3. SMP
+	- b\_smp\_enqueue
+	- b\_smp\_dequeue
+	- b\_smp\_run
+	- b\_smp\_wait
+4. Memory
+	- b\_mem\_allocate
+	- b\_mem\_release
+5. Network
+	- b\_ethernet\_tx
+	- b\_ethernet\_rx
+6. File
+	- b\_file\_open
+	- b\_file\_close
+	- b\_file\_read
+	- b\_file\_write
+	- b\_file\_seek
+	- b\_file\_create
+	- b\_file\_delete
+	- b\_file\_query
+7. Misc
+	- b\_system\_config
 
 
 ## Output ##
 
-**b_output**
+**b\_output**
 
 Output text to the screen (The string must be null-terminated)
 
@@ -29,7 +60,7 @@ C/C++ Example:
 	b_output("This is a another test");
 
 
-**b_output_chars**
+**b\_output\_chars**
 
 Output a number of characters to the screen
 
@@ -54,7 +85,7 @@ C/C++ Example:
 
 ## Input ##
 
-**os_input**
+**b\_input**
 
 Accept a number of keys from the keyboard. The resulting string will automatically be null-terminated
 
@@ -79,7 +110,7 @@ C/C++ Example:
 	b_input(Input, 20);
 
 
-**os_input_key**
+**b\_input\_key**
 
 Scans keyboard for input
 
@@ -104,69 +135,142 @@ C/C++ Example:
 
 ## SMP ##
 
-	b_smp_enqueue
+**b\_smp\_enqueue**
+
 Add a workload to the processing queue
 
-	b_smp_dequeue
+**b\_smp\_dequeue**
+
 Dequeue a workload from the processing queue
 
-	b_smp_run
+**b\_smp\_run**
+
 Call the code address stored in RAX
 
-	b_smp_wait
+**b\_smp\_wait**
+
 Wait until all other CPU Cores are finished processing
 
 
 ## Memory ##
 
-	os_mem_allocate
+**b\_mem\_allocate**
+
 Allocate pages of memory
 
-	os_mem_release
+**b\_mem\_release**
+
 Release pages of memory
 
 
 ## Network ##
 
-	b_ethernet_tx
+**b\_ethernet\_tx**
+
 Send data via Ethernet
 
+**b\_ethernet\_rx**
 
-	b_ethernet_rx
 Receive data via Ethernet
 
 
 ## File ##
 
-	b_file_open
+**b\_file\_open**
+
 Open a file
 
-	b_file_close
+Assembly Registers:
+
+	 IN:	RSI = File name (zero-terminated string)
+	OUT:	RAX = File I/O handler number
+			All other registers preserved
+
+Assembly Example:
+
+	mov rsi, Filename
+	call b_file_open
+	mov [Filenumber], rax
+	...
+	Filename: db 'test.txt', 0
+	Filenumber: dq 0
+
+
+**b\_file\_close**
+
 Close a file
 
-	b_file_read
+Assembly Registers:
+
+	 IN:	RAX = File I/O handler number
+	OUT:	All registers preserved
+
+Assembly Example:
+
+	mov rax, [Filenumber]
+	call b_file_close
+
+**b\_file\_read**
+
 Read a number of bytes from a file to memory
 
-	b_file_write
+Assembly Registers:
+
+	 IN:	RAX = File I/O handler number
+			RCX = Number of bytes to read
+			RDI = Destination memory address
+	OUT:	RCX = Number of bytes read
+			All other registers preserved
+
+**b\_file\_write**
+
 Write a number of bytes from memory to a file
 
-	b_file_seek
+Assembly Registers:
+
+	 IN:	RAX = File I/O handler number
+			RCX = Number of bytes to write
+			RSI = Source memory address
+	OUT:	RCX = Number of bytes written
+			All other registers preserved
+
+**b\_file\_seek**
+
 Seek to a specific part of a file
 
-	b_file_create
+Assembly Registers:
+
+	 IN:	RAX = File I/O handler number
+			RCX = Number of bytes to offset from origin.
+			RDX = Origin
+	OUT:	All registers preserved
+
+**b\_file\_create**
+
 Create a file on disk
 
-	b_file_delete
+Assembly Registers:
+
+	 IN:	RCX = Number of bytes to reserve
+			RSI = File name (zero-terminated string)
+	OUT:	All registers preserved
+
+**b\_file\_delete**
+
 Delete a file from disk
 
-	b_file_query
-Query the existence of a file
+Assembly Registers:
 
-	b_file_list
-Generate a list of files on disk
+	 IN:	RSI = File name (zero-terminated string)
+	OUT:	All registers preserved
+
+**b\_file\_query**
+
+Query the existence of a file
 
 
 ## Misc ##
 
-	b_system_config
+**b\_system\_config**
+
 A grab-bag of useful functions
