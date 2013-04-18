@@ -6,7 +6,7 @@
 ; =============================================================================
 
 align 16
-db 'DEBUG: BMFS     '
+db 'DEBUG: BMFS    '
 align 16
 
 
@@ -39,53 +39,12 @@ init_bmfs:
 
 
 ; -----------------------------------------------------------------------------
-; os_file_open -- Open a file on disk
-; IN:	RSI = File name (zero-terminated string)
-; OUT:	RAX = File I/O handler, 0 on error
-;	All other registers preserved
-os_bmfs_file_open:
-	push rdx
-	push rcx
-	push rbx
-
-	; Query the existance
-	call os_bmfs_file_query
-	jc os_bmfs_file_open_error
-	mov rax, rbx		; Slot #
-	add rax, 10		; Files start at 10
-
-	; Is it already open?
-	; cmp blah, blah
-	; jne os_bmfs_file_open_done
-
-os_bmfs_file_open_error:
-	xor eax, eax
-
-os_bmfs_file_open_done:
-	pop rbx
-	pop rcx
-	pop rdx
-	ret
-; -----------------------------------------------------------------------------
-
-
-; -----------------------------------------------------------------------------
-; os_file_close -- Close an open file
-; IN:	RAX = File I/O handler
-; OUT:	All registers preserved
-os_bmfs_file_close:
-	; Mark as closed
-	ret
-; -----------------------------------------------------------------------------
-
-
-; -----------------------------------------------------------------------------
-; os_bmfs_file_read -- Read a number of bytes from a file
-; IN:	RAX = File I/O handler
-;	RCX = Number of bytes to read
-;	RDI = Destination memory address
-; OUT:	RCX = Number of bytes read
-;	All other registers preserved
+; os_bmfs_file_read -- Read a file from disk into memory. The destination
+; buffer must be large enough to store the entire file, rounded up to the next
+; 2 MiB.
+; IN:	RSI = Address of filename string
+;	RDI = Memory location where file will be loaded to
+; OUT:	Carry clear on success, set if file was not found or error occured
 os_bmfs_file_read:
 	push rdi
 	push rdx
@@ -93,26 +52,26 @@ os_bmfs_file_read:
 	push rbx
 	push rax
 
-;	call os_bmfs_file_query
-;	jc os_bmfs_file_read_done
-;
-;	add rcx, 511			; Convert byte count to the number of sectors required to fit
-;	shr rcx, 9
-;	shl rax, 12			; Multiply block start count by 4096 to get sector start count
-;	mov rbx, rcx
-;	xor edx, edx			; Read from drive 0
-;
-;os_bmfs_file_read_loop:
-;	mov rcx, 4096			; Read 2MiB at a time
-;	cmp rbx, rcx
-;	jg os_bmfs_file_read_read
-;	mov rcx, rbx
-;
-;os_bmfs_file_read_read:
-;	call readsectors
-;	sub rbx, rcx
-;	jnz os_bmfs_file_read_loop
-;
+	call os_bmfs_file_query
+	jc os_bmfs_file_read_done
+
+	add rcx, 511			; Convert byte count to the number of sectors required to fit
+	shr rcx, 9
+	shl rax, 12			; Multiply block start count by 4096 to get sector start count
+	mov rbx, rcx
+	xor edx, edx			; Read from drive 0
+
+os_bmfs_file_read_loop:
+	mov rcx, 4096			; Read 2MiB at a time
+	cmp rbx, rcx
+	jg os_bmfs_file_read_read
+	mov rcx, rbx
+
+os_bmfs_file_read_read:
+	call readsectors
+	sub rbx, rcx
+	jnz os_bmfs_file_read_loop
+
 os_bmfs_file_read_done:
 	pop rax
 	pop rbx
@@ -124,64 +83,15 @@ os_bmfs_file_read_done:
 
 
 ; -----------------------------------------------------------------------------
-; os_bmfs_file_write -- Write a number of bytes to a file
-; IN:	RAX = File I/O handler
-;	RCX = Number of bytes to write
-;	RSI = Source memory address
-; OUT:	RCX = Number of bytes written
-;	All other registers preserved
+; os_bmfs_file_write -- Write a file to the hard disk
+; IN:	RSI = Address of data in memory
+;	RDI = File name to write
+;	RCX = number of bytes to write
+; OUT:	Carry clear on success, set on failure
 os_bmfs_file_write:
 
 	; Flush directory to disk
 
-	ret
-; -----------------------------------------------------------------------------
-
-
-; -----------------------------------------------------------------------------
-; os_bmfs_file_seek -- Seek to position in a file
-; IN:	RAX = File I/O handler
-;	RCX = Number of bytes to offset from origin.
-;	RDX = Origin
-; OUT:	All registers preserved
-os_bmfs_file_seek:
-
-	ret
-; -----------------------------------------------------------------------------
-
-
-; -----------------------------------------------------------------------------
-; os_bmfs_file_query -- Search for a file name and return information
-; IN:	RSI = Pointer to file name
-; OUT:	RAX = Staring block number
-;	RBX = Offset to entry
-;	RCX = File size in bytes
-;	RDX = Reserved blocks
-;	Carry set if not found. If carry is set then ignore returned values
-os_bmfs_file_query:
-	push rdi
-
-	clc				; Clear carry
-	mov rdi, bmfs_directory		; Beginning of directory structure
-
-os_bmfs_file_query_next:
-	call os_string_compare
-	jc os_bmfs_file_query_found
-	add rdi, 64			; Next record
-	cmp rdi, bmfs_directory + 0x1000	; End of directory
-	jne os_bmfs_file_query_next
-	stc				; Set flag for file not found
-	pop rdi
-	ret
-
-os_bmfs_file_query_found:
-	clc				; Clear flag for file found
-	mov rbx, rdi
-	mov rdx, [rdi + BMFS_DirEnt.reserved]	; Reserved blocks
-	mov rcx, [rdi + BMFS_DirEnt.size]	; Size in bytes
-	mov rax, [rdi + BMFS_DirEnt.start]	; Starting block number
-
-	pop rdi
 	ret
 ; -----------------------------------------------------------------------------
 
@@ -223,6 +133,102 @@ os_bmfs_file_delete_notfound:
 	pop rcx
 	pop rdx
 	ret
+; -----------------------------------------------------------------------------
+
+
+; -----------------------------------------------------------------------------
+; os_bmfs_file_query -- Search for a file name and return information
+; IN:	RSI = Pointer to file name
+; OUT:	RAX = Staring block number
+;	RBX = Offset to entry
+;	RCX = File size in bytes
+;	RDX = Reserved blocks
+;	Carry set if not found. If carry is set then ignore returned values
+os_bmfs_file_query:
+	push rdi
+
+	clc				; Clear carry
+	mov rdi, bmfs_directory		; Beginning of directory structure
+
+os_bmfs_file_query_next:
+	call os_string_compare
+	jc os_bmfs_file_query_found
+	add rdi, 64			; Next record
+	cmp rdi, bmfs_directory + 0x1000	; End of directory
+	jne os_bmfs_file_query_next
+	stc				; Set flag for file not found
+	pop rdi
+	ret
+
+os_bmfs_file_query_found:
+	clc				; Clear flag for file found
+	mov rbx, rdi
+	mov rdx, [rdi + BMFS_DirEnt.reserved]	; Reserved blocks
+	mov rcx, [rdi + BMFS_DirEnt.size]	; Size in bytes
+	mov rax, [rdi + BMFS_DirEnt.start]	; Starting block number
+
+	pop rdi
+	ret
+; -----------------------------------------------------------------------------
+
+
+; -----------------------------------------------------------------------------
+; os_bmfs_file_list -- Generate a list of files on disk
+; IN:	RDI = location to store list
+; OUT:	RDI = pointer to end of list
+os_bmfs_file_list:
+	push rsi
+	push rdx
+	push rcx
+	push rbx
+	push rax
+
+	mov rsi, dir_title_string	; Copy the header string
+	call os_string_length
+	call os_string_copy
+	add rdi, rcx
+
+	mov rsi, bmfs_directory
+	mov rbx, rsi
+
+os_bmfs_file_list_next:
+	cmp byte [rbx], 0x01
+	jle os_bmfs_file_list_skip
+
+	mov rsi, rbx			; Copy filename to destination
+	call os_string_length		; Get the length before copying
+	call os_string_copy
+	add rdi, rcx			; Remove terminator
+
+	sub rcx, 32			; Pad out to 32 characters
+	neg rcx
+	mov al, ' '
+	rep stosb
+
+	mov rax, [rbx + BMFS_DirEnt.size]
+	call os_int_to_string
+	dec rdi
+	mov al, 13
+	stosb
+
+os_bmfs_file_list_skip:
+	add rbx, 64			; Next record
+	cmp rbx, bmfs_directory + 0x1000	; End of directory
+	jne os_bmfs_file_list_next
+
+os_bmfs_file_list_done:
+	mov al, 0x00			; Terminate the string
+	stosb
+
+	pop rax
+	pop rbx
+	pop rcx
+	pop rdx
+	pop rsi
+	ret
+
+dir_title_string: db "Name                            Size", 13, \
+	"====================================", 13, 0
 ; -----------------------------------------------------------------------------
 
 

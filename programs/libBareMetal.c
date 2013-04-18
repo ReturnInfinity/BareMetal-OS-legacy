@@ -104,7 +104,7 @@ unsigned long b_ethernet_rx(void *mem)
 	return tlong;
 }
 
-
+/*
 unsigned long b_file_read(const unsigned char *name, void *mem)
 {
 	unsigned long tlong;
@@ -139,7 +139,7 @@ unsigned long b_file_query(const unsigned char *name)
 	asm volatile ("call *0x00100118" : : "S"(name));
 	return tlong;
 }
-
+*/
 
 // =============================================================================
 // EOF
