@@ -44,6 +44,7 @@ init_bmfs:
 ; OUT:	RAX = File I/O handler, 0 on error
 ;	All other registers preserved
 os_bmfs_file_open:
+	push rsi
 	push rdx
 	push rcx
 	push rbx
@@ -51,12 +52,24 @@ os_bmfs_file_open:
 	; Query the existance
 	call os_bmfs_file_query
 	jc os_bmfs_file_open_error
-	mov rax, rbx		; Slot #
-	add rax, 10		; Files start at 10
+	mov rax, rbx			; Slot #
+	add rax, 10			; Files start at 10
 
-	; Is it already open?
-	; cmp blah, blah
-	; jne os_bmfs_file_open_done
+	; Is it already open? If not, mark as open
+	mov rsi, os_filehandlers
+	add rsi, rbx
+	cmp byte [rsi], 0		; 0 is closed
+	jne os_bmfs_file_open_error
+	mov byte [rsi], 1		; Set to open
+
+	; Reset the seek
+	mov rsi, os_filehandlers_seek
+	shl rbx, 3			; Quick multiply by 8
+	add rsi, rbx
+	xor ebx, ebx			; SEEK_START
+	mov qword [rsi], rbx
+
+	jmp os_bmfs_file_open_done
 
 os_bmfs_file_open_error:
 	xor eax, eax
@@ -65,6 +78,7 @@ os_bmfs_file_open_done:
 	pop rbx
 	pop rcx
 	pop rdx
+	pop rsi
 	ret
 ; -----------------------------------------------------------------------------
 
@@ -74,7 +88,24 @@ os_bmfs_file_open_done:
 ; IN:	RAX = File I/O handler
 ; OUT:	All registers preserved
 os_bmfs_file_close:
+	push rsi
+	push rax
+
+	; Is it in the valid file handler range?
+	sub rax, 10			; Subtract the handler offset
+	cmp rax, 64			; BMFS has up to 64 files
+	jg os_bmfs_file_close_error
+
 	; Mark as closed
+	mov rsi, os_filehandlers
+	add rsi, rax
+	mov byte [rsi], 0		; Set to closed
+
+os_bmfs_file_close_error:
+
+os_bmfs_file_close_done:
+	pop rax
+	pop rsi
 	ret
 ; -----------------------------------------------------------------------------
 
@@ -88,14 +119,30 @@ os_bmfs_file_close:
 ;	All other registers preserved
 os_bmfs_file_read:
 	push rdi
+	push rsi
 	push rdx
 	push rcx
 	push rbx
 	push rax
 
-;	call os_bmfs_file_query
-;	jc os_bmfs_file_read_done
-;
+	; Is it in the valid file handler range?
+	sub rax, 10			; Subtract the handler offset
+	cmp rax, 64			; BMFS has up to 64 files
+	jg os_bmfs_file_read_error
+
+	; Is this an open file?
+	mov rsi, os_filehandlers
+	add rsi, rax
+	cmp byte [rsi], 0
+	je os_bmfs_file_read_error
+
+	; Get the starting sector
+	mov rsi, bmfs_directory		; Beginning of directory structure
+	shl rax, 6			; Quicky multiply by 64 (size of BMFS record)
+	add rsi, rax
+	add rsi, 32			; Offset to starting sector
+	lodsq				; Load starting sector in RAX
+
 ;	add rcx, 511			; Convert byte count to the number of sectors required to fit
 ;	shr rcx, 9
 ;	shl rax, 12			; Multiply block start count by 4096 to get sector start count
@@ -112,12 +159,17 @@ os_bmfs_file_read:
 ;	call readsectors
 ;	sub rbx, rcx
 ;	jnz os_bmfs_file_read_loop
-;
+;	jmp os_bmfs_file_read_done
+
+os_bmfs_file_read_error:
+	xor ecx, ecx
+
 os_bmfs_file_read_done:
 	pop rax
 	pop rbx
 	pop rcx
 	pop rdx
+	pop rsi
 	pop rdi
 	ret
 ; -----------------------------------------------------------------------------
@@ -131,6 +183,8 @@ os_bmfs_file_read_done:
 ; OUT:	RCX = Number of bytes written
 ;	All other registers preserved
 os_bmfs_file_write:
+	; Is this an open file?
+
 
 	; Flush directory to disk
 
@@ -145,6 +199,7 @@ os_bmfs_file_write:
 ;	RDX = Origin
 ; OUT:	All registers preserved
 os_bmfs_file_seek:
+	; Is this an open file?
 
 	ret
 ; -----------------------------------------------------------------------------

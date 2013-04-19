@@ -24,13 +24,10 @@ newline:		db 13, 0
 appextension:		db '.APP', 0
 memory_message:		db 'Not enough system memory for CPU stacks! System halted.', 0
 startupapp:		db 'startup.app', 0
-ARP_timeout		dd 0x10000000		; After this time, ARP entry must be refreshed
-os_icmp_callback	dq 0x00000000000000000	; Point to ICMP reciever call back fundtion
+;ARP_timeout		dd 0x10000000		; After this time, ARP entry must be refreshed
+;os_icmp_callback	dq 0x00000000000000000	; Point to ICMP reciever call back fundtion
 
 ; Memory addresses
-os_ip_rx_buffer		equ 0x000000000004EC00	; 2048 bytes
-os_ip_tx_buffer		equ 0x000000000006F400	; 2048 butes
-arp_table		equ 0x000000000006FC00  ; 1024 bytes	0x06FC00 -> 0x06FFFF
 ahci_cmdlist:		equ 0x0000000000070000	; 4096 bytes	0x070000 -> 0x071FFF
 ahci_receivedfis:	equ 0x0000000000071000	; 4096 bytes	0x071000 -> 0x072FFF
 ahci_cmdtable:		equ 0x0000000000072000	; 57344 bytes	0x072000 -> 0x07FFFF
@@ -38,6 +35,8 @@ cli_temp_string:	equ 0x0000000000080000	; 1024 bytes	0x080000 -> 0x0803FF
 os_temp_string:		equ 0x0000000000080400	; 1024 bytes	0x080400 -> 0x0807FF
 os_args:		equ 0x0000000000080C00
 bmfs_directory:		equ 0x0000000000090000	; 4096 bytes	0x090000 -> 0x090FFF
+os_filehandlers:	equ 0x0000000000091000	; 64 bytes (1x64)
+os_filehandlers_seek:	equ 0x0000000000092000	; 512 bytes (8x64)
 os_KernelStart:		equ 0x0000000000100000	; 65536 bytes	0x100000 -> 0x10FFFF - Location of Kernel
 os_SystemVariables:	equ 0x0000000000110000	; 65536 bytes	0x110000 -> 0x11FFFF - Location of System Variables
 os_MemoryMap:		equ 0x0000000000120000	; 131072 bytes	0x120000 -> 0x13FFFF - Location of Memory Map - Room to map 256 GiB with 2 MiB pages
@@ -48,7 +47,6 @@ os_ethernet_rx_buffer:	equ 0x00000000001C0000
 os_eth_rx_buffer:	equ 0x00000000001C8000
 os_ethernet_tx_buffer:	equ 0x00000000001D0000
 os_eth_tx_buffer:	equ 0x00000000001D8000
-os_eth_temp_buffer:	equ 0x00000000001E0000
 cpustatus:		equ 0x00000000001FEF00	; Location of CPU status data (256 bytes) Bit 0 = Avaiable, Bit 1 = Free/Busy
 cpuqueue:		equ 0x00000000001FF000	; Location of CPU Queue. Each queue item is 16 bytes. (4KiB before the 2MiB mark, Room for 256 entries)
 programlocation:	equ 0x0000000000200000	; Location in memory where programs are loaded (the start of 2MiB)
