@@ -106,16 +106,20 @@ add_suffix:
 
 ; cli_command_string now contains a full filename
 full_name:
-;	mov rsi, cli_command_string
-;	mov rdi, programlocation	; We load the program to this location in memory (currently 0x00100000 : at the 2MB mark)
-;	call os_file_read		; Read the file into memory
-;	jc fail				; If carry is set then the file was not found
-;
-;	mov rax, programlocation	; 0x00100000 : at the 2MB mark
-;	xor rbx, rbx			; No arguements required (The app can get them with os_get_argc and os_get_argv)
-;	call os_smp_enqueue		; Queue the application to run on the next available core
-;	jmp exit			; The CLI can quit now. IRQ 8 will restart it when the program is finished
-;
+	mov rsi, cli_command_string
+	call os_file_open
+	cmp rax, 0
+	je fail
+	mov rcx, 2000
+	mov rdi, programlocation
+	call os_file_read
+	call os_file_close
+
+	mov rax, programlocation	; 0x00100000 : at the 2MB mark
+	xor rbx, rbx			; No arguements required (The app can get them with os_get_argc and os_get_argv)
+	call os_smp_enqueue		; Queue the application to run on the next available core
+	jmp exit			; The CLI can quit now. IRQ 8 will restart it when the program is finished
+
 fail:					; We didn't get a valid command or program name
 	mov rsi, not_found_msg
 	call os_output
@@ -199,7 +203,7 @@ exit:
 	exit_string		db 'exit', 0
 	help_string		db 'help', 0
 	debug_string		db 'debug', 0
-	reboot_string		db 'rebot', 0
+	reboot_string		db 'reboot', 0
 	testzone_string		db 'testzone', 0
 
 

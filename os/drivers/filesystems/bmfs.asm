@@ -125,8 +125,13 @@ os_bmfs_file_read:
 	push rbx
 	push rax
 
+	; Is it a valid read?
+	cmp rcx, 0
+	je os_bmfs_file_read_error
+
 	; Is it in the valid file handler range?
 	sub rax, 10			; Subtract the handler offset
+	mov rbx, rax			; Keep the file ID
 	cmp rax, 64			; BMFS has up to 64 files
 	jg os_bmfs_file_read_error
 
@@ -136,30 +141,32 @@ os_bmfs_file_read:
 	cmp byte [rsi], 0
 	je os_bmfs_file_read_error
 
-	; Get the starting sector
+	; Get the starting block
 	mov rsi, bmfs_directory		; Beginning of directory structure
 	shl rax, 6			; Quicky multiply by 64 (size of BMFS record)
 	add rsi, rax
-	add rsi, 32			; Offset to starting sector
-	lodsq				; Load starting sector in RAX
+	add rsi, 32			; Offset to starting block
+	lodsq				; Load starting block in RAX
 
-;	add rcx, 511			; Convert byte count to the number of sectors required to fit
-;	shr rcx, 9
-;	shl rax, 12			; Multiply block start count by 4096 to get sector start count
-;	mov rbx, rcx
-;	xor edx, edx			; Read from drive 0
-;
-;os_bmfs_file_read_loop:
-;	mov rcx, 4096			; Read 2MiB at a time
-;	cmp rbx, rcx
-;	jg os_bmfs_file_read_read
-;	mov rcx, rbx
-;
-;os_bmfs_file_read_read:
-;	call readsectors
-;	sub rbx, rcx
-;	jnz os_bmfs_file_read_loop
-;	jmp os_bmfs_file_read_done
+	; Add the current offset
+
+	; Calculate the starting sector
+	add rcx, 511			; Convert byte count to the number of sectors required to fit
+	shr rcx, 9			; Quick divide by 512; Number of sectors to read
+	shl rax, 12			; Multiply block start count by 4096 to get sector start count
+	mov rbx, rcx			; RBX holds the total of sectors to read
+	xor edx, edx			; Read from drive 0
+
+os_bmfs_file_read_loop:
+	mov rcx, 4096			; Read 2MiB at a time (4096 512-byte sectors = 2MiB)
+	cmp rbx, rcx
+	jg os_bmfs_file_read_loop_next
+	mov rcx, rbx
+os_bmfs_file_read_loop_next:
+	call readsectors
+	sub rbx, rcx
+	jnz os_bmfs_file_read_loop
+	jmp os_bmfs_file_read_done
 
 os_bmfs_file_read_error:
 	xor ecx, ecx
@@ -231,6 +238,7 @@ os_bmfs_file_query_next:
 
 os_bmfs_file_query_found:
 	clc				; Clear flag for file found
+	sub rdi, bmfs_directory
 	mov rbx, rdi
 	mov rdx, [rdi + BMFS_DirEnt.reserved]	; Reserved blocks
 	mov rcx, [rdi + BMFS_DirEnt.size]	; Size in bytes
