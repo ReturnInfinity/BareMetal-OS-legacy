@@ -138,10 +138,10 @@ print_ver:
 	jmp os_command_line
 
 dir:
-;	mov rdi, cli_temp_string
-;	mov rsi, rdi
-;	call os_file_list
-;	call os_output
+	mov rdi, cli_temp_string
+	mov rsi, rdi
+	call os_bmfs_file_list
+	call os_output
 	jmp os_command_line
 
 
@@ -439,6 +439,66 @@ os_hex_string_to_int_exit:
 	pop rcx
 	pop rsi
 	ret
+; -----------------------------------------------------------------------------
+
+
+; -----------------------------------------------------------------------------
+; os_bmfs_file_list -- Generate a list of files on disk
+; IN:	RDI = location to store list
+; OUT:	RDI = pointer to end of list
+os_bmfs_file_list:
+	push rsi
+	push rdx
+	push rcx
+	push rbx
+	push rax
+
+	mov rsi, dir_title_string	; Copy the header string
+	call os_string_length
+	call os_string_copy
+	add rdi, rcx
+
+	mov rsi, bmfs_directory
+	mov rbx, rsi
+
+os_bmfs_file_list_next:
+	cmp byte [rbx], 0x01
+	jle os_bmfs_file_list_skip
+
+	mov rsi, rbx			; Copy filename to destination
+	call os_string_length		; Get the length before copying
+	call os_string_copy
+	add rdi, rcx			; Remove terminator
+
+	sub rcx, 32			; Pad out to 32 characters
+	neg rcx
+	mov al, ' '
+	rep stosb
+
+	mov rax, [rbx + BMFS_DirEnt.size]
+	call os_int_to_string
+	dec rdi
+	mov al, 13
+	stosb
+
+os_bmfs_file_list_skip:
+	add rbx, 64			; Next record
+	cmp rbx, bmfs_directory + 0x1000	; End of directory
+	jne os_bmfs_file_list_next
+
+os_bmfs_file_list_done:
+	mov al, 0x00			; Terminate the string
+	stosb
+
+	pop rax
+	pop rbx
+	pop rcx
+	pop rdx
+	pop rsi
+	ret
+
+dir_title_string: db "Name                            Size", 13, \
+	"====================================", 13, 0
 ; -----------------------------------------------------------------------------
 
 
