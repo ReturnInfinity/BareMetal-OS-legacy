@@ -110,7 +110,7 @@ full_name:
 	call os_file_open
 	cmp rax, 0
 	je fail
-	mov rcx, 2000
+	mov rcx, 1
 	mov rdi, programlocation
 	call os_file_read
 	call os_file_close

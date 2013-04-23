@@ -113,7 +113,7 @@ os_bmfs_file_close_done:
 ; -----------------------------------------------------------------------------
 ; os_bmfs_file_read -- Read a number of bytes from a file
 ; IN:	RAX = File I/O handler
-;	RCX = Number of bytes to read
+;	RCX = Number of bytes to read (automatically rounded up to next 2MiB)
 ;	RDI = Destination memory address
 ; OUT:	RCX = Number of bytes read
 ;	All other registers preserved
@@ -149,23 +149,14 @@ os_bmfs_file_read:
 	lodsq				; Load starting block in RAX
 
 	; Add the current offset
+	; Currently always starting from start
 
-	; Calculate the starting sector
-	add rcx, 511			; Convert byte count to the number of sectors required to fit
-	shr rcx, 9			; Quick divide by 512; Number of sectors to read
-	shl rax, 12			; Multiply block start count by 4096 to get sector start count
-	mov rbx, rcx			; RBX holds the total of sectors to read
-	xor edx, edx			; Read from drive 0
+	; Round up 'bytes to read' to the next 2MiB block
+	add rcx, 2097152
+	shr rcx, 21
 
-os_bmfs_file_read_loop:
-	mov rcx, 4096			; Read 2MiB at a time (4096 512-byte sectors = 2MiB)
-	cmp rbx, rcx
-	jg os_bmfs_file_read_loop_next
-	mov rcx, rbx
-os_bmfs_file_read_loop_next:
-	call readsectors
-	sub rbx, rcx
-	jnz os_bmfs_file_read_loop
+	; Read the block(s)
+	call os_bmfs_block_read
 	jmp os_bmfs_file_read_done
 
 os_bmfs_file_read_error:
@@ -285,6 +276,60 @@ os_bmfs_file_delete_notfound:
 	pop rbx
 	pop rcx
 	pop rdx
+	ret
+; -----------------------------------------------------------------------------
+
+
+; -----------------------------------------------------------------------------
+; os_bmfs_block_read -- Read a number of blocks into memory
+; IN:	RAX = Starting block #
+;	RCX = Number of blocks to read
+;	RDI = Memory location to store blocks
+; OUT:	
+os_bmfs_block_read:
+	cmp rcx, 0
+	je os_bmfs_block_read_done	; Bail out if instructed to read nothing
+
+	; Calculate the starting sector
+	shl rax, 12			; Multiply block start count by 4096 to get sector start count
+
+	; Calculate sectors to read
+	shl rcx, 12			; Multiply block count by 4096 to get number of sectors to read
+	mov rbx, rcx
+	
+os_bmfs_block_read_loop:
+	mov rcx, 4096			; Read 2MiB at a time (4096 512-byte sectors = 2MiB)
+	call readsectors
+	sub rbx, 4096
+	cmp rbx, 0
+	jne os_bmfs_block_read_loop
+
+os_bmfs_block_read_done:
+	ret
+; -----------------------------------------------------------------------------
+
+
+; -----------------------------------------------------------------------------
+; os_bmfs_block_write -- Write a number of blocks to disk
+os_bmfs_block_write:
+	cmp rcx, 0
+	je os_bmfs_block_write_done	; Bail out if instructed to write nothing	
+
+	; Calculate the starting sector
+	shl rax, 12			; Multiply block start count by 4096 to get sector start count
+
+	; Calculate sectors to write
+	shl rcx, 12			; Multiply block count by 4096 to get number of sectors to write
+	mov rbx, rcx
+	
+os_bmfs_block_write_loop:
+	mov rcx, 4096			; Write 2MiB at a time (4096 512-byte sectors = 2MiB)
+	call writesectors
+	sub rbx, 4096
+	cmp rbx, 0
+	jne os_bmfs_block_write_loop
+
+os_bmfs_block_write_done:
 	ret
 ; -----------------------------------------------------------------------------
 
