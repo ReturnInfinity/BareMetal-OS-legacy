@@ -152,8 +152,8 @@ os_bmfs_file_read:
 	; Currently always starting from start
 
 	; Round up 'bytes to read' to the next 2MiB block
-	add rcx, 2097152
-	shr rcx, 21
+	add rcx, 2097151		; 2MiB - 1 byte
+	shr rcx, 21			; Quick divide by 2097152
 
 	; Read the block(s)
 	call os_bmfs_block_read
@@ -193,7 +193,7 @@ os_bmfs_file_write:
 ; -----------------------------------------------------------------------------
 ; os_bmfs_file_seek -- Seek to position in a file
 ; IN:	RAX = File I/O handler
-;	RCX = Number of bytes to offset from origin.
+;	RCX = Number of bytes to offset from origin
 ;	RDX = Origin
 ; OUT:	All registers preserved
 os_bmfs_file_seek:
@@ -311,6 +311,10 @@ os_bmfs_block_read_done:
 
 ; -----------------------------------------------------------------------------
 ; os_bmfs_block_write -- Write a number of blocks to disk
+; IN:	RAX = Starting block #
+;	RCX = Number of blocks to write
+;	RSI = Memory location of blocks to store
+; OUT:	
 os_bmfs_block_write:
 	cmp rcx, 0
 	je os_bmfs_block_write_done	; Bail out if instructed to write nothing	

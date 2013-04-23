@@ -84,7 +84,8 @@ int isatty(fd)
 // Minimal implementation
 int close(int file)
 {
-	return -1;
+	asm volatile ("call *0x001000E8" : : "a"(file));
+	return 0;
 }
 
 // link - Establish a new name for an existing file
@@ -106,7 +107,11 @@ int lseek(int file, int ptr, int dir)
 // Minimal implementation
 int open(const char *name, int flags, ...)
 {
-	return -1;
+	long long id;
+	asm volatile ("call *0x001000D8" : "=a"(id) : "S"(name));
+	if (id == 0)
+		id = -1;
+	return id;
 }
 
 // read - Read from a file
@@ -115,7 +120,7 @@ int read(int file, char *ptr, int len)
 //	asm volatile ("xchg %bx, %bx"); // Debug
 	if (file == 0) // STDIN
 	{
-		asm volatile ("call *0x00100078" : "=c" (len) : "c"(len), "D"(ptr));
+		asm volatile ("call *0x00100078" : "=c"(len) : "c"(len), "D"(ptr));
 		ptr[len] = '\r';
 		ptr[len+1] = '\n';
 		len += 2;
@@ -123,8 +128,7 @@ int read(int file, char *ptr, int len)
 	}
 	else
 	{
-		// File!
-		len = 0;
+		asm volatile ("call *0x001000F8" : "=c"(len) : "a"(file));
 	}
 	return len;
 }
