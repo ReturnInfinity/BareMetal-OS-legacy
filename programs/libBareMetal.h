@@ -27,12 +27,16 @@ unsigned long b_mem_release(unsigned long *mem, unsigned long nbr);
 void b_ethernet_tx(void *mem, void *dest, unsigned short type, unsigned short len);
 unsigned long b_ethernet_rx(void *mem);
 
+unsigned long b_file_open(const unsigned char *name);
+unsigned long b_file_close(unsigned long handle);
+unsigned long b_file_read(unsigned long handle, void *buf, unsigned int count);
+unsigned long b_file_write(unsigned long handle, const void *buf, unsigned int count);
+
 /*
-unsigned long b_file_read(const unsigned char *name, void *mem);
-unsigned long b_file_write(void *data, const unsigned char *name, unsigned int size);
+unsigned long b_file_seek(unsigned long handle, unsigned int offset, unsigned int whence);
+unsigned long b_file_query(const unsigned char *name);
 unsigned long b_file_create(const char *name, unsigned long size);
 unsigned long b_file_delete(const unsigned char *name);
-unsigned long b_file_query(const unsigned char *name);
 */
 
 

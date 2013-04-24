@@ -164,6 +164,9 @@ os_bmfs_file_read_error:
 	xor ecx, ecx
 
 os_bmfs_file_read_done:
+
+	; Increment the offset
+
 	pop rax
 	pop rbx
 	pop rcx

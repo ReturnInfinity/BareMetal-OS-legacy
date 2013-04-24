@@ -104,21 +104,36 @@ unsigned long b_ethernet_rx(void *mem)
 	return tlong;
 }
 
+
+unsigned long b_file_open(const unsigned char *name)
+{
+	unsigned long tlong;
+	asm volatile ("call *0x001000D8" : "=a"(tlong) : "S"(name));
+	return tlong;
+}
+
+unsigned long b_file_close(unsigned long handle)
+{
+	unsigned long tlong = 0;
+	asm volatile ("call *0x001000E8" : : "a"(handle));
+	return tlong;
+}
+
+unsigned long b_file_read(unsigned long handle, void *buf, unsigned int count)
+{
+	unsigned long tlong;
+	asm volatile ("call *0x001000F8" : "=c"(tlong) : "a"(handle), "D"(buf), "c"(count));
+	return tlong;
+}
+
+unsigned long b_file_write(unsigned long handle, const void *buf, unsigned int count)
+{
+	unsigned long tlong;
+	asm volatile ("call *0x00100108" : "=c"(tlong) : "a"(handle), "S"(buf), "c"(count));
+	return tlong;
+}
+
 /*
-unsigned long b_file_read(const unsigned char *name, void *mem)
-{
-	unsigned long tlong;
-	asm volatile ("call *0x001000D8" : : "S"(name), "D"(mem));
-	return tlong;
-}
-
-unsigned long b_file_write(void *mem, const unsigned char *name, unsigned int size)
-{
-	unsigned long tlong;
-	asm volatile ("call *0x001000E8" : : "S"(mem), "D"(name), "c"(size));
-	return tlong;
-}
-
 unsigned long b_file_create(const char *name, unsigned long size)
 {
 	unsigned long tlong;
