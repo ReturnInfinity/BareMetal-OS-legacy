@@ -156,6 +156,7 @@ os_bmfs_file_read:
 	shr rcx, 21			; Quick divide by 2097152
 
 	; Read the block(s)
+	xor edx, edx			; Drive 0
 	call os_bmfs_block_read
 	jmp os_bmfs_file_read_done
 
@@ -231,6 +232,7 @@ os_bmfs_file_query_found:
 	clc				; Clear flag for file found
 	sub rdi, bmfs_directory
 	mov rbx, rdi
+	shr rbx, 6
 	mov rdx, [rdi + BMFS_DirEnt.reserved]	; Reserved blocks
 	mov rcx, [rdi + BMFS_DirEnt.size]	; Size in bytes
 	mov rax, [rdi + BMFS_DirEnt.start]	; Starting block number
