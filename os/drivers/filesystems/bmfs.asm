@@ -185,11 +185,42 @@ os_bmfs_file_read_done:
 ; OUT:	RCX = Number of bytes written
 ;	All other registers preserved
 os_bmfs_file_write:
-	; Is this an open file?
+	push rdi
+	push rsi
+	push rdx
+	push rcx
+	push rbx
+	push rax
 
+	; Is it a valid write?
+	cmp rcx, 0
+	je os_bmfs_file_write_error
+
+	; Is it in the valid file handler range?
+	sub rax, 10			; Subtract the handler offset
+	mov rbx, rax			; Keep the file ID
+	cmp rax, 64			; BMFS has up to 64 files
+	jg os_bmfs_file_write_error
+
+	; Is this an open file?
+	mov rdi, os_filehandlers
+	add rdi, rax
+	cmp byte [rdi], 0
+	je os_bmfs_file_write_error
 
 	; Flush directory to disk
 
+os_bmfs_file_write_error:
+	xor ecx, ecx
+
+os_bmfs_file_write_done:
+
+	pop rax
+	pop rbx
+	pop rcx
+	pop rdx
+	pop rsi
+	pop rdi
 	ret
 ; -----------------------------------------------------------------------------
 
