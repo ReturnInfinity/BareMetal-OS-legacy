@@ -120,11 +120,11 @@ int read(int file, char *ptr, int len)
 //	asm volatile ("xchg %bx, %bx"); // Debug
 	if (file == 0) // STDIN
 	{
-		asm volatile ("call *0x00100078" : "=c"(len) : "c"(len), "D"(ptr));
+		asm volatile ("call *0x00100038" : "=c"(len) : "c"(len), "D"(ptr));
 		ptr[len] = '\r';
 		ptr[len+1] = '\n';
 		len += 2;
-		asm volatile ("call *0x00100048"); // Print a newline
+	//	write(1, "\n", 2); // Print a newline
 	}
 	else
 	{
@@ -162,7 +162,7 @@ int write(int file, char *ptr, int len)
 //	asm volatile ("xchg %bx, %bx"); // Debug
 	if (file == 1 || file == 2) // STDOUT = 1, STDERR = 2
 	{
-		asm volatile ("call *0x001004A8" : : "S"(ptr), "c"(len)); // Make sure source register (RSI) has the string address (str)
+		asm volatile ("call *0x00100028" : : "S"(ptr), "c"(len)); // Make sure source register (RSI) has the string address (str)
 	}
 	else
 	{

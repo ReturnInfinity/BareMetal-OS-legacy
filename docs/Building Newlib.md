@@ -43,7 +43,7 @@ Create a build folder alongside the extracted `newlib-2.0.0` directory:
 Modify the following files:
 
 	newlib-2.0.0/config.sub
-	@ Line 1334
+	@ Line 1363
 	  	      | -sym* | -kopensolaris* \
 	  	      | -amigaos* | -amigados* | -msdos* | -newsos* | -unicos* | -aof* \
 	  	      | -aos* | -aros* \
@@ -53,7 +53,7 @@ Modify the following files:
 	  	      | -hiux* | -386bsd* | -knetbsd* | -mirbsd* | -netbsd* \
 	
 	newlib-2.0.0/newlib/configure.host
-	@ Line 506
+	@ Line 522
 	    z8k-*-coff)
 	  	sys_dir=z8ksim
 	  	;;
@@ -63,7 +63,7 @@ Modify the following files:
 	  esac
 	
 	newlib-2.0.0/newlib/libc/sys/configure.in
-	@ Line 46
+	@ Line 50
 	  	tic80) AC_CONFIG_SUBDIRS(tic80) ;;
 	  	w65) AC_CONFIG_SUBDIRS(w65) ;;
 	  	z8ksim) AC_CONFIG_SUBDIRS(z8ksim) ;;
