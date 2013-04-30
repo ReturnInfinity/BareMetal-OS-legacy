@@ -75,9 +75,11 @@ int wait(int *status)
 // isatty - Query whether output stream is a terminal
 // Set for STDOUT only
 int isatty(fd)
-     int fd;
 {
-	return 1;
+	if (fd == 1 || fd == 2)
+		return 1;
+	else
+		return 0;
 }
 
 // close - Close a file
@@ -124,7 +126,7 @@ int read(int file, char *ptr, int len)
 		ptr[len] = '\r';
 		ptr[len+1] = '\n';
 		len += 2;
-	//	write(1, "\n", 2); // Print a newline
+		write(1, "\n", 1);
 	}
 	else
 	{
@@ -137,6 +139,7 @@ int read(int file, char *ptr, int len)
 // Minimal implementation
 int fstat(int file, struct stat *st)
 {
+//	write(1, "fstat\n", 6);
 	st->st_mode = S_IFCHR;
 	return 0;
 }
@@ -145,6 +148,7 @@ int fstat(int file, struct stat *st)
 // Minimal implementation
 int stat(const char *file, struct stat *st)
 {
+//	write(1, "stat\n", 5);
 	st->st_mode = S_IFCHR;
 	return 0;
 }
@@ -173,7 +177,6 @@ int write(int file, char *ptr, int len)
 }
 
 // --- Memory ---
-
 /* _end is set in the linker command file */
 extern caddr_t _end;
 
@@ -187,17 +190,16 @@ extern caddr_t _end;
  *         left of memory on the board.
  */
 // sbrk - Increase program data space
-
 caddr_t sbrk(int incr)
 {
 //	asm volatile ("xchg %bx, %bx"); // Debug
-	extern caddr_t _end; /* Defined by the linker */
+//	write (2, "sbrk\n", 5);
+	extern caddr_t _end; // Defined by the linker
 	static caddr_t *heap_end;
 	caddr_t *prev_heap_end;
-//	write (2, "sbrk\n", 5);
 	if (heap_end == 0)
 	{
-//		write (2, "sbrk end\n", 9);
+//		write (2, "sbrk new\n", 9);
 		heap_end = &_end;
 	}
 	prev_heap_end = heap_end;

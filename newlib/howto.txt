@@ -1,0 +1,3 @@
+gcc -I newlib-2.0.0/newlib/libc/include/ -c crt0.c -o crt0.o
+gcc -I newlib-2.0.0/newlib/libc/include/ -c test.c -o test.o
+ld -T app.ld -o test.app crt0.o test.o libc.a
