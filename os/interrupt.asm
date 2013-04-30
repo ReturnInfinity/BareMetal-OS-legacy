@@ -119,6 +119,22 @@ rtc:
 	call system_status		; Show System Status information on screen
 rtc_no_sysstatus:
 
+	; Check to make sure that at least one core is running something
+	cmp word [os_QueueLen], 0	; Check the length of the Queue
+	jne rtc_end			; If it is greater than 0 then skip to the end
+	mov rcx, 256
+	mov rsi, cpustatus
+nextcpu:
+	lodsb
+	dec rcx
+	bt ax, 1			; Is bit 1 set? If so then the CPU is running a job
+	jc rtc_end
+	cmp rcx, 0
+	jne nextcpu
+	mov rax, os_command_line	; If nothing is running then restart the CLI
+	call os_smp_enqueue
+
+rtc_end:
 	mov al, 0x0C			; Select RTC register C
 	out 0x70, al			; Port 0x70 is the RTC index, and 0x71 is the RTC data
 	in al, 0x71			; Read the value in register C
