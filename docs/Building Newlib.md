@@ -91,7 +91,10 @@ Run the following:
 
 	../newlib-2.0.0/configure --target=x86_64-pc-baremetal --disable-multilib
 
-Edit the Makefile and remove all instances of `x86_64-pc-baremetal-` in the FOR_TARGET section. This will instruct the compiler to use the default applications instead of looking for a special cross-compiler that does not exist (and is not necessary).
+Edit the Makefile with the following commands. This will instruct the compiler to use the default applications instead of looking for a special cross-compiler that does not exist (and is not necessary).
+
+	sed -i 's/TARGET=x86_64-pc-baremetal-/TARGET=/g' Makefile
+	sed -i 's/WRAPPER) x86_64-pc-baremetal-/WRAPPER) /g' Makefile
 
 Also add `-fno-stack-protector` to CFLAGS_FOR_TARGET and CXXFLAGS_FOR_TARGET. You may also want to add `-mcmodel=large` if you plan on running programs in the high canonical address range.
 
