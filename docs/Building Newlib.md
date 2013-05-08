@@ -96,7 +96,7 @@ Edit the Makefile with the following commands. This will instruct the compiler t
 	sed -i 's/TARGET=x86_64-pc-baremetal-/TARGET=/g' Makefile
 	sed -i 's/WRAPPER) x86_64-pc-baremetal-/WRAPPER) /g' Makefile
 
-Also add `-fno-stack-protector` to CFLAGS_FOR_TARGET and CXXFLAGS_FOR_TARGET. You may also want to add `-mcmodel=large` if you plan on running programs in the high canonical address range.
+You may also want to add `-mcmodel=large` if you plan on running programs in the high canonical address range.
 
 Run the following:
 
