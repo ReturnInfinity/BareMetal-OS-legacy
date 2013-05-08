@@ -216,7 +216,14 @@ caddr_t sbrk(int incr)
 // --- Other ---
 
 // gettimeofday -- 
-int gettimeofday(struct timeval *p, void *z){
+int gettimeofday(struct timeval *p, void *z)
+{
 	return -1;
 }
 
+void __stack_chk_fail(void)
+{
+	write(1, "Stack smashin' detected!\n", 25);
+}
+
+// EOF
