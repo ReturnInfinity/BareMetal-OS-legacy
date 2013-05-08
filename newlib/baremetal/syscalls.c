@@ -75,19 +75,16 @@ int wait(int *status)
 // isatty - Query whether output stream is a terminal
 // Set for STDOUT only
 int isatty(fd)
+     int fd;
 {
-	if (fd == 1 || fd == 2)
-		return 1;
-	else
-		return 0;
+	return 1;
 }
 
 // close - Close a file
 // Minimal implementation
 int close(int file)
 {
-	asm volatile ("call *0x001000E8" : : "a"(file));
-	return 0;
+	return -1;
 }
 
 // link - Establish a new name for an existing file
@@ -109,11 +106,7 @@ int lseek(int file, int ptr, int dir)
 // Minimal implementation
 int open(const char *name, int flags, ...)
 {
-	long long id;
-	asm volatile ("call *0x001000D8" : "=a"(id) : "S"(name));
-	if (id == 0)
-		id = -1;
-	return id;
+	return -1;
 }
 
 // read - Read from a file
@@ -139,7 +132,6 @@ int read(int file, char *ptr, int len)
 // Minimal implementation
 int fstat(int file, struct stat *st)
 {
-//	write(1, "fstat\n", 6);
 	st->st_mode = S_IFCHR;
 	return 0;
 }
@@ -148,7 +140,6 @@ int fstat(int file, struct stat *st)
 // Minimal implementation
 int stat(const char *file, struct stat *st)
 {
-//	write(1, "stat\n", 5);
 	st->st_mode = S_IFCHR;
 	return 0;
 }
@@ -173,10 +164,10 @@ int write(int file, char *ptr, int len)
 		// File!
 	}
 	return 0;
-//	return -1;
 }
 
 // --- Memory ---
+
 /* _end is set in the linker command file */
 extern caddr_t _end;
 
@@ -190,16 +181,17 @@ extern caddr_t _end;
  *         left of memory on the board.
  */
 // sbrk - Increase program data space
+
 caddr_t sbrk(int incr)
 {
 //	asm volatile ("xchg %bx, %bx"); // Debug
-//	write (2, "sbrk\n", 5);
-	extern caddr_t _end; // Defined by the linker
+	extern caddr_t _end; /* Defined by the linker */
 	static caddr_t *heap_end;
 	caddr_t *prev_heap_end;
+//	write (2, "sbrk\n", 5);
 	if (heap_end == 0)
 	{
-//		write (2, "sbrk new\n", 9);
+//		write (2, "sbrk end\n", 9);
 		heap_end = &_end;
 	}
 	prev_heap_end = heap_end;
@@ -208,7 +200,6 @@ caddr_t sbrk(int incr)
 //		abort ();
 //	}
 	heap_end += incr;
-//	asm volatile ("xchg %bx, %bx");
 	return (caddr_t) prev_heap_end;
 }
 
@@ -224,6 +215,7 @@ int gettimeofday(struct timeval *p, void *z)
 void __stack_chk_fail(void)
 {
 	write(1, "Stack smashin' detected!\n", 25);
-}
+} 
 
 // EOF
+
