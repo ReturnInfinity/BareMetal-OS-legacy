@@ -36,10 +36,9 @@ int execve(char *name, char **argv, char **env)
 
 // getpid -- Process-ID
 // Return 1 by default
-#define __MYPID 1
 int getpid(void)
 {
-	return __MYPID; // 1?
+	return 1;
 }
 
 // fork -- Create a new process
@@ -52,10 +51,8 @@ int fork(void)
 
 // kill -- Send a signal
 int kill(pid, sig)
-     int pid;
-     int sig;
 {
-	if(pid == __MYPID)
+	if(pid == 1)
 		_exit(sig);
 
 	errno = EINVAL;
@@ -162,18 +159,19 @@ int write(int file, char *ptr, int len)
 	else
 	{
 		// File!
+		return -1;
 	}
-	return 0;
+	return len;
 }
 
 // --- Memory ---
 
 /* _end is set in the linker command file */
-extern caddr_t _end;
+//extern caddr_t _end;
 
-#define PAGE_SIZE 2097152ULL
-#define PAGE_MASK 0xFFFFFFFFFFE00000ULL
-#define HEAP_ADDR (((unsigned long long)&_end + PAGE_SIZE) & PAGE_MASK)
+//#define PAGE_SIZE 2097152ULL
+//#define PAGE_MASK 0xFFFFFFFFFFE00000ULL
+//#define HEAP_ADDR (((unsigned long long)&_end + PAGE_SIZE) & PAGE_MASK)
 
 /*
  * sbrk -- changes heap size size. Get nbytes more
@@ -217,5 +215,5 @@ void __stack_chk_fail(void)
 	write(1, "Stack smashin' detected!\n", 25);
 } 
 
-// EOF
 
+// EOF
