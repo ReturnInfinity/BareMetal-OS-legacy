@@ -72,7 +72,7 @@ int wait(int *status)
 // isatty - Query whether output stream is a terminal
 int isatty(fd)
 {
-	if (fd == 1 || fd == 2)
+	if (fd == 0 || fd == 1 || fd == 2)
 		return 1;
 	else
 		return 0;
