@@ -114,9 +114,6 @@ int read(int file, char *ptr, int len)
 	if (file == 0) // STDIN
 	{
 		asm volatile ("call *0x00100038" : "=c"(len) : "c"(len), "D"(ptr));
-		ptr[len] = '\r';
-		ptr[len+1] = '\n';
-		len += 2;
 		write(1, "\n", 1);
 	}
 	else
