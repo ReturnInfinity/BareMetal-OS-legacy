@@ -21,8 +21,8 @@ os_input:
 	push rdx			; Counter to keep track of max accepted characters
 	push rax
 
-	mov rdx, rcx
-	xor rcx, rcx
+	mov rdx, rcx			; Max chars to accept
+	xor rcx, rcx			; Offset from start
 os_input_more:
 	push rdi			; Display a cursor during user input
 	mov rdi, [screen_cursor_offset]	; Offset within the screen buffer
@@ -32,7 +32,7 @@ os_input_more:
 	stosb
 	pop rdi
 	call os_input_key
-	jnc os_input_halt	; No key entered... halt until an interrupt is received
+	jnc os_input_halt		; No key entered... halt until an interrupt is received
 	cmp al, 0x1C			; If Enter key pressed, finish
 	je os_input_done
 	cmp al, 0x0E			; Backspace

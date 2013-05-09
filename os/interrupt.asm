@@ -109,6 +109,7 @@ keyboard_done:
 align 16
 rtc:
 	push rsi
+	push rcx
 	push rax
 
 	cld				; Clear direction flag
@@ -143,6 +144,7 @@ rtc_end:
 	mov dword [rsi+0xB0], eax
 
 	pop rax
+	pop rcx
 	pop rsi
 	iretq
 ; -----------------------------------------------------------------------------
