@@ -70,11 +70,12 @@ int wait(int *status)
 // --- I/O ---
 
 // isatty - Query whether output stream is a terminal
-// Set for STDOUT only
 int isatty(fd)
-     int fd;
 {
-	return 1;
+	if (fd == 1 || fd == 2)
+		return 1;
+	else
+		return 0;
 }
 
 // close - Close a file
