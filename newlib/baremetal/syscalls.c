@@ -1,6 +1,6 @@
 // ============================================================================
 // BareMetal -- a 64-bit OS written in Assembly for x86-64 systems
-// Copyright (C) 2008-2012 Return Infinity -- see LICENSE.TXT
+// Copyright (C) 2008-2013 Return Infinity -- see LICENSE.TXT
 //
 // Syscalls glue for Newlib
 // ============================================================================
@@ -110,13 +110,11 @@ int open(const char *name, int flags, ...)
 // read - Read from a file
 int read(int file, char *ptr, int len)
 {
-//	asm volatile ("xchg %bx, %bx"); // Debug
 	if (file == 0) // STDIN
 	{
 		asm volatile ("call *0x00100038" : "=c"(len) : "c"(len), "D"(ptr));
-        // FIXME : Don't add newline if the input is full
-		ptr[len] = '\n';
-		ptr[len+1] = 0;
+		ptr[len] = '\n'; // BareMetal does not add a newline after keyboard input ...
+		ptr[len+1] = 0; // ... but C expects it.
 		len+=1;
 		write(1, "\n", 1);
 	}
@@ -153,7 +151,6 @@ int unlink(char *name)
 // write - Write to a file
 int write(int file, char *ptr, int len)
 {
-//	asm volatile ("xchg %bx, %bx"); // Debug
 	if (file == 1 || file == 2) // STDOUT = 1, STDERR = 2
 	{
 		asm volatile ("call *0x00100028" : : "S"(ptr), "c"(len)); // Make sure source register (RSI) has the string address (str)
