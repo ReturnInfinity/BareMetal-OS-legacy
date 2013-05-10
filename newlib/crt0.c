@@ -10,8 +10,6 @@ _start()
 {
 	char *i;
 
-	write(1, "trololo\n", 8);
-
 	// zero BSS
 	for(i = &__bss_start; i < &_end; i++)
 	{
