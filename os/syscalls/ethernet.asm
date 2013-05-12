@@ -97,7 +97,7 @@ os_ethernet_rx:
 	mov word [rsi], cx		; Clear the packet length
 	mov cx, ax			; Save the count
 	push rcx
-	rep movs
+	rep movsb
 	pop rcx
 
 os_ethernet_rx_fail:
