@@ -19,7 +19,7 @@ unsigned char b_input_key(void);
 unsigned long b_smp_enqueue(void *ptr, unsigned long var);
 unsigned long b_smp_dequeue(unsigned long *var);
 void b_smp_run(unsigned long ptr, unsigned long var);
-void b_smp_wait(unsigned long nbr);
+void b_smp_wait(void);
 
 unsigned long b_mem_allocate(unsigned long *mem, unsigned long nbr);
 unsigned long b_mem_release(unsigned long *mem, unsigned long nbr);
