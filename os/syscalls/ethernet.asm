@@ -42,7 +42,7 @@ os_ethernet_status_end:
 ; -----------------------------------------------------------------------------
 ; os_ethernet_tx -- Transmit a packet via Ethernet
 ;  IN:	RSI = Memory location where packet is stored
-;	 CX = Length of packet
+;	RCX = Length of packet
 ; OUT:	Nothing. All registers preserved
 os_ethernet_tx:
 	push rsi
@@ -52,9 +52,9 @@ os_ethernet_tx:
 
 	cmp byte [os_NetEnabled], 1
 	jne os_ethernet_tx_fail
-	cmp cx, 46				; An Ethernet packet must be at least 46 bytes
+	cmp rcx, 64				; An Ethernet packet must be at least 64 bytes
 	jl os_ethernet_tx_fail
-	cmp cx, 1500				; Fail if more then 1500 bytes
+	cmp rcx, 1522				; Fail if more than 1522 bytes
 	jg os_ethernet_tx_fail
 
 	mov rax, os_EthernetBusyLock		; Lock the Ethernet so only one send can happen at a time
@@ -77,7 +77,7 @@ os_ethernet_tx_fail:
 ; -----------------------------------------------------------------------------
 ; os_ethernet_rx -- Polls the Ethernet card for received data
 ;  IN:	RDI = Memory location where packet will be stored
-; OUT:	RCX = Length of packet
+; OUT:	RCX = Length of packet, 0 if no data
 ;	All other registers preserved
 os_ethernet_rx:
 	push rdi

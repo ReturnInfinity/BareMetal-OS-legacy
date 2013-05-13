@@ -167,12 +167,43 @@ Release pages of memory
 
 **b\_ethernet\_tx**
 
-Send data via Ethernet
+Transmit data via Ethernet
+
+Assembly Registers:
+
+	 IN:	RSI = memory location of packet
+			RCX = length of packet
+	OUT:	All registers preserved
+
+Assembly Example:
+
+	mov rsi, Packet
+	mov rcx, 1500
+	call b_ethernet_tx
+	...
+	Packet:
+	Packet_Dest: db 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF ; Broadcast
+	Packet_Src: db 0x00, 0x00, 0x00, 0x00, 0x00, 0x00
+	Packet_Type: dw 0xABBA
+	Packet_Data: db 'This is a test', 0
+
+The packet must contain a proper 14-byte header.
 
 **b\_ethernet\_rx**
 
 Receive data via Ethernet
 
+Assembly Registers:
+
+	 IN:	RDI = memory location to store packet
+	OUT:	RCX = length of packet, 0 if nothing to receive
+
+Assembly Example:
+
+	mov rdi, Packet
+	call b_ethernet_rx
+	...
+	Packet: times 1518 db 0
 
 ## File ##
 
