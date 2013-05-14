@@ -36,6 +36,7 @@ emptyqueue:
 ret				; Return to OS
 
 endstring: db 13, 0
+spacestring: db ' ', 0
 
 ; This procedure will be executed by each of the processors
 ; It requires mutually exclusive access while it creates the string and prints to the screen
@@ -58,6 +59,8 @@ grablock:
 	call b_system_misc
 	mov rdx, 5		; Print the APIC ID
 	call b_system_misc
+	mov rsi, spacestring
+	call b_output
 
 	bts word [mutex], 0	; Release the mutex
 ret
