@@ -27,6 +27,7 @@ b_file_query		equ 0x0000000000100120	; Query the existence of a file. IN: RSI = 
 b_file_create		equ 0x0000000000100130	; Create a file on disk. IN: RSI = location of filename, RCX = number of 2MiB blocks to reserve
 b_file_delete		equ 0x0000000000100140	; Delete a file from disk. IN: RSI = Memory location of file name to delete. OUT: Carry is set if the file was not found or an error occured
 b_system_config		equ 0x0000000000100150	; Info pending!
+b_system_misc		equ 0x0000000000100160	; Call a misc system function
 
 ; =============================================================================
 ; EOF

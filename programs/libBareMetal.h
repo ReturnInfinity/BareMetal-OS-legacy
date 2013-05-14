@@ -24,7 +24,7 @@ void b_smp_wait(void);
 unsigned long b_mem_allocate(unsigned long *mem, unsigned long nbr);
 unsigned long b_mem_release(unsigned long *mem, unsigned long nbr);
 
-void b_ethernet_tx(void *mem, void *dest, unsigned short type, unsigned short len);
+void b_ethernet_tx(void *mem, unsigned long len);
 unsigned long b_ethernet_rx(void *mem);
 
 unsigned long b_file_open(const unsigned char *name);

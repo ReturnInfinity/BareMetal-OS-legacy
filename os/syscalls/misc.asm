@@ -316,12 +316,54 @@ os_show_statusbar:
 
 
 ; -----------------------------------------------------------------------------
-; os_system_config
+; os_system_config - View or modify system configuration options
 os_system_config:
 
 
 	ret
 ; -----------------------------------------------------------------------------
+
+
+; -----------------------------------------------------------------------------
+; os_system_misc - Call misc OS sub-functions
+; IN:	RDX = Function #
+; OUT:	Dependant on system call
+os_system_misc:
+;	cmp rdx, X
+;	je os_system_misc_
+	cmp rdx, 1
+	je os_system_misc_os_smp_get_id
+	cmp rdx, 2
+	je os_system_misc_os_smp_lock
+	cmp rdx, 3
+	je os_system_misc_os_smp_unlock
+	cmp rdx, 4
+	je os_system_misc_os_debug_dump_mem
+	cmp rdx, 5
+	je os_system_misc_os_debug_dump_rax
+	ret
+
+os_system_misc_os_smp_get_id:
+	call os_smp_get_id
+	ret
+
+os_system_misc_os_smp_lock:
+	call os_smp_lock
+	ret
+
+os_system_misc_os_smp_unlock:
+	call os_smp_unlock
+	ret
+
+os_system_misc_os_debug_dump_mem:
+	call os_debug_dump_mem
+	ret
+
+os_system_misc_os_debug_dump_rax:
+	call os_debug_dump_rax
+	ret
+; -----------------------------------------------------------------------------
+
 
 
 ; -----------------------------------------------------------------------------

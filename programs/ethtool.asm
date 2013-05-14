@@ -50,8 +50,9 @@ ethtool_receive:
 	je ethtool_receive_nopacket
 	mov rsi, receiveddata
 	call b_output
-;	mov rsi, EthernetBuffer
-;	call b_debug_dump_mem
+	mov rsi, EthernetBuffer
+	mov rdx, 4
+	call b_system_misc
 	jmp ethtool_command
 
 ethtool_receive_nopacket:

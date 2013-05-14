@@ -96,6 +96,7 @@ os_ethernet_rx:
 	je os_ethernet_rx_fail		; If not, bail out
 	mov word [rsi], cx		; Clear the packet length
 	mov cx, ax			; Save the count
+	add rsi, 2			; Skip the packet length word
 	push rcx
 	rep movsb
 	pop rcx

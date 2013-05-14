@@ -92,9 +92,9 @@ unsigned long b_mem_release(unsigned long *mem, unsigned long nbr)
 }
 
 
-void b_ethernet_tx(void *mem, void *dest, unsigned short type, unsigned short len)
+void b_ethernet_tx(void *mem, unsigned long len)
 {
-	asm volatile ("call *0x001000B8" : : "S"(mem), "D"(dest), "b"(type), "c"(len));
+	asm volatile ("call *0x001000B8" : : "S"(mem), "c"(len));
 }
 
 unsigned long b_ethernet_rx(void *mem)

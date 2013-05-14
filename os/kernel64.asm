@@ -122,6 +122,11 @@ kernel_start:
 	align 8
 	dq os_system_config
 
+	align 8			; 0x0160
+	jmp os_system_misc
+	align 8
+	dq os_system_misc
+
 
 align 16
 
