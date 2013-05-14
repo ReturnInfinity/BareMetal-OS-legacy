@@ -1,8 +1,12 @@
-; SMP Test Program (v1.0, July 6 2010)
-; Written by Ian Seyler
+; -----------------------------------------------------------------------------
+; SMP Test Program (v1.1, May 14 2013)
+; Ian Seyler @ Return Infinity
+;
+; Demo the ability to spawn multiple workloads for CPU cores to work on
 ;
 ; BareMetal compile:
 ; nasm smptest.asm -o smptest.app
+; -----------------------------------------------------------------------------
 
 
 [BITS 64]
@@ -24,16 +28,17 @@ spawn:
 
 bsp:
 	call b_smp_dequeue	; Try to dequeue a workload
-	jc emptyqueue		; If carry is set then the queue is empty
+	cmp eax, 0
+	je emptyqueue		; If 0 is returned then the queue is empty
 	call b_smp_run		; Otherwise run the workload
-	jne bsp			; If it is not empty try to do another workload
+	jmp bsp			; Try to do another workload
 
 emptyqueue:
 	call b_smp_wait		; Wait for all other processors to finish
 	mov rsi, endstring
 	call b_output
 
-ret				; Return to OS
+	ret			; Return to OS
 
 endstring: db 13, 0
 spacestring: db ' ', 0
@@ -63,7 +68,7 @@ grablock:
 	call b_output
 
 	bts word [mutex], 0	; Release the mutex
-ret
+	ret
 
 	mutex dw 1		; The MUTual-EXclustion flag
 

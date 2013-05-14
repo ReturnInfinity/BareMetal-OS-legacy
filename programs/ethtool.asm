@@ -1,7 +1,13 @@
-; -----------------------------------------------------------------
-; EthTool v0.1 - Ethernet debugging tool
+; -----------------------------------------------------------------------------
+; EthTool - Ethernet debugging tool (v1.0, May 14 2013)
 ; Ian Seyler @ Return Infinity
-; -----------------------------------------------------------------
+;
+; 's' to broadcast a packet
+; 'r' to display the last packet received
+;
+; BareMetal compile:
+; nasm ethtool.asm -o ethtool.app
+; -----------------------------------------------------------------------------
 
 
 [BITS 64]
@@ -9,7 +15,7 @@
 
 %INCLUDE "bmdev.asm"
 
-ethtool:
+start:
 
 	mov rsi, startstring
 	call b_output
