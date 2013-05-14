@@ -35,7 +35,7 @@ ethtool_send:
 	mov rsi, sendstring
 	call b_output
 	mov rsi, packet
-	mov rcx, 1500
+	mov rcx, 1522
 	call b_ethernet_tx
 	mov rsi, sentstring
 	call b_output
@@ -61,10 +61,6 @@ ethtool_receive_nopacket:
 
 ; -----------------------------------------------------------------
 
-packet:
-destination: db 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF
-source: db 0x00, 0x00, 0x00, 0x00, 0x00, 0x00
-ethertype: db 0xAB, 0xBA
 startstring: db 'EthTool: S to send a packet, R to recieve a packet, Q to quit.', 0
 endstring: db 13, 0
 sendstring: db 13, 'Sending packet, ', 0
@@ -72,4 +68,8 @@ sentstring: db 'Sent', 0
 receivestring: db 13, 'Receiving packet, ', 0
 receivednothingstring: db 'Nothing there', 0
 receiveddata: db 'Data received', 13, 0
+packet:
+destination: db 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF
+source: db 0x00, 0x00, 0x00, 0x00, 0x00, 0x00
+ethertype: db 0xAB, 0xBA
 EthernetBuffer: db 0
