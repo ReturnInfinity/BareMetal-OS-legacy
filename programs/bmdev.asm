@@ -12,8 +12,8 @@ b_output_chars		equ 0x0000000000100020	; Displays a number of characters. IN: RS
 b_input			equ 0x0000000000100030	; Take string from keyboard entry. IN: RDI = location where string will be stored. RCX = max chars to accept
 b_input_key		equ 0x0000000000100040	; Scans keyboard for input. OUT: AL = 0 if no key pressed, otherwise ASCII code
 
-b_smp_enqueue		equ 0x0000000000100050	; Add a workload to the processing queue. IN: RAX = Code to execute, RBX = Variable/Data to work on
-b_smp_dequeue		equ 0x0000000000100060	; Dequeue a workload from the processing queue. OUT: RAX = Code to execute, RBX = Variable/Data to work on
+b_smp_enqueue		equ 0x0000000000100050	; Add a workload to the processing queue. IN: RAX = Code to execute, RSI = Variable/Data to work on
+b_smp_dequeue		equ 0x0000000000100060	; Dequeue a workload from the processing queue. OUT: RAX = Code to execute, RDI = Variable/Data to work on
 b_smp_run		equ 0x0000000000100070	; Call the function address in RAX. IN: RAX = Memory location of code to run
 b_smp_wait		equ 0x0000000000100080	; Wait until all other CPU Cores are finished processing.
 
