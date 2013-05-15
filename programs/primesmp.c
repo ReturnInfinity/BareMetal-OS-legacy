@@ -1,33 +1,30 @@
-// Prime SMP Test Program (v1.3, June 2 2012)
+// Prime SMP Test Program (v1.4, May 14 2013)
 // Written by Ian Seyler @ Return Infinity
 //
 // This program checks all odd numbers between 3 and 'maxn' and determines if they are prime.
 // On exit the program will display the execution time and how many prime numbers were found.
 // Useful for testing runtime performance between Linux/BSD and BareMetal OS.
 //
-// BareMetal compile using GCC (Tested with 4.5.0)
-// gcc -c -m64 -nostdlib -nostartfiles -nodefaultlibs -mno-red-zone -o primesmp.o primesmp.c -DBAREMETAL
-// gcc -c -m64 -nostdlib -nostartfiles -nodefaultlibs -mno-red-zone -o libBareMetal.o libBareMetal.c
-// objcopy --remove-section .eh_frame --remove-section .rel.eh_frame --remove-section .rela.eh_frame primesmp.o
-// objcopy --remove-section .eh_frame --remove-section .rel.eh_frame --remove-section .rela.eh_frame libBareMetal.o
-// ld -T app.ld -o primesmp.app primesmp.o libBareMetal.o
+// BareMetal compile using GCC (Tested with 4.7) with Newlib 2.0.0
+// gcc -I newlib-2.0.0/newlib/libc/include/ -c primesmp.c -o primesmp.o -DBAREMETAL
+// gcc -c libBareMetal.c -o libBareMetal.o
+// ld -T app.ld -o primesmp.app primesmp.o libBareMetal.o libc.a
 //
-// Linux/BSD compile using GCC (Tested with 4.5.0)
-// gcc -m64 -lpthread -o primesmp primesmp.c
-// strip primesmp
+// Linux/BSD compile using GCC (Tested with 4.7)
+// gcc -pthread primesmp.c -o primesmp
 //
 // maxn = 500000	primes = 41538
 // maxn = 1000000	primes = 78498
 // maxn = 5000000	primes = 348513
 // maxn = 10000000	primes = 664579
 
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 
 #ifdef BAREMETAL
 #include "libBareMetal.h"
 #else
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
 #include <pthread.h>
 #include <time.h>
 #endif
@@ -36,7 +33,6 @@ void *prime_process(void *param);
 
 // primes is set to 1 since we don't calculate for '2' as it is a known prime number
 unsigned long max_number=0, primes=1, local=0, lock=0, process_stage=0, processes=0, max_processes=0, singletime=0;
-unsigned char tstring[25];
 float speedup;
 
 #ifndef BAREMETAL
@@ -64,7 +60,7 @@ int main(int argc, char *argv[])
 		exit(1);
 	}
 
-	printf("PrimeSMP v1.0. Using a maximum of %ld processes. Searching up to %ld.\n", max_processes, max_number);
+	printf("PrimeSMP v1.4 - Using a maximum of %ld process(es). Searching up to %ld.\n", max_processes, max_number);
 
 	unsigned long k;
 
@@ -113,13 +109,6 @@ int main(int argc, char *argv[])
 		// Print the results
 #ifdef BAREMETAL
 		finish = b_get_timercounter();
-		b_int_to_string(primes, tstring);
-		b_print_string(tstring);
-		b_print_string(" in ");
-		finish = (finish - start) / 8;
-		b_int_to_string(finish, tstring);
-		b_print_string(tstring);
-		b_print_string(" seconds\n");
 #else
 		time(&finish);
 		if (processes == 1)
