@@ -317,9 +317,25 @@ os_show_statusbar:
 
 ; -----------------------------------------------------------------------------
 ; os_system_config - View or modify system configuration options
+; IN:	RDX = Function #
+;	RAX = Variable 1
+;	RCX = Variable 2
+; OUT:	Dependant on system call
 os_system_config:
+;	cmp rdx, X
+;	je os_system_config_
+	cmp rdx, 1
+	je os_system_config_networkcallback_get
+	cmp rdx, 2
+	je os_system_config_networkcallback_set
+	ret
 
+os_system_config_networkcallback_get:
+	mov rax, [os_NetworkCallback]
+	ret
 
+os_system_config_networkcallback_set:
+	mov qword [os_NetworkCallback], rax
 	ret
 ; -----------------------------------------------------------------------------
 
@@ -327,6 +343,8 @@ os_system_config:
 ; -----------------------------------------------------------------------------
 ; os_system_misc - Call misc OS sub-functions
 ; IN:	RDX = Function #
+;	RAX = Variable 1
+;	RCX = Variable 2
 ; OUT:	Dependant on system call
 os_system_misc:
 ;	cmp rdx, X

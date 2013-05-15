@@ -3,7 +3,10 @@
 ; Ian Seyler @ Return Infinity
 ;
 ; 's' to broadcast a packet
-; 'r' to display the last packet received
+; 'q' to quit
+;
+; A network callback is installed to deal with packets the moment they are
+; received. This callback is run by the network interrupt.
 ;
 ; BareMetal compile:
 ; nasm ethtool.asm -o ethtool.app
@@ -19,6 +22,10 @@ start:
 
 	mov rsi, startstring
 	call b_output
+	; Configure the network callback
+	mov rax, ethtool_receive
+	mov rdx, 2
+	call b_system_config
 
 ethtool_command:
 	call b_input_key
@@ -26,8 +33,6 @@ ethtool_command:
 
 	cmp al, 's'
 	je ethtool_send
-	cmp al, 'r'
-	je ethtool_receive
 	cmp al, 'q'
 	je ethtool_finish
 	jmp ethtool_command			; Didn't get any key we were expecting so try again.
@@ -35,6 +40,10 @@ ethtool_command:
 ethtool_finish:
 	mov rsi, endstring
 	call b_output
+	; Clear the network callback
+	mov rax, 0
+	mov rdx, 2
+	call b_system_config
 	ret					; Back to OS
 
 ethtool_send:
@@ -52,29 +61,19 @@ ethtool_receive:
 	call b_output
 	mov rdi, EthernetBuffer
 	call b_ethernet_rx
-	cmp rcx, 0
-	je ethtool_receive_nopacket
-	mov rsi, receiveddata
-	call b_output
 	mov rsi, EthernetBuffer
 	mov rdx, 4
 	call b_system_misc
-	jmp ethtool_command
+	ret
 
-ethtool_receive_nopacket:
-	mov rsi, receivednothingstring
-	call b_output
-	jmp ethtool_command
 
 ; -----------------------------------------------------------------
 
-startstring: db 'EthTool: S to send a packet, R to recieve a packet, Q to quit.', 0
+startstring: db 'EthTool: S to send a packet, Q to quit.', 13, 'Received packets will display automatically.', 0
 endstring: db 13, 0
 sendstring: db 13, 'Sending packet, ', 0
 sentstring: db 'Sent', 0
-receivestring: db 13, 'Receiving packet, ', 0
-receivednothingstring: db 'Nothing there', 0
-receiveddata: db 'Data received', 13, 0
+receivestring: db 13, 'Received packet', 13, 0
 packet:
 destination: db 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF
 source: db 0x00, 0x00, 0x00, 0x00, 0x00, 0x00
