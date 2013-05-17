@@ -350,34 +350,34 @@ os_system_misc:
 ;	cmp rdx, X
 ;	je os_system_misc_
 	cmp rdx, 1
-	je os_system_misc_os_smp_get_id
+	je os_system_misc_smp_get_id
 	cmp rdx, 2
-	je os_system_misc_os_smp_lock
+	je os_system_misc_smp_lock
 	cmp rdx, 3
-	je os_system_misc_os_smp_unlock
+	je os_system_misc_smp_unlock
 	cmp rdx, 4
-	je os_system_misc_os_debug_dump_mem
+	je os_system_misc_debug_dump_mem
 	cmp rdx, 5
-	je os_system_misc_os_debug_dump_rax
+	je os_system_misc_debug_dump_rax
 	ret
 
-os_system_misc_os_smp_get_id:
+os_system_misc_smp_get_id:
 	call os_smp_get_id
 	ret
 
-os_system_misc_os_smp_lock:
+os_system_misc_smp_lock:
 	call os_smp_lock
 	ret
 
-os_system_misc_os_smp_unlock:
+os_system_misc_smp_unlock:
 	call os_smp_unlock
 	ret
 
-os_system_misc_os_debug_dump_mem:
+os_system_misc_debug_dump_mem:
 	call os_debug_dump_mem
 	ret
 
-os_system_misc_os_debug_dump_rax:
+os_system_misc_debug_dump_rax:
 	call os_debug_dump_rax
 	ret
 ; -----------------------------------------------------------------------------

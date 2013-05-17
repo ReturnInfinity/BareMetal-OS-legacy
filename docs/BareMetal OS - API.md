@@ -32,6 +32,7 @@ Version 0.6.0 - April 17, 2013
 	- b\_file\_delete
 7. Misc
 	- b\_system\_config
+	- b\_system\_misc
 
 
 ## Output ##
@@ -205,6 +206,8 @@ Assembly Example:
 	...
 	Packet: times 1518 db 0
 
+Notes: BareMetal OS does not keep a buffer of received packets. This means that the OS will overwrite the last packet received as soon as it receives a new one. You can continuously poll the network by checking b_ethernet_rx often, but this is not ideal. BareMetal OS allows for a network interrupt callback handler to be run whenever a packet is received. With a callback, your program will always be aware of when a packet was received. Check programs/ethtool.asm for an example of using a callback.
+
 ## File ##
 
 **b\_file\_open**
@@ -304,4 +307,26 @@ Assembly Registers:
 
 **b\_system\_config**
 
-A grab-bag of useful functions
+View or modify system configuration options
+
+Assembly Registers:
+
+	 IN:	RDX = Function #
+			RAX = Variable 1
+			RCX = Variable 2 
+	OUT:	RAX = Result 1
+			RCX = Result 2
+
+Function numbers come in pairs (one for reading a parameter, and one for writing a parameter). b_system_config should be called with a function alias and not a direct function number.
+
+**b\_system\_misc**
+
+Call miscellaneous OS sub-functions
+
+Assembly Registers:
+
+	 IN:	RDX = Function #
+			RAX = Variable 1
+			RCX = Variable 2 
+	OUT:	RAX = Result 1
+			RCX = Result 2
