@@ -1,3 +1,5 @@
+#include <stdio.h>
+
 extern int main(int argc, char **argv, char **environ);
 
 extern char __bss_start, _end; // BSS should be the last think before _end
@@ -9,16 +11,19 @@ char **environ = __env;
 _start()
 {
 	char *i;
+	int retval = 0;
 
 	// zero BSS
 	for(i = &__bss_start; i < &_end; i++)
 	{
-		*i = 0; 
-	} 
+		*i = 0;
+	}
 
 	// XXX: get argc and argv
 
-	main(0,0, __env);
+	retval = main(0,0, __env);
 
-	return 0;
+	fflush(stdout);
+
+	return retval;
 }
