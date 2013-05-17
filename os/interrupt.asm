@@ -177,7 +177,38 @@ network_rx_as_well:
 	stosw				; Store the size of the packet
 	cmp qword [os_NetworkCallback], 0	; Is it valid?
 	je network_end			; If not then bail out.
-	call [os_NetworkCallback]
+
+	; We could do a 'call [os_NetworkCallback]' here but that would not be ideal.
+	; A defective callback would hang the system if it never returned back to the
+	; interrupt handler. Instead, we modify the stack so that the callback is
+	; executed after the interrupt handler has finished. Once the callback has
+	; finished, the execution flow will pick up back in the program.
+	mov rcx, [os_NetworkCallback]	; RCX stores the callback address
+	mov rsi, rsp			; Copy the current stack pointer to RSI
+	sub rsp, 8			; Subtract 8 since we will copy 8 registers
+	mov rdi, rsp			; Copy the 'new' stack pointer to RDI
+	lodsq				; RAX
+	stosq
+	lodsq				; RCX
+	stosq
+	lodsq				; RSI
+	stosq
+	lodsq				; RDI
+	stosq
+	lodsq				; RIP
+	xchg rax, rcx
+	stosq				; Callback address
+	lodsq				; CS
+	stosq
+	lodsq				; Flags
+	stosq
+	lodsq				; RSP
+	sub rax, 8
+	stosq
+	lodsq				; SS
+	stosq
+	xchg rax, rcx
+	stosq				; Original program address
 	jmp network_end
 
 network_tx:
