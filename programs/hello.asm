@@ -13,7 +13,7 @@
 start:					; Start of program label
 
 	mov rsi, hello_message		; Load RSI with memory address of string
-	call b_print_string		; Print the string that RSI points to
+	call [b_output]			; Print the string that RSI points to
 
 ret					; Return to OS
 

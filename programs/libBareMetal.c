@@ -28,26 +28,26 @@
 
 void b_output(const char *str)
 {
-	asm volatile ("call *0x00100018" : : "S"(str)); // Make sure source register (RSI) has the string address (str)
+	asm volatile ("call *0x00100010" : : "S"(str)); // Make sure source register (RSI) has the string address (str)
 }
 
 void b_output_chars(const char *str, unsigned long nbr)
 {
-	asm volatile ("call *0x00100028" : : "S"(str), "c"(nbr));
+	asm volatile ("call *0x00100018" : : "S"(str), "c"(nbr));
 }
 
 
 unsigned long b_input(unsigned char *str, unsigned long nbr)
 {
 	unsigned long len;
-	asm volatile ("call *0x00100038" : "=c" (len) : "c"(nbr), "D"(str));
+	asm volatile ("call *0x00100020" : "=c" (len) : "c"(nbr), "D"(str));
 	return len;
 }
 
 unsigned char b_input_key(void)
 {
 	unsigned char chr;
-	asm volatile ("call *0x00100048" : "=a" (chr));
+	asm volatile ("call *0x00100028" : "=a" (chr));
 	return chr;
 }
 
@@ -55,52 +55,52 @@ unsigned char b_input_key(void)
 unsigned long b_smp_enqueue(void *ptr, unsigned long var)
 {
 	unsigned long tlong;
-	asm volatile ("call *0x00100058" : "=a"(tlong) : "a"(ptr), "S"(var));
+	asm volatile ("call *0x00100030" : "=a"(tlong) : "a"(ptr), "S"(var));
 	return tlong;
 }
 
 unsigned long b_smp_dequeue(unsigned long *var)
 {
 	unsigned long tlong;
-	asm volatile ("call *0x00100068" : "=a"(tlong), "=D"(*(var)));
+	asm volatile ("call *0x00100038" : "=a"(tlong), "=D"(*(var)));
 	return tlong;
 }
 
 void b_smp_run(unsigned long ptr, unsigned long var)
 {
-	asm volatile ("call *0x00100078" : : "a"(ptr), "D"(var));
+	asm volatile ("call *0x00100040" : : "a"(ptr), "D"(var));
 }
 
 void b_smp_wait(void)
 {
-	asm volatile ("call *0x00100088");
+	asm volatile ("call *0x00100048");
 }
 
 
 unsigned long b_mem_allocate(unsigned long *mem, unsigned long nbr)
 {
 	unsigned long tlong;
-	asm volatile ("call *0x00100098" : "=a"(*(mem)), "=c"(tlong) : "c"(nbr));
+	asm volatile ("call *0x00100050" : "=a"(*(mem)), "=c"(tlong) : "c"(nbr));
 	return tlong;
 }
 
 unsigned long b_mem_release(unsigned long *mem, unsigned long nbr)
 {
 	unsigned long tlong;
-	asm volatile ("call *0x001000A8" : "=c"(tlong) : "a"(*(mem)), "c"(nbr));
+	asm volatile ("call *0x00100058" : "=c"(tlong) : "a"(*(mem)), "c"(nbr));
 	return tlong;
 }
 
 
 void b_ethernet_tx(void *mem, unsigned long len)
 {
-	asm volatile ("call *0x001000B8" : : "S"(mem), "c"(len));
+	asm volatile ("call *0x00100060" : : "S"(mem), "c"(len));
 }
 
 unsigned long b_ethernet_rx(void *mem)
 {
 	unsigned long tlong;
-	asm volatile ("call *0x001000C8" : "=c"(tlong) : "D"(mem));
+	asm volatile ("call *0x00100068" : "=c"(tlong) : "D"(mem));
 	return tlong;
 }
 
@@ -108,28 +108,28 @@ unsigned long b_ethernet_rx(void *mem)
 unsigned long b_file_open(const unsigned char *name)
 {
 	unsigned long tlong;
-	asm volatile ("call *0x001000D8" : "=a"(tlong) : "S"(name));
+	asm volatile ("call *0x00100070" : "=a"(tlong) : "S"(name));
 	return tlong;
 }
 
 unsigned long b_file_close(unsigned long handle)
 {
 	unsigned long tlong = 0;
-	asm volatile ("call *0x001000E8" : : "a"(handle));
+	asm volatile ("call *0x00100078" : : "a"(handle));
 	return tlong;
 }
 
 unsigned long b_file_read(unsigned long handle, void *buf, unsigned int count)
 {
 	unsigned long tlong;
-	asm volatile ("call *0x001000F8" : "=c"(tlong) : "a"(handle), "D"(buf), "c"(count));
+	asm volatile ("call *0x00100080" : "=c"(tlong) : "a"(handle), "D"(buf), "c"(count));
 	return tlong;
 }
 
 unsigned long b_file_write(unsigned long handle, const void *buf, unsigned int count)
 {
 	unsigned long tlong;
-	asm volatile ("call *0x00100108" : "=c"(tlong) : "a"(handle), "S"(buf), "c"(count));
+	asm volatile ("call *0x00100088" : "=c"(tlong) : "a"(handle), "S"(buf), "c"(count));
 	return tlong;
 }
 

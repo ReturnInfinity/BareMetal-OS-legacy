@@ -21,14 +21,14 @@
 start:
 
 	mov rsi, startstring
-	call b_output
+	call [b_output]
 	; Configure the network callback
 	mov rax, ethtool_receive
 	mov rdx, 2
-	call b_system_config
+	call [b_system_config]
 
 ethtool_command:
-	call b_input_key
+	call [b_input_key]
 	or al, 00100000b			; Convert character to lowercase if it is not already
 
 	cmp al, 's'
@@ -39,31 +39,31 @@ ethtool_command:
 
 ethtool_finish:
 	mov rsi, endstring
-	call b_output
+	call [b_output]
 	; Clear the network callback
 	mov rax, 0
 	mov rdx, 2
-	call b_system_config
+	call [b_system_config]
 	ret					; Back to OS
 
 ethtool_send:
 	mov rsi, sendstring
-	call b_output
+	call [b_output]
 	mov rsi, packet
 	mov rcx, 1522
-	call b_ethernet_tx
+	call [b_ethernet_tx]
 	mov rsi, sentstring
-	call b_output
+	call [b_output]
 	jmp ethtool_command
 	
 ethtool_receive:
 	mov rsi, receivestring
-	call b_output
+	call [b_output]
 	mov rdi, EthernetBuffer
-	call b_ethernet_rx
+	call [b_ethernet_rx]
 	mov rsi, EthernetBuffer
 	mov rdx, 4
-	call b_system_misc
+	call [b_system_misc]
 	ret
 
 

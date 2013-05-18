@@ -112,7 +112,7 @@ int read(int file, char *ptr, int len)
 {
 	if (file == 0) // STDIN
 	{
-		asm volatile ("call *0x00100038" : "=c"(len) : "c"(len), "D"(ptr));
+		asm volatile ("call *0x00100020" : "=c"(len) : "c"(len), "D"(ptr));
 		ptr[len] = '\n'; // BareMetal does not add a newline after keyboard input ...
 		ptr[len+1] = 0; // ... but C expects it.
 		len+=1;
@@ -120,7 +120,7 @@ int read(int file, char *ptr, int len)
 	}
 	else
 	{
-		asm volatile ("call *0x001000F8" : "=c"(len) : "a"(file));
+		asm volatile ("call *0x00100080" : "=c"(len) : "a"(file));
 	}
 	return len;
 }
@@ -153,7 +153,7 @@ int write(int file, char *ptr, int len)
 {
 	if (file == 1 || file == 2) // STDOUT = 1, STDERR = 2
 	{
-		asm volatile ("call *0x00100028" : : "S"(ptr), "c"(len)); // Make sure source register (RSI) has the string address (str)
+		asm volatile ("call *0x00100018" : : "S"(ptr), "c"(len)); // Make sure source register (RSI) has the string address (str)
 	}
 	else
 	{
