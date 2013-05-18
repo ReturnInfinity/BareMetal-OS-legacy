@@ -199,6 +199,8 @@ os_output_chars_nextchar:
 	je os_output_chars_newline	; If so then we print a new line
 	cmp al, 10			; Check if there was a newline character in the string
 	je os_output_chars_newline	; If so then we print a new line
+	cmp al, 9
+	je os_output_chars_tab
 	mov rdi, [screen_cursor_offset]
 	stosw				; Write the character and attribute with one call
 	call os_inc_cursor
@@ -219,6 +221,25 @@ os_output_chars_newline_skip_LF_nosub:
 	add rsi, 1
 	call os_print_newline
 	jmp os_output_chars_nextchar	
+
+os_output_chars_tab:
+	push rcx
+	mov al, [screen_cursor_x]	; Grab the current cursor X value (ex 7)
+	mov cl, al
+	add al, 8			; Add 8 (ex 15)
+	shr al, 3			; Clear lowest 3 bits (ex 8)
+	shl al, 3			; Bug? 'xor al, 7' doesn't work...
+	sub al, cl			; (ex 8 - 7 = 1)
+	mov cl, al
+	mov al, ' '
+os_output_chars_tab_next:
+	stosw				; Write the character and attribute with one call
+	call os_inc_cursor
+	sub cl, 1
+	cmp cl, 0
+	jne os_output_chars_tab_next
+	pop rcx
+	jmp os_output_chars_nextchar
 
 os_output_chars_done:
 	call os_screen_update
