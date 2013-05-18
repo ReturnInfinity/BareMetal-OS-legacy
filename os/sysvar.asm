@@ -13,19 +13,16 @@ align 16
 hextable: 		db '0123456789ABCDEF'
 
 ; Strings
-system_status_header:	db 'BareMetal v0.6.0', 0
+system_status_header:	db 'BareMetal v0.6.1-pre', 0
 readymsg:		db 'BareMetal is ready', 0
 networkmsg:		db 'net: ', 0
 diskmsg:		db 'hdd: ', 0
 diskmibmsg:		db ' MiB', 0
-prompt:			db '> ', 0
 space:			db ' ', 0
 newline:		db 13, 0
-appextension:		db '.APP', 0
+tab:			db 9, 0
 memory_message:		db 'Not enough system memory for CPU stacks! System halted.', 0
 startupapp:		db 'startup.app', 0
-;ARP_timeout		dd 0x10000000		; After this time, ARP entry must be refreshed
-;os_icmp_callback	dq 0x00000000000000000	; Point to ICMP reciever call back fundtion
 
 ; Memory addresses
 ahci_cmdlist:		equ 0x0000000000070000	; 4096 bytes	0x070000 -> 0x071FFF

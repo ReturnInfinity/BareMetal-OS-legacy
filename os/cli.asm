@@ -99,9 +99,8 @@ add_suffix:
 	call os_string_length
 	cmp rcx, 8
 	jg fail				; If the string is longer than 8 chars we can't add a suffix
-
 	mov rdi, cli_command_string
-	mov rsi, appextension		; '.APP'
+	mov rsi, appextension		; '.app'
 	call os_string_append		; Append the extension to the command string
 
 ; cli_command_string now contains a full filename
@@ -206,6 +205,8 @@ exit:
 	reboot_string		db 'reboot', 0
 	testzone_string		db 'testzone', 0
 
+	appextension:		db '.app', 0
+	prompt:			db '> ', 0
 
 ; -----------------------------------------------------------------------------
 ; os_string_find_char -- Find first location of character in a string
