@@ -24,7 +24,7 @@ start:
 	call [b_output]
 	; Configure the network callback
 	mov rax, ethtool_receive
-	mov rdx, 2
+	mov rdx, networkcallback_set
 	call [b_system_config]
 
 ethtool_command:
@@ -42,7 +42,7 @@ ethtool_finish:
 	call [b_output]
 	; Clear the network callback
 	mov rax, 0
-	mov rdx, 2
+	mov rdx, networkcallback_set
 	call [b_system_config]
 	ret					; Back to OS
 

@@ -35,5 +35,19 @@ b_file_delete		equ 0x00000000001000A8	; Delete a file from disk. IN: RSI = Memor
 b_system_config		equ 0x00000000001000B0	; Info pending!
 b_system_misc		equ 0x00000000001000B8	; Call a misc system function
 
+
+; Index for b_system_config calls
+networkcallback_get	equ 1
+networkcallback_set	equ 2
+
+
+; Index for b_system_misc calls
+smp_get_id		equ 1
+smp_lock		equ 2
+smp_unlock		equ 3
+debug_dump_mem		equ 4
+debug_dump_rax		equ 5
+
+
 ; =============================================================================
 ; EOF
