@@ -287,47 +287,27 @@ os_get_argv_end:
 
 
 ; -----------------------------------------------------------------------------
-; os_get_timecounter -- Get the current RTC clock couter value
-; IN:	Nothing
-; OUT:	RAX = Time in eights of a second since clock started
-; This function depends on the RTC (IRQ 8) so interrupts must be enabled.
-os_get_timecounter:
-	mov rax, [os_ClockCounter]	; Grab the timer counter value. It increments 8 times a second
-	ret
-; -----------------------------------------------------------------------------
-
-
-; -----------------------------------------------------------------------------
-; os_hide_statusbar -- Hide the system status bar
-; IN:
-os_hide_statusbar:
-	mov byte [os_show_sysstatus], 0
-	ret
-; -----------------------------------------------------------------------------
-
-
-; -----------------------------------------------------------------------------
-; os_show_statusbar -- Show the system status bar
-; IN:
-os_show_statusbar:
-	mov byte [os_show_sysstatus], 1
-	ret
-; -----------------------------------------------------------------------------
-
-
-; -----------------------------------------------------------------------------
 ; os_system_config - View or modify system configuration options
 ; IN:	RDX = Function #
-;	RAX = Variable 1
-;	RCX = Variable 2
-; OUT:	Dependant on system call
+;	RAX = Variable
+; OUT:	RAX = Result
 os_system_config:
 ;	cmp rdx, X
 ;	je os_system_config_
+	cmp rdx, 0
+	je os_system_config_timecounter
 	cmp rdx, 1
 	je os_system_config_networkcallback_get
 	cmp rdx, 2
 	je os_system_config_networkcallback_set
+	cmp rdx, 10
+	je os_system_config_statusbar_hide
+	cmp rdx, 11
+	je os_system_config_statusbar_show
+	ret
+
+os_system_config_timecounter:
+	mov rax, [os_ClockCounter]	; Grab the timer counter value. It increments 8 times a second
 	ret
 
 os_system_config_networkcallback_get:
@@ -336,6 +316,14 @@ os_system_config_networkcallback_get:
 
 os_system_config_networkcallback_set:
 	mov qword [os_NetworkCallback], rax
+	ret
+
+os_system_config_statusbar_hide:
+	mov byte [os_show_sysstatus], 0
+	ret
+	
+os_system_config_statusbar_show:
+	mov byte [os_show_sysstatus], 1
 	ret
 ; -----------------------------------------------------------------------------
 

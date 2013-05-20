@@ -313,9 +313,7 @@ Assembly Registers:
 
 	 IN:	RDX = Function #
 			RAX = Variable 1
-			RCX = Variable 2 
 	OUT:	RAX = Result 1
-			RCX = Result 2
 
 Function numbers come in pairs (one for reading a parameter, and one for writing a parameter). b_system_config should be called with a function alias and not a direct function number.
 
