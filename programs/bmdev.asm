@@ -32,13 +32,16 @@ b_file_query		equ 0x0000000000100098	; Query the existence of a file. IN: RSI = 
 b_file_create		equ 0x00000000001000A0	; Create a file on disk. IN: RSI = location of filename, RCX = number of 2MiB blocks to reserve
 b_file_delete		equ 0x00000000001000A8	; Delete a file from disk. IN: RSI = Memory location of file name to delete. OUT: Carry is set if the file was not found or an error occured
 
-b_system_config		equ 0x00000000001000B0	; Info pending!
-b_system_misc		equ 0x00000000001000B8	; Call a misc system function
+b_system_config		equ 0x00000000001000B0	; View/modify system configuration. IN: RDX = Function #, RAX = Variable. OUT: RAX = Result
+b_system_misc		equ 0x00000000001000B8	; Call a misc system function. IN: RDX = Function #, RAX = Variable 1, RCX = Variable 2. Out: RAX = Result 1, RCX = Result 2
 
 
 ; Index for b_system_config calls
+timecounter		equ 0
 networkcallback_get	equ 1
 networkcallback_set	equ 2
+statusbar_hide		equ 10
+statusbar_show		equ 11
 
 
 ; Index for b_system_misc calls
