@@ -84,8 +84,8 @@ start:
 	mov ax, 0x0018			; Set the cursor to the bottom left-hand corner
 	call os_move_cursor
 
-	mov rax, os_command_line	; Start the CLI
-	call os_smp_enqueue
+;	mov rax, os_command_line	; Start the CLI
+;	call os_smp_enqueue
 
 	; Fall through to ap_clear as align fills the space with No-Ops
 	; At this point the BSP is just like one of the AP's
@@ -147,16 +147,16 @@ ap_halt:				; Halt until a wakeup call is received
 	jmp ap_spin			; Try again
 
 ap_process:				; Set the status byte to "Busy" and run the code
-	cli
-	push rsi
-	push rax
-	mov rsi, [os_LocalAPICAddress]
-	xor eax, eax
-	mov al, 0x10
-	mov dword [rsi+0x80], eax	; APIC Task Priority Register (TPR)
-	pop rax
-	pop rsi
-	sti
+;	cli
+;	push rsi
+;	push rax
+;	mov rsi, [os_LocalAPICAddress]
+;	xor eax, eax
+;	mov al, 0x10
+;	mov dword [rsi+0x80], eax	; APIC Task Priority Register (TPR)
+;	pop rax
+;	pop rsi
+;	sti
 
 	push rdi			; Push RDI since it is used temporarily
 	push rax			; Push RAX since os_smp_get_id uses it
@@ -168,60 +168,10 @@ ap_process:				; Set the status byte to "Busy" and run the code
 	pop rax				; Pop RAX (holds the workload code address)
 	pop rdi				; Pop RDI (holds the variable/variable address)
 
-	mov r15, rax
-
-	call os_get_argc
-	mov rcx, rax
-	cmp al, 1
-	je noargs
-
-	mov rdi, os_args
-	sub rcx, 1
-	shl rcx, 3
-	add rdi, rcx
-	shr rcx, 3
-	add rcx, 1
-nextargv:
-	sub al, 1
-	call os_get_argv
-	mov [rdi], rsi
-	sub rdi, 8
-	cmp al, 1
-	jne nextargv
-
-noargs:
-	mov al, 0
-	call os_get_argv
-	mov [os_args], rsi
-	mov rsi, os_args		; ARGV[0]
-
-	mov rdi, rcx			; ARGC
-	mov rax, r15
-
 	call rax			; Run the code
-
-	; Check task list and restart CLI if needed
 
 	jmp ap_clear			; Reset the stack, clear the registers, and wait for something else to work on
 
-;hellofunc:
-;	push rsi
-;	push rcx
-;	push rax
-;
-;	mov rsi, readymsg
-;	call os_output	
-;	xor eax, eax
-;	mov rsi, os_EthernetBuffer
-;	lodsw
-;	mov rcx, rax
-;	call os_debug_dump_mem
-;	call os_print_newline
-;	
-;	pop rax
-;	pop rcx
-;	pop rsi
-;	ret
 
 ; Includes
 %include "init.asm"
