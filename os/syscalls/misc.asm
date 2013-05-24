@@ -16,99 +16,20 @@ align 16
 system_status:
 	push rsi
 	push rdi
-	push rdx
 	push rcx
 	push rax
 
 	; Display the dark grey bar
 	mov ax, 0x8720			; 0x87 for dark grey background/white foreground, 0x20 for space (blank) character
 	mov rdi, os_screen		; Draw to screen buffer
+	add rdi, 144
 	push rdi
-	mov rcx, 80
+	mov rcx, 8
 	rep stosw
 	pop rdi
 
-	; Display CPU status
-	mov al, '['
-	stosb
-	add rdi, 1			; Skip the attribute byte
-	mov rax, 0x8F208F758F708F63	; ' upc'
-	stosq
-
-	xor ecx, ecx
-	xor edx, edx
-	mov rsi, cpustatus
-system_status_cpu_next:
-	cmp cx, 256
-	je system_status_cpu_calc
-	add rcx, 1
-	lodsb
-	bt ax, 0			; Check to see if the Core is Present
-	jnc system_status_cpu_next	; If not then check the next
-	bt ax, 1
-	jnc system_status_cpu_next
-	add edx, 1
-	jmp system_status_cpu_next
-
-system_status_cpu_calc:
-	mov rax, rdx			; Cores in use
-
-	call system_status_print_string
-
-	mov al, '/'
-	stosb
-	add rdi, 1
-
-	xor eax, eax
-	mov ax, word [os_NumCores]	; Total system memory in MiBs
-
-	call system_status_print_string
-
-system_status_cpu_done:
-	mov al, ']'
-	stosb
-	add rdi, 1
-
-	; Display memory status
-	add rdi, 4
-	mov al, '['
-	stosb
-	add rdi, 1			; Skip the attribute byte
-	mov rax, 0x8F208F6D8F658F6D	; ' mem'
-	stosq
-
-	; Calculate % of memory that is in use
-	call os_mem_get_free		; Free system memory in 2 MiB pages
-	shl rcx, 1			; Quick multiply by 2 to get MiBs
-	xor eax, eax
-	mov eax, dword [os_MemAmount]	; Total system memory in MiBs
-	push rax			; Save total MiBs
-	sub rax, rcx			; Get MiB's in use
-
-	call system_status_print_string
-
-	mov al, '/'
-	stosb
-	add rdi, 1
-
-	pop rax				; Restore total MiBs
-
-	call system_status_print_string
-
-system_status_mem_finish:
-	mov al, ']'
-	stosb
-	add rdi, 1
-
 	; Display network status
-	cmp byte [os_NetEnabled], 1	; Print network details (if a supported NIC was initialized)
-	jne system_status_no_network
-	add rdi, 4
-	mov al, '['
-	stosb
-	add rdi, 1
-	mov rax, 0x8F208F748F658F6E	; ' ten'
-	stosq
+	add rdi, 2
 	mov al, 'T'
 	stosb
 	add rdi, 1
@@ -133,95 +54,33 @@ tx_idle:
 	mov byte [os_NetActivity_RX], 0
 rx_idle:
 	stosb
-	mov al, ']'
-	stosb
-	add rdi, 1
-system_status_no_network:
-
-	; Display disk status
-	cmp byte [os_DiskEnabled], 1	; Show disk activity (if a supported disk was initialized)
-	jne system_status_no_disk
-	add rdi, 4
-	mov al, '['
-	stosb
-	add rdi, 1
-	mov rax, 0x8F208F648F648F68	; ' ddh'
-	stosq
-	mov al, 0xFE			; Ascii block character
-	stosb				; Put the block character on the screen
-	mov al, 0x87			; Light Gray on Dark Gray
-	cmp byte [os_DiskActivity], 1
-	jne hdd_idle
-	mov al, 0x8F
-hdd_idle:
-	stosb
-	mov al, ']'
-	stosb
-	add rdi, 1
-system_status_no_disk:
 
 	; Display the RTC pulse
-	add rdi, 4
-	mov al, '['
-	stosb
-	add rdi, 1
-	mov rax, 0x8F208F638F748F72	; ' ctr'
-	stosq
-	mov al, 0xFE			; Ascii block character
+	add rdi, 2
+	mov al, 0x03			; Ascii heart character
 	stosb				; Put the block character on the screen
 	mov rax, [os_ClockCounter]
 	bt rax, 0			; Check bit 0. Store bit 0 in CF
 	jc system_status_rtc_flash_hi
-	mov al, 0x87			; Light Gray on Dark Gray (Active Core Low)
+	mov al, 0x87			; Light Gray on Dark Gray
 	jmp system_status_rtc_flash_lo
 system_status_rtc_flash_hi:
-	mov al, 0x8F			; White on Dark Gray (Active Core High)
+	mov al, 0x8F			; White on Dark Gray
 system_status_rtc_flash_lo:
 	stosb				; Store the color (attribute) byte
-	mov al, ']'
-	stosb
-	add rdi, 1
-
-	; Display header text
-	mov rdi, os_screen
-	add rdi, 0x80
-	mov rsi, system_status_header
-	mov rcx, 16
-headernext:
-	lodsb
-	stosb
-	inc rdi
-	dec rcx
-	cmp rcx, 0
-	jne headernext
 
 	; Copy the system status to the screen
 	mov rsi, os_screen
+	add rsi, 144
 	mov rdi, 0xB8000
-	mov rcx, 80
+	add rdi, 144
+	mov rcx, 8
 	rep movsw
 
 	pop rax
 	pop rcx
-	pop rdx
 	pop rdi
 	pop rsi
-	ret
-
-system_status_print_string:
-	push rdi
-	mov rdi, os_temp
-	mov rsi, rdi
-	call os_int_to_string
-	pop rdi
-system_status_print_string_nextchar:
-	lodsb
-	cmp al, 0
-	je system_status_print_string_finish
-	stosb
-	add rdi, 1
-	jmp system_status_print_string_nextchar
-system_status_print_string_finish:
 	ret
 ; -----------------------------------------------------------------------------
 

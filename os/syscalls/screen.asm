@@ -287,6 +287,11 @@ os_screen_scroll:
 	cmp byte [os_show_sysstatus], 0
 	je os_screen_scroll_no_sysstatus
 
+	mov rsi, os_screen 		; Start of video text memory for row 2
+	add rsi, 0xa0
+	mov rdi, os_screen 		; Start of video text memory for row 1
+	mov rcx, 72			; 80 - 8
+	rep movsw			; Copy the Character and Attribute
 	mov rsi, os_screen		; Start of video text memory for row 3
 	add rsi, 0x140
 	mov rdi, os_screen		; Start of video text memory for row 2
@@ -328,23 +333,11 @@ os_screen_clear:
 	push rcx
 	push rax
 
-	cmp byte [os_show_sysstatus], 0
-	je os_screen_clear_no_sysstatus
-
-	mov ax, 0x0720		; 0x07 for black background/white foreground, 0x20 for space (black) character
-	mov rdi, os_screen	; Address for start of color video memory
-	add rdi, 160		; Offset to second row
-	mov rcx, 1920		; 80 x 25 - 80
-	rep stosw		; Clear the screen. Store word in AX to RDI, RCX times
-	jmp os_screen_clear_done
-
-os_screen_clear_no_sysstatus:
 	mov ax, 0x0720		; 0x07 for black background/white foreground, 0x20 for space (black) character
 	mov rdi, os_screen	; Address for start of color video memory
 	mov rcx, 2000
 	rep stosw		; Clear the screen. Store word in AX to RDI, RCX times
 
-os_screen_clear_done:
 	call os_screen_update	; Copy the video buffer to video memory
 
 	pop rax
