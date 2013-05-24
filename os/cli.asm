@@ -171,11 +171,13 @@ debug:
 	jl noamount			; If not no amount was specified
 	mov al, 2
 	call os_get_argv		; Get the amount of bytes to display
+	mov rsi, rax
 	call os_string_to_int		; Convert to an integer
 	mov rcx, rax
 noamount:
 	mov al, 1
 	call os_get_argv		; Get the starting memory address
+	mov rsi, rax
 	call os_hex_string_to_int
 	mov rsi, rax
 debug_default:

@@ -50,6 +50,8 @@ smp_lock		equ 2
 smp_unlock		equ 3
 debug_dump_mem		equ 4
 debug_dump_rax		equ 5
+get_argc		equ 6
+get_argv		equ 7
 
 
 ; =============================================================================

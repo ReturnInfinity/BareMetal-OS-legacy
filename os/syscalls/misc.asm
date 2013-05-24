@@ -110,7 +110,7 @@ os_delay_loop:
 ; -----------------------------------------------------------------------------
 ; os_get_argc -- Return the number arguments passed to the program
 ; IN:	Nothing
-; OUT:	AL = Number of arguments
+; OUT:	RAX = Number of arguments
 os_get_argc:
 	xor eax, eax
 	mov al, [cli_args]
@@ -120,11 +120,11 @@ os_get_argc:
 
 ; -----------------------------------------------------------------------------
 ; os_get_argv -- Get the value of an argument that was passed to the program
-; IN:	AL = Argument number
-; OUT:	RSI = Start of numbered argument string
+; IN:	RAX = Argument number
+; OUT:	RAX = Start of numbered argument string
 os_get_argv:
+	push rsi
 	push rcx
-	push rax
 	mov rsi, cli_temp_string
 	cmp al, 0x00
 	je os_get_argv_end
@@ -139,8 +139,9 @@ os_get_argv_nextchar:
 	jne os_get_argv_nextchar
 
 os_get_argv_end:
-	pop rax
+	mov rax, rsi
 	pop rcx
+	pop rsi
 	ret
 ; -----------------------------------------------------------------------------
 
@@ -206,6 +207,10 @@ os_system_misc:
 	je os_system_misc_debug_dump_mem
 	cmp rdx, 5
 	je os_system_misc_debug_dump_rax
+	cmp rdx, 6
+	je os_system_misc_get_argc
+	cmp rdx, 7
+	je os_system_misc_get_argv
 	ret
 
 os_system_misc_smp_get_id:
@@ -226,6 +231,14 @@ os_system_misc_debug_dump_mem:
 
 os_system_misc_debug_dump_rax:
 	call os_debug_dump_rax
+	ret
+
+os_system_misc_get_argc:
+	call os_get_argc
+	ret
+
+os_system_misc_get_argv:
+	call os_get_argv
 	ret
 ; -----------------------------------------------------------------------------
 
