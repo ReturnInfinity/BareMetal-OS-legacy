@@ -36,45 +36,35 @@ Now start the DHCP server:
 
 	sudo service isc-dhcp-server restart
 
-At this point we can verify if the DCHP and TFTP services are running correctly. Create a new VM within VirtualBox? with no Hard Drive. Configure a single NIC to be on the private network and set the boot order to Network first.
+At this point we can verify if the DCHP and TFTP services are running correctly. Create a new VM within VirtualBox with no Hard Drive. Configure a single NIC to be on the private network and set the boot order to Network first.
 
-On bootup of the new VM you should see this: 
-
-This shows the the VM successfully connected to our DHCP server and tried to download the file from the TFTP server. The failure is due to us not building and placing the file yet.
 
 ## Download and build the Pure64 and BareMetal OS source
 
-Now we will grab the Pure64 and BareMetal OS source code:
+Now we will grab the Pure64 and BareMetal OS source code and extract it:
 
-svn checkout http://baremetal.googlecode.com/svn/trunk/ baremetal
-svn checkout http://pure64.googlecode.com/svn/trunk/ pure64
+Build Pure64:
 
-	cd pure64/bootsectors
-
-	nasm pxestart.asm -o ../../pxestart.bin
-
+	cd Pure64
+	./build.sh
+	cp pxeboot.sys ../
+	cp pure64.sys ../
 	cd ..
 
-Modify Pure64 so that it will work via PXE.
+Build BareMetal OS:
 
-Comment the following line in `pure64.asm`:
+In kernel64.asm you will need to comment or delete the line with "call init_hdd".
 
-	call hdd_setup
+	cd BareMetal-OS
+	./build.sh
+	cp kernel64.sys ../
+	cd ..
 
-Now compile Pure64 and the Kernel:
-
-	nasm pure64.asm -o ../pure64.sys
-
-	cd ../baremetal/os/
-
-	nasm kernel64.asm -o ../../kernel64.sys
-
-	cd ../..
-
-	cat pxestart.bin pure64.sys kernel64.sys > pxeboot.bin
+Prepare the PXE boot file:
 
 The default TFTP directory is located at `/var/lib/tftpboot`
 
-	sudo copy pxeboot.bin /var/lib/tftpboot/
+	cat pxestart.sys pure64.sys kernel64.sys > pxeboot.bin
+	sudo cp pxeboot.bin /var/lib/tftpboot/
 
 Reboot the PXE boot VM.
