@@ -18,6 +18,11 @@ init_bmfs:
 	push rcx
 	push rax
 
+	mov byte [bmfs_directory], 0
+
+	cmp byte [os_DiskEnabled], 0x01
+	jne init_bmfs_nodisk
+
 	; Read directory to memory
 	mov rax, 8			; Start to read from 4K in
 	mov rcx, 8			; Read 8 sectors (4KiB)
@@ -29,6 +34,8 @@ init_bmfs:
 	mov eax, [hd1_size]		; in mebibytes (MiB)
 	shr rax, 1
 	mov [bmfs_TotalBlocks], rax
+
+init_bmfs_nodisk:
 
 	pop rax
 	pop rcx

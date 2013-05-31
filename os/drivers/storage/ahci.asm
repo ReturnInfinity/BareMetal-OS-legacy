@@ -110,6 +110,13 @@ founddrive:
 
 hdd_setup_err_noahci:
 hdd_setup_err_nodisk:
+	mov ax, 0x0012
+	call os_move_cursor
+	mov rsi, diskmsg
+	call os_output
+	mov rsi, namsg
+	call os_output
+
 	ret
 ; -----------------------------------------------------------------------------
 

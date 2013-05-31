@@ -18,6 +18,7 @@ readymsg:		db 'BareMetal is ready', 0
 networkmsg:		db 'net: ', 0
 diskmsg:		db 'hdd: ', 0
 diskmibmsg:		db ' MiB', 0
+namsg:			db 'N/A', 0
 space:			db ' ', 0
 newline:		db 13, 0
 tab:			db 9, 0

@@ -84,9 +84,6 @@ start:
 	mov ax, 0x0018			; Set the cursor to the bottom left-hand corner
 	call os_move_cursor
 
-;	mov rax, os_command_line	; Start the CLI
-;	call os_smp_enqueue
-
 	; Fall through to ap_clear as align fills the space with No-Ops
 	; At this point the BSP is just like one of the AP's
 
