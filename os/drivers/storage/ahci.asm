@@ -12,6 +12,10 @@ align 16
 
 ; -----------------------------------------------------------------------------
 init_ahci:
+	mov ax, 0x0012
+	call os_move_cursor
+	mov rsi, diskmsg
+	call os_output
 
 ; Probe for an AHCI hard drive controller
 	xor ebx, ebx
@@ -83,9 +87,6 @@ founddrive:
 	stosd				; Offset 10h: PxIS – Port x Interrupt Status
 	stosd				; Offset 14h: PxIE – Port x Interrupt Enable
 
-	mov ax, 0x0012
-	call os_move_cursor
-
 	; Query drive
 	mov rdi, 0x200000
 	call iddrive
@@ -94,8 +95,6 @@ founddrive:
 	shr rax, 11			; rax = rax * 512 / 1048576	MiB
 ;	shr rax, 21			; rax = rax * 512 / 1073741824	GiB
 	mov [hd1_size], eax		; in mebibytes (MiB)
-	mov rsi, diskmsg
-	call os_output
 	mov rdi, os_temp_string
 	mov rsi, rdi
 	call os_int_to_string
@@ -110,10 +109,6 @@ founddrive:
 
 hdd_setup_err_noahci:
 hdd_setup_err_nodisk:
-	mov ax, 0x0012
-	call os_move_cursor
-	mov rsi, diskmsg
-	call os_output
 	mov rsi, namsg
 	call os_output
 

@@ -469,6 +469,8 @@ os_bmfs_file_list:
 	mov rbx, rsi
 
 os_bmfs_file_list_next:
+	cmp byte [rbx], 0x00
+	je os_bmfs_file_list_done
 	cmp byte [rbx], 0x01
 	jle os_bmfs_file_list_skip
 
