@@ -21,8 +21,31 @@ clearmem:
 	cmp rcx, 122880	; Clear 960 KiB
 	jne clearmem
 
-	mov ax, 0x000A			; Set the cursor to 0,10 (needs to happen before anything is printed to the screen)
+	mov ax, 0x0000
 	call os_move_cursor
+	call os_screen_clear		; Clear screen and display cursor
+
+	mov ax, 0x000E
+	call os_move_cursor
+	mov rsi, cpumsg
+	call os_output
+	xor eax, eax
+	mov rsi, 0x5012
+	lodsw
+	mov rdi, os_temp_string
+	mov rsi, rdi
+	call os_int_to_string
+	call os_output
+	mov rsi, coresmsg
+	call os_output
+	mov rsi, 0x5010
+	lodsw
+	mov rdi, os_temp_string
+	mov rsi, rdi
+	call os_int_to_string
+	call os_output
+	mov rsi, mhzmsg
+	call os_output
 
 	xor rdi, rdi 			; create the 64-bit IDT (at linear address 0x0000000000000000) as defined by Pure64
 
@@ -178,6 +201,18 @@ skip_ap:
 	jmp next_ap
 
 no_more_aps:
+
+	mov ax, 0x0010
+	call os_move_cursor
+	mov rsi, memmsg
+	call os_output
+	mov eax, [os_MemAmount]		; In MiB's
+	mov rdi, os_temp_string
+	mov rsi, rdi
+	call os_int_to_string
+	call os_output
+	mov rsi, mibmsg
+	call os_output
 
 	; Enable specific interrupts
 	mov rcx, 1			; Enable Keyboard

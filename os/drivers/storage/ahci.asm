@@ -99,7 +99,7 @@ founddrive:
 	mov rsi, rdi
 	call os_int_to_string
 	call os_output
-	mov rsi, diskmibmsg
+	mov rsi, mibmsg
 	call os_output
 
 	; Found a bootable drive

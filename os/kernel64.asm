@@ -68,8 +68,6 @@ align 16
 start:
 	call init_64			; After this point we are in a working 64-bit enviroment
 
-	call os_screen_clear		; Clear screen and display cursor
-
 	call init_pci
 
 	call init_hdd			; Initialize the disk
