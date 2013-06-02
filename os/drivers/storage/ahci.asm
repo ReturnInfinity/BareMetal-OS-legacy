@@ -18,25 +18,28 @@ init_ahci:
 	call os_output
 
 ; Probe for an AHCI hard drive controller
-	xor ebx, ebx
-	xor ecx, ecx
-findcontroller:
-	cmp bx, 256			; Search up to 256 buses
-	je hdd_setup_err_noahci		; No AHCI controller detected
-	cmp cx, 256			; Up to 32 devices per bus
-	jne findcontroller_1
-	add bx, 1			; Next bus
-	xor ecx, ecx
-findcontroller_1:
-	mov dl, 2			; We want the Class/Device code
+	xor ebx, ebx			; Clear the Bus number
+	xor ecx, ecx			; Clear the Device/Slot number
+	mov edx, 2			; Register 2 for Class code/Subclass
+	
+init_ahci_probe_next:
 	call os_pci_read_reg
-	add cx, 1			; Increment the device number
-	shr rax, 16
-	cmp ax, 0xFFFF			; Non-existant device
-	je findcontroller
-	cmp ax, 0x0106			; Mass storage device, SATA
-	jne findcontroller
-	sub cl, 1
+	shr eax, 16			; Move the Class/Subclass code to AX
+	cmp ax, 0x0106			; Mass Storage Controller (01) / SATA Controller (06)
+	je init_ahci_found		; Found a SATA Controller
+	add ecx, 1
+	cmp ecx, 32			; Maximum 32 devices per bus
+	je init_ahci_probe_next_bus
+	jmp init_ahci_probe_next
+	
+init_ahci_probe_next_bus:
+	xor ecx, ecx
+	add ebx, 1
+	cmp ebx, 256			; Maximum 256 buses
+	je init_ahci_err_noahci
+	jmp init_ahci_probe_next
+
+init_ahci_found:
 	mov dl, 9
 	xor eax, eax
 	call os_pci_read_reg		; BAR5 (AHCI Base Address Register)
@@ -107,7 +110,7 @@ founddrive:
 
 	ret
 
-hdd_setup_err_noahci:
+init_ahci_err_noahci:
 hdd_setup_err_nodisk:
 	mov rsi, namsg
 	call os_output
