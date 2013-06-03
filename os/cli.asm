@@ -64,6 +64,10 @@ endofcommand:
 	call os_string_compare
 	jc near dir
 
+	mov rdi, pci_string		; 'PCI' entered?
+	call os_string_compare
+	jc near pci
+
 	mov rdi, ver_string		; 'VER' entered?
 	call os_string_compare
 	jc near print_ver
@@ -147,6 +151,29 @@ dir:
 	call os_output
 	jmp os_command_line
 
+pci:
+	xor ebx, ebx			; Clear the Bus number
+	xor ecx, ecx			; Clear the Device/Slot number
+	mov edx, 2			; Register 2 for Class code/Subclass
+pci_probe_next:
+	call os_pci_read_reg
+	shr eax, 16			; Move the Class/Subclass code to AX
+	cmp ax, 0xFFFF			; 0xFFFF = non-existant device
+	je pci_probe_next_skip
+	call os_debug_dump_ax
+	mov rsi, newline
+	call os_output
+pci_probe_next_skip:
+	add ecx, 1
+	cmp ecx, 32			; Maximum 32 devices per bus
+	je pci_probe_next_bus
+	jmp pci_probe_next
+pci_probe_next_bus:
+	xor ecx, ecx
+	add ebx, 1
+	cmp ebx, 256			; Maximum 256 buses
+	jne pci_probe_next
+	jmp os_command_line
 
 align 16
 testzone:
@@ -200,6 +227,7 @@ exit:
 
 	cls_string		db 'cls', 0
 	dir_string		db 'dir', 0
+	pci_string		db 'pci', 0
 	ver_string		db 'ver', 0
 	exit_string		db 'exit', 0
 	help_string		db 'help', 0
