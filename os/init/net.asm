@@ -18,11 +18,11 @@ init_net:
 
 init_net_probe_next:
 	call os_pci_read_reg
-	shr eax, 24			; Move the Class code to AL
-	cmp al, 0x02			; Network Controller Class Code
+	shr eax, 16			; Move the Class/Subclass code to AX
+	cmp ax, 0x0200			; Network Controller (02) / Ethernet (00)
 	je init_net_probe_find_driver	; Found a Network Controller... now search for a driver
 	add ecx, 1
-	cmp ecx, 32			; Maximum 32 devices per bus
+	cmp ecx, 256			; Maximum 256 devices/functions per bus
 	je init_net_probe_next_bus
 	jmp init_net_probe_next
 

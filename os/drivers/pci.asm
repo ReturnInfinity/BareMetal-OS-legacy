@@ -13,7 +13,7 @@ align 16
 ; -----------------------------------------------------------------------------
 ; os_pci_read_reg -- Read a register from a PCI device
 ;  IN:	BL  = Bus number
-;	CL  = Device/Slot number
+;	CL  = Device/Slot/Function number
 ;	DL  = Register number
 ; OUT:	EAX = Register information
 ;	All other registers preserved
@@ -23,7 +23,7 @@ os_pci_read_reg:
 	push rbx
 
 	shl ebx, 16			; Move Bus number to bits 23 - 16
-	shl ecx, 11			; Move Device number to bits 15 - 11
+	shl ecx, 8			; Move Device/Slot/Fuction number to bits 15 - 8
 	mov bx, cx
 	shl edx, 2
 	mov bl, dl

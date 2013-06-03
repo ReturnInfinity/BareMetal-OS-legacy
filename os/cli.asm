@@ -165,7 +165,7 @@ pci_probe_next:
 	call os_output
 pci_probe_next_skip:
 	add ecx, 1
-	cmp ecx, 32			; Maximum 32 devices per bus
+	cmp ecx, 256			; Maximum 256 devices/functions per bus
 	je pci_probe_next_bus
 	jmp pci_probe_next
 pci_probe_next_bus:

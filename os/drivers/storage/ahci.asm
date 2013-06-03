@@ -28,7 +28,7 @@ init_ahci_probe_next:
 	cmp ax, 0x0106			; Mass Storage Controller (01) / SATA Controller (06)
 	je init_ahci_found		; Found a SATA Controller
 	add ecx, 1
-	cmp ecx, 32			; Maximum 32 devices per bus
+	cmp ecx, 256			; Maximum 256 devices/functions per bus
 	je init_ahci_probe_next_bus
 	jmp init_ahci_probe_next
 	
