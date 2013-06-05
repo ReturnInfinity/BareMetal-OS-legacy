@@ -25,7 +25,8 @@ clearmem:
 	call os_move_cursor
 	call os_screen_clear		; Clear screen and display cursor
 
-	mov ax, 0x000E
+	; Display CPU information
+	mov ax, 0x0014
 	call os_move_cursor
 	mov rsi, cpumsg
 	call os_output
@@ -202,8 +203,7 @@ skip_ap:
 
 no_more_aps:
 
-	mov ax, 0x0010
-	call os_move_cursor
+	; Display memory information
 	mov rsi, memmsg
 	call os_output
 	mov eax, [os_MemAmount]		; In MiB's

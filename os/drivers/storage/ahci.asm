@@ -12,8 +12,6 @@ align 16
 
 ; -----------------------------------------------------------------------------
 init_ahci:
-	mov ax, 0x0012
-	call os_move_cursor
 	mov rsi, diskmsg
 	call os_output
 
