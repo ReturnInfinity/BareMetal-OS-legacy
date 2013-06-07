@@ -108,17 +108,6 @@ os_delay_loop:
 
 
 ; -----------------------------------------------------------------------------
-; os_get_argc -- Return the number arguments passed to the program
-; IN:	Nothing
-; OUT:	RAX = Number of arguments
-os_get_argc:
-	xor eax, eax
-	mov al, [cli_args]
-	ret
-; -----------------------------------------------------------------------------
-
-
-; -----------------------------------------------------------------------------
 ; os_get_argv -- Get the value of an argument that was passed to the program
 ; IN:	RAX = Argument number
 ; OUT:	RAX = Start of numbered argument string
@@ -157,8 +146,12 @@ os_system_config:
 	cmp rdx, 0
 	je os_system_config_timecounter
 	cmp rdx, 1
-	je os_system_config_networkcallback_get
+	je os_system_config_argc
 	cmp rdx, 2
+	je os_system_config_argv
+	cmp rdx, 3
+	je os_system_config_networkcallback_get
+	cmp rdx, 4
 	je os_system_config_networkcallback_set
 	cmp rdx, 10
 	je os_system_config_statusbar_hide
@@ -168,6 +161,15 @@ os_system_config:
 
 os_system_config_timecounter:
 	mov rax, [os_ClockCounter]	; Grab the timer counter value. It increments 8 times a second
+	ret
+
+os_system_config_argc:
+	xor eax, eax
+	mov al, [app_argc]
+	ret
+
+os_system_config_argv:
+	mov rax, cli_temp_string
 	ret
 
 os_system_config_networkcallback_get:
@@ -207,10 +209,6 @@ os_system_misc:
 	je os_system_misc_debug_dump_mem
 	cmp rdx, 5
 	je os_system_misc_debug_dump_rax
-	cmp rdx, 6
-	je os_system_misc_get_argc
-	cmp rdx, 7
-	je os_system_misc_get_argv
 	ret
 
 os_system_misc_smp_get_id:
@@ -231,14 +229,6 @@ os_system_misc_debug_dump_mem:
 
 os_system_misc_debug_dump_rax:
 	call os_debug_dump_rax
-	ret
-
-os_system_misc_get_argc:
-	call os_get_argc
-	ret
-
-os_system_misc_get_argv:
-	call os_get_argv
 	ret
 ; -----------------------------------------------------------------------------
 

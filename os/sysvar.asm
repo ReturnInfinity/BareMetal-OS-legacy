@@ -107,7 +107,7 @@ os_EthernetBuffer_C1:	equ os_SystemVariables + 396	; Counter 1 for the Ethernet 
 os_EthernetBuffer_C2:	equ os_SystemVariables + 397	; Counter 2 for the Ethernet RX Ring Buffer
 os_DiskEnabled:		equ os_SystemVariables + 398
 os_DiskActivity:	equ os_SystemVariables + 399
-
+app_argc:		equ os_SystemVariables + 400
 
 cpuqueuemax:		dw 256
 screen_rows: 		db 25 ; x
@@ -179,7 +179,6 @@ os_debug_dump_flag_string4:	db ' O:', 0
 
 
 cli_command_string:	times 14 db 0
-cli_args:		db 0
 
 align 16
 this_is_the_end:	db 'This is the end.'

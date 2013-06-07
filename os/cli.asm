@@ -24,7 +24,7 @@ os_command_line:
 	mov rsi, rdi
 	call os_string_parse		; Remove extra spaces
 	jrcxz os_command_line		; os_string_parse stores the number of words in RCX
-	mov byte [cli_args], cl		; Store the number of words in the string
+	mov byte [app_argc], cl		; Store the number of words in the string
 
 ; Copy the first word in the string to a new string. This is the command/application to run
 	xor rcx, rcx
@@ -162,7 +162,8 @@ testzone:
 	jmp os_command_line
 
 debug:
-	call os_get_argc		; Check the argument number
+	mov rdx, 1			; argc
+	call os_system_config
 	cmp al, 1
 	je debug_dump_reg		; If it is only one then do a register dump
 	mov rcx, 16	
