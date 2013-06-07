@@ -89,6 +89,9 @@ os_debug_dump_mem:
 	shr rdx, 36
 	shl rdx, 4
 
+	shr rsi, 4		; Round the starting memory address
+	shl rsi, 4
+
 os_debug_dump_mem_print_address:
 	mov rax, rsi
 	call os_debug_dump_rax
