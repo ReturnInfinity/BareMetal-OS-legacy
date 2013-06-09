@@ -1,32 +1,33 @@
-extern int main(int argc, char **argv, char **environ);
+#include <stdio.h>
+#include <string.h>
+
+extern int main(int argc, char *argv[]);
 unsigned long b_system_config(unsigned long function, unsigned long var);
 
 extern char __bss_start, _end; // BSS should be the last think before _end
 
-// XXX: environment
-char *__env[1] = { 0 };
-char **environ = __env;
-
 _start()
 {
-	char *i;
-	int retval = 0;
-	unsigned long Argc = 0;
-	char **Argv;
+	int argc, i, retval;
+	argc = (int)b_system_config(1, 0);
+	char *argv[argc], *c, *tchar;
+	unsigned long tval;
 
 	// zero BSS
-	for(i = &__bss_start; i < &_end; i++)
+	for(c = &__bss_start; c < &_end; c++)
 	{
-		*i = 0;
+		*c = 0;
 	}
 	
 	// XXX: get argc and argv
-	Argc = b_system_config(1, 0);
-	Argv = 0;
+//	tval = b_system_config(2, 0);
 
-	retval = main((int)Argc, Argv, __env);
+	for(i=0; i<argc; i++)
+		argv[i] = (char *)b_system_config(2, (unsigned long)i);
 
-//	fflush(stdout);
+	retval = main(argc, argv);
+
+	fflush(stdout);
 
 	return retval;
 }

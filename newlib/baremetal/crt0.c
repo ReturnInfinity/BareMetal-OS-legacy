@@ -1,22 +1,44 @@
+#include <stdio.h>
+#include <string.h>
 
-extern int main(); //int argc, char **argv, char **environ);
+extern int main(int argc, char *argv[]);
+unsigned long b_system_config(unsigned long function, unsigned long var);
 
 extern char __bss_start, _end; // BSS should be the last think before _end
 
-// XXX: environment
-char *__env[1] = { 0 };
-char **environ = __env;
+_start()
+{
+	int argc, i, retval;
+	argc = (int)b_system_config(1, 0);
+	char *argv[argc], *c, *tchar;
+	unsigned long tval;
 
-_start(){
-  char *i;
+	// zero BSS
+	for(c = &__bss_start; c < &_end; c++)
+	{
+		*c = 0;
+	}
+	
+	// XXX: get argc and argv
+//	tval = b_system_config(2, 0);
 
-  // zero BSS
-  for(i = &__bss_start; i < &_end; i++){
-    *i = 0; 
-  } 
+	for(i=0; i<argc; i++)
+		argv[i] = (char *)b_system_config(2, (unsigned long)i);
 
+	retval = main(argc, argv);
 
-  // XXX: get argc and argv
+	fflush(stdout);
 
-  exit(main(0,0, __env));
+	return retval;
 }
+
+unsigned long b_system_config(unsigned long function, unsigned long var)
+{
+	unsigned long tlong;
+	asm volatile ("call *0x001000B0" : "=a"(tlong) : "d"(function), "a"(var));
+	return tlong;
+}
+
+
+// EOF
+

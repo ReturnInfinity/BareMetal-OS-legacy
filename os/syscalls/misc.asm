@@ -169,7 +169,7 @@ os_system_config_argc:
 	ret
 
 os_system_config_argv:
-	mov rax, cli_temp_string
+	call os_get_argv
 	ret
 
 os_system_config_networkcallback_get:

@@ -79,8 +79,7 @@ os_debug_dump_mem:
 	je os_debug_dump_mem_done
 	mov rdx, rcx		; Save the total number of bytes to display
 	add rdx, 15
-	;and rdx, 0xFFFFFFF0
-	;and rsi, 0xFFFFFFF0
+
 	shl rcx, 32
 	shr rcx, 36
 	shl rcx, 4
