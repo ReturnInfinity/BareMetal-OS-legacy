@@ -1,5 +1,4 @@
-#include <stdio.h>
-#include <string.h>
+#include <stdio.h> // fflush()
 
 extern int main(int argc, char *argv[]);
 unsigned long b_system_config(unsigned long function, unsigned long var);
@@ -11,17 +10,14 @@ _start()
 	int argc, i, retval;
 	argc = (int)b_system_config(1, 0);
 	char *argv[argc], *c, *tchar;
-	unsigned long tval;
 
 	// zero BSS
 	for(c = &__bss_start; c < &_end; c++)
 	{
 		*c = 0;
 	}
-	
-	// XXX: get argc and argv
-//	tval = b_system_config(2, 0);
 
+	// Parse argv[*]
 	for(i=0; i<argc; i++)
 		argv[i] = (char *)b_system_config(2, (unsigned long)i);
 

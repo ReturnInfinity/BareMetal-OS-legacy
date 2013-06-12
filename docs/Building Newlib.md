@@ -96,7 +96,7 @@ Edit the Makefile with the following commands. This will instruct the compiler t
 	sed -i 's/TARGET=x86_64-pc-baremetal-/TARGET=/g' Makefile
 	sed -i 's/WRAPPER) x86_64-pc-baremetal-/WRAPPER) /g' Makefile
 
-You may also want to add `-mcmodel=large` if you plan on running programs in the high canonical address range.
+Optional: You may also want to add `-mcmodel=large` if you plan on running programs in the high canonical address range.
 
 Run the following:
 
@@ -104,7 +104,12 @@ Run the following:
 
 After a lengthy compile you should have an 'etc' and 'x86_64-pc-baremetal' in your build directory
 
-build/x86_64-pc-baremetal/newlib/libc.a is the compiled C library that is ready for linking.
+build/x86_64-pc-baremetal/newlib/libc.a is the compiled C library that is ready for linking. build/x86_64-pc-baremetal/newlib/crt0.o is the starting binary stub for your program.
+
+	cd x86_64-pc-baremetal/newlib/
+	cp libc.a ../../..
+	cp crt0.o ../../..
+	cd ../../..
 
 By default libc.a will be about 5 MiB. You can `strip` it to make it a little more compact. `strip` can decrease it to about 1.2 MiB.
 
@@ -115,5 +120,5 @@ Compiling Your Application
 
 By default GCC will look in predefined system paths for the C headers. This will not work correctly as we need to use the Newlib C headers. Using the `-I` argument we can point GCC where to find the correct headers. Adjust the path as necessary.
 
-	gcc -I ../../newlib-2.0.0/newlib/libc/include/ -c helloc.c -o helloc.o
-	ld -T app.ld -o helloc.app helloc.o libc.a
+	gcc -I newlib-2.0.0/newlib/libc/include/ -c test.c -o test.o
+	ld -T app.ld -o test.app crt0.o test.o libc.a
