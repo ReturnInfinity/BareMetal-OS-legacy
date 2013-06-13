@@ -188,7 +188,8 @@ os_system_config_statusbar:
 ; IN:	RDX = Function #
 ;	RAX = Variable 1
 ;	RCX = Variable 2
-; OUT:	Dependant on system call
+; OUT:	RAX = Result 1, dependant on system call
+;	RCX = Result 2, dependant on system call
 os_system_misc:
 ;	cmp rdx, X
 ;	je os_system_misc_
@@ -202,6 +203,8 @@ os_system_misc:
 	je os_system_misc_debug_dump_mem
 	cmp rdx, 5
 	je os_system_misc_debug_dump_rax
+	cmp rdx, 6
+	je os_system_misc_delay
 	ret
 
 os_system_misc_smp_get_id:
@@ -225,6 +228,10 @@ os_system_misc_debug_dump_mem:
 
 os_system_misc_debug_dump_rax:
 	call os_debug_dump_rax
+	ret
+
+os_system_misc_delay:
+	call os_delay
 	ret
 ; -----------------------------------------------------------------------------
 
