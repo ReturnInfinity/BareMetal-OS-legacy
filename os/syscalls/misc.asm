@@ -205,6 +205,14 @@ os_system_misc:
 	je os_system_misc_debug_dump_rax
 	cmp rdx, 6
 	je os_system_misc_delay
+	cmp rdx, 7
+	je os_system_misc_ethernet_status
+	cmp rdx, 8
+	je os_system_misc_mem_get_free
+	cmp rdx, 9
+	je os_system_misc_smp_numcores
+	cmp rdx, 10
+	je os_system_misc_smp_queuelen
 	ret
 
 os_system_misc_smp_get_id:
@@ -232,6 +240,22 @@ os_system_misc_debug_dump_rax:
 
 os_system_misc_delay:
 	call os_delay
+	ret
+
+os_system_misc_ethernet_status:
+	call os_ethernet_status
+	ret
+
+os_system_misc_mem_get_free:
+	call os_mem_get_free
+	ret
+
+os_system_misc_smp_numcores:
+	call os_smp_numcores
+	ret
+
+os_system_misc_smp_queuelen:
+	call os_smp_queuelen
 	ret
 ; -----------------------------------------------------------------------------
 
