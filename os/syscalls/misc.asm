@@ -140,9 +140,8 @@ os_get_argv_end:
 ; IN:	RDX = Function #
 ;	RAX = Variable
 ; OUT:	RAX = Result
+;	All other registers preserved
 os_system_config:
-;	cmp rdx, X
-;	je os_system_config_
 	cmp rdx, 0
 	je os_system_config_timecounter
 	cmp rdx, 1
@@ -154,9 +153,7 @@ os_system_config:
 	cmp rdx, 4
 	je os_system_config_networkcallback_set
 	cmp rdx, 10
-	je os_system_config_statusbar_hide
-	cmp rdx, 11
-	je os_system_config_statusbar_show
+	je os_system_config_statusbar
 	ret
 
 os_system_config_timecounter:
@@ -180,12 +177,8 @@ os_system_config_networkcallback_set:
 	mov qword [os_NetworkCallback], rax
 	ret
 
-os_system_config_statusbar_hide:
-	mov byte [os_show_sysstatus], 0
-	ret
-	
-os_system_config_statusbar_show:
-	mov byte [os_show_sysstatus], 1
+os_system_config_statusbar:
+	mov byte [os_show_sysstatus], al
 	ret
 ; -----------------------------------------------------------------------------
 
@@ -224,7 +217,10 @@ os_system_misc_smp_unlock:
 	ret
 
 os_system_misc_debug_dump_mem:
+	push rsi
+	mov rsi, rax
 	call os_debug_dump_mem
+	pop rsi
 	ret
 
 os_system_misc_debug_dump_rax:
