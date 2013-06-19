@@ -9,7 +9,7 @@ BareMetal is a 64-bit OS for x86-64 based computers. The OS is written entirely 
 
 BareMetal is a 64-bit protected mode operating system for x86-64 compatible PCs, written entirely in assembly language, which boots from a hard drive or via the network. It features a command-line interface, support for [BMFS-formatted](https://github.com/ReturnInfinity/BMFS) hard drives and sound via the PC speaker. It can load external programs and has over 60 system calls. BareMetal can also utilize all available CPU's in the computer it is run on.
 
-At the moment there is no plan to BareMetal into a general-purpose operating system like Windows, Mac OS X, or Linux; it is designed to be as lean as possible while still offering useful features.
+At the moment there is no plan to build BareMetal into a general-purpose operating system like Windows, Mac OS X, or Linux; it is designed to be as lean as possible while still offering useful features.
 
 The complete documentation for BareMetal, including instructions on running it, building it and writing your own programs for it can be found in the docs/ directory.
 
