@@ -17,50 +17,29 @@ kernel_start:
 	nop
 	db 'BAREMETAL'
 
-	align 16		; 0x0010
-	dq os_output
-	align 8			; 0x0018
-	dq os_output_chars
-	align 8			; 0x0020
-	dq os_input
-	align 8			; 0x0028
-	dq os_input_key
-	align 8			; 0x0030
-	dq os_smp_enqueue
-	align 8			; 0x0038
-	dq os_smp_dequeue
-	align 8			; 0x0040
-	dq os_smp_run
-	align 8			; 0x0048
-	dq os_smp_wait
-	align 8			; 0x0050
-	dq os_mem_allocate
-	align 8			; 0x0058
-	dq os_mem_release
-	align 8			; 0x0060
-	dq os_ethernet_tx
-	align 8			; 0x0068
-	dq os_ethernet_rx
-	align 8			; 0x0070
-	dq os_file_open
-	align 8			; 0x0078
-	dq os_file_close
-	align 8			; 0x0080
-	dq os_file_read
-	align 8			; 0x0088
-	dq os_file_write
-	align 8			; 0x0090
-	dq os_file_seek
-	align 8			; 0x0098
-	dq os_file_query
-	align 8			; 0x00A0
-	dq os_file_create
-	align 8			; 0x00A8
-	dq os_file_delete
-	align 8			; 0x00B0
-	dq os_system_config
-	align 8			; 0x00B8
-	dq os_system_misc
+	align 16
+	dq os_output		; 0x0010
+	dq os_output_chars	; 0x0018
+	dq os_input		; 0x0020
+	dq os_input_key		; 0x0028
+	dq os_smp_enqueue	; 0x0030
+	dq os_smp_dequeue	; 0x0038
+	dq os_smp_run		; 0x0040
+	dq os_smp_wait		; 0x0048
+	dq os_mem_allocate	; 0x0050
+	dq os_mem_release	; 0x0058
+	dq os_ethernet_tx	; 0x0060
+	dq os_ethernet_rx	; 0x0068
+	dq os_file_open		; 0x0070
+	dq os_file_close	; 0x0078
+	dq os_file_read		; 0x0080
+	dq os_file_write	; 0x0088
+	dq os_file_seek		; 0x0090
+	dq os_file_query	; 0x0098
+	dq os_file_create	; 0x00A0
+	dq os_file_delete	; 0x00A8
+	dq os_system_config	; 0x00B0
+	dq os_system_misc	; 0x00B8
 
 
 align 16
