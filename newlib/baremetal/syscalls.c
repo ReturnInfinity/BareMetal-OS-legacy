@@ -15,6 +15,9 @@
 #include <stdio.h>
 #include <errno.h>
 
+inline unsigned char inportbyte(unsigned int port);
+inline void outportbyte(unsigned int port,unsigned char value);
+
 // --- Process Control ---
 
 // exit -- Exit a program without cleaning up files
@@ -206,7 +209,24 @@ caddr_t sbrk(int incr)
 // gettimeofday -- 
 int gettimeofday(struct timeval *p, void *z)
 {
-	return -1;
+	struct tm t;
+	t.tm_year = 2013-1900;
+	outportbyte(0x70, 0x08); // Month
+	t.tm_mon = inportbyte(0x71) - 1;
+	outportbyte(0x70, 0x07); // Day
+	t.tm_mday = inportbyte(0x71);
+	outportbyte(0x70, 0x04); // Hour
+	t.tm_hour = inportbyte(0x71);
+	outportbyte(0x70, 0x02); // Minute
+	t.tm_min = inportbyte(0x71);
+	outportbyte(0x70, 0x00); // Second
+	t.tm_sec = inportbyte(0x71);
+	t.tm_isdst = -1;
+
+	p->tv_sec = (long) mktime(&t);
+	p->tv_usec = 0;
+
+	return 0;
 }
 
 void __stack_chk_fail(void)
@@ -214,5 +234,18 @@ void __stack_chk_fail(void)
 	write(1, "Stack smashin' detected!\n", 25);
 } 
 
+inline unsigned char inportbyte(unsigned int port)
+{
+	// read a byte from a port
+	unsigned char ret;
+	asm volatile ("inb %%dx,%%al":"=a"(ret):"d"(port));
+	return ret;
+}
+
+inline void outportbyte(unsigned int port,unsigned char value)
+{
+	// write a byte to a port
+	asm volatile ("outb %%al,%%dx": :"d"(port),"a"(value));
+}
 
 // EOF
