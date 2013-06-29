@@ -209,18 +209,24 @@ caddr_t sbrk(int incr)
 // gettimeofday -- 
 int gettimeofday(struct timeval *p, void *z)
 {
+	unsigned char bcd;
 	struct tm t;
 	t.tm_year = 2013-1900;
 	outportbyte(0x70, 0x08); // Month
-	t.tm_mon = inportbyte(0x71) - 1;
+	bcd = inportbyte(0x71);
+	t.tm_mon = (((bcd & 0xF0) >> 1) + ((bcd & 0xF0) >> 3) + (bcd & 0x0F)) - 1;
 	outportbyte(0x70, 0x07); // Day
-	t.tm_mday = inportbyte(0x71);
+	bcd = inportbyte(0x71);
+	t.tm_mday = ((bcd & 0xF0) >> 1) + ((bcd & 0xF0) >> 3) + (bcd & 0x0F);
 	outportbyte(0x70, 0x04); // Hour
-	t.tm_hour = inportbyte(0x71);
+	bcd = inportbyte(0x71);
+	t.tm_hour = ((bcd & 0xF0) >> 1) + ((bcd & 0xF0) >> 3) + (bcd & 0x0F);
 	outportbyte(0x70, 0x02); // Minute
-	t.tm_min = inportbyte(0x71);
+	bcd = inportbyte(0x71);
+	t.tm_min = ((bcd & 0xF0) >> 1) + ((bcd & 0xF0) >> 3) + (bcd & 0x0F);
 	outportbyte(0x70, 0x00); // Second
-	t.tm_sec = inportbyte(0x71);
+	bcd = inportbyte(0x71);
+	t.tm_sec = ((bcd & 0xF0) >> 1) + ((bcd & 0xF0) >> 3) + (bcd & 0x0F);
 	t.tm_isdst = -1;
 
 	p->tv_sec = (long) mktime(&t);
