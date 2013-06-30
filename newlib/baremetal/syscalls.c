@@ -211,7 +211,9 @@ int gettimeofday(struct timeval *p, void *z)
 {
 	unsigned char bcd;
 	struct tm t;
-	t.tm_year = 2013-1900;
+	outportbyte(0x70, 0x09);
+	bcd = inportbyte(0x71);
+	t.tm_year = 100 + ((bcd & 0xF0) >> 1) + ((bcd & 0xF0) >> 3) + (bcd & 0x0F);
 	outportbyte(0x70, 0x08); // Month
 	bcd = inportbyte(0x71);
 	t.tm_mon = (((bcd & 0xF0) >> 1) + ((bcd & 0xF0) >> 3) + (bcd & 0x0F)) - 1;
