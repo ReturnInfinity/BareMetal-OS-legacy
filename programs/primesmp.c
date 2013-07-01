@@ -7,8 +7,8 @@
 //
 // BareMetal compile using GCC (Tested with 4.7) with Newlib 2.0.0
 // gcc -I newlib-2.0.0/newlib/libc/include/ -c primesmp.c -o primesmp.o -DBAREMETAL
-// gcc -c libBareMetal.c -o libBareMetal.o
-// ld -T app.ld -o primesmp.app primesmp.o libBareMetal.o libc.a
+// gcc -c -nostdlib -nostartfiles -nodefaultlibs libBareMetal.c -o libBareMetal.o
+// ld -T app.ld -o primesmp.app crt0.o primesmp.o libBareMetal.o libc.a
 //
 // Linux/BSD compile using GCC (Tested with 4.7)
 // gcc -pthread primesmp.c -o primesmp
@@ -34,8 +34,11 @@ void *prime_process(void *param);
 // primes is set to 1 since we don't calculate for '2' as it is a known prime number
 unsigned long max_number=0, primes=1, local=0, lock=0, process_stage=0, processes=0, max_processes=0, singletime=0;
 float speedup;
+time_t start, finish;
 
-#ifndef BAREMETAL
+#ifdef BAREMETAL
+unsigned int lock;
+#else
 pthread_mutex_t mutex1 = PTHREAD_MUTEX_INITIALIZER;
 #endif
 
@@ -75,7 +78,8 @@ int main(int argc, char *argv[])
 		pthread_t worker[processes];
 #endif
 
-		time_t start, finish;
+		printf("Processing with %ld process(es)...\n", processes);
+
 		time(&start);				// Grab the starting time
 
 		// Spawn the worker processes
@@ -87,8 +91,6 @@ int main(int argc, char *argv[])
 			pthread_create(&worker[k], NULL, prime_process, NULL);
 #endif
 		}
-
-		printf("Processing with %ld process(es)...\n", processes);
 
 #ifdef BAREMETAL
 		// Attempt to run a process on this CPU Core
@@ -106,8 +108,9 @@ int main(int argc, char *argv[])
 		}
 #endif
 
+		time(&finish);				// Grab the finishing time
+
 		// Print the results
-		time(&finish);
 		if (processes == 1)
 		{
 			singletime = difftime(finish, start);

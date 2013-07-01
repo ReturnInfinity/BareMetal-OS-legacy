@@ -3,11 +3,11 @@
 //
 // This program checks all odd numbers between 3 and 'maxn' and determines if they are prime.
 // On exit the program will display the execution time and how many prime numbers were found.
-// Useful for testing runtime performance between Linux and BareMetal OS.
+// Useful for testing runtime performance between Linux/BSD and BareMetal OS.
 //
 // BareMetal compile using GCC (Tested with 4.7) with Newlib 2.0.0
 // gcc -I newlib-2.0.0/newlib/libc/include/ -c primesmp.c -o primesmp.o -DBAREMETAL
-// ld -T app.ld -o primesmp.app primesmp.o libc.a
+// ld -T app.ld -o primesmp.app crt0.o primesmp.o libc.a
 //
 // Linux/BSD compile using GCC (Tested with 4.7)
 // gcc primesmp.c -o primesmp
@@ -23,7 +23,8 @@
 #include <time.h>
 
 // primes is set to 1 since we don't calculate for '2' as it is a known prime number
-unsigned long i, j, max_number, primes=1;
+unsigned long i, j, max_number=0, primes=1;
+time_t start, finish;
 
 
 int main(int argc, char *argv[])
@@ -45,9 +46,7 @@ int main(int argc, char *argv[])
 		exit(1);
 	}
 	
-	printf("Prime v1.5 - Searching up to %ld.\n", max_number);
-
-	time_t start, finish;
+	printf("Prime v1.5 - Searching up to %ld.\nProcessing...\n", max_number);
 
 	time(&start);
 
