@@ -32,12 +32,12 @@
 void *prime_process(void *param);
 
 // primes is set to 1 since we don't calculate for '2' as it is a known prime number
-unsigned long max_number=0, primes=1, local=0, lock=0, process_stage=0, processes=0, max_processes=0, singletime=0;
+unsigned long max_number=0, primes=1, local=0, process_stage=0, processes=0, max_processes=0, singletime=0;
 float speedup;
 time_t start, finish;
 
 #ifdef BAREMETAL
-unsigned int lock;
+unsigned int lock=0;
 #else
 pthread_mutex_t mutex1 = PTHREAD_MUTEX_INITIALIZER;
 #endif
@@ -94,12 +94,11 @@ int main(int argc, char *argv[])
 
 #ifdef BAREMETAL
 		// Attempt to run a process on this CPU Core
-		while (b_smp_queuelen() != 0)		// Check the length of the queue. If greater than 0 then try to run a queued job.
-		{
+		do {
 			local = b_smp_dequeue(NULL);	// Grab a job from the queue. b_smp_dequeue returns the memory address of the code
 			if (local != 0)			// If it was set to 0 then the queue was empty
 				b_smp_run(local, tval);	// Run the code
-		}
+		} while (local != 0);			// Abandon the loop if the queue was empty
 		b_smp_wait();				// Wait for all CPU cores to finish
 #else
 		for (k=0; k<processes; k++)
