@@ -11,7 +11,7 @@ Install Linux in a 64 bit VM. In this example we used Ubuntu 11.10 64-bit. Add d
 
 Ubuntu:
 
-	sudo apt-get install dhcp3-server tftpd-hpa nasm
+	sudo apt-get install isc-dhcp-server tftpd-hpa nasm
 
 In Debian/Ubuntu the config for tftpd is located at `/etc/default/tftpd-hpa`. In Fedora/Redhat the config for tftpd is located at `/etc/xinetd.d/tftp`
 
