@@ -18,7 +18,7 @@ init_64:
 clearmem:
 	stosq
 	add rcx, 1
-	cmp rcx, 122880	; Clear 960 KiB
+	cmp rcx, 122880			; Clear 960 KiB
 	jne clearmem
 
 	mov ax, 0x0000
@@ -48,7 +48,7 @@ clearmem:
 	mov rsi, mhzmsg
 	call os_output
 
-	xor rdi, rdi 			; create the 64-bit IDT (at linear address 0x0000000000000000) as defined by Pure64
+	xor rdi, rdi 			; Create the 64-bit IDT (at linear address 0x0000000000000000) as defined by Pure64
 
 	; Create exception gate stubs (Pure64 has already set the correct gate markers)
 	mov rcx, 32
@@ -123,12 +123,12 @@ rtc_poll:
 
 	; Set color palette
 	xor eax, eax
-	mov dx, 0x03C8		; DAC Address Write Mode Register
+	mov dx, 0x03C8			; DAC Address Write Mode Register
 	out dx, al
-	mov dx, 0x03C9		; DAC Data Register
-	mov rbx, 16		; 16 lines
+	mov dx, 0x03C9			; DAC Data Register
+	mov rbx, 16			; 16 lines
 nextline:
-	mov rcx, 16		; 16 colors
+	mov rcx, 16			; 16 colors
 	mov rsi, palette
 nexttritone:
 	lodsb
@@ -142,11 +142,11 @@ nexttritone:
 	jne nexttritone
 	dec rbx
 	cmp rbx, 0
-	jne nextline		; Set the next 16 colors to the same
-	mov eax, 0x14		; Fix for color 6
-	mov dx, 0x03c8		; DAC Address Write Mode Register
+	jne nextline			; Set the next 16 colors to the same
+	mov eax, 0x14			; Fix for color 6
+	mov dx, 0x03c8			; DAC Address Write Mode Register
 	out dx, al
-	mov dx, 0x03c9		; DAC Data Register
+	mov dx, 0x03c9			; DAC Data Register
 	mov rsi, palette
 	add rsi, 18
 	lodsb
@@ -161,11 +161,11 @@ nexttritone:
 	xor ecx, ecx
 	; Grab data from Pure64's infomap
 	mov rsi, 0x5008
-	lodsd			; Load the BSP ID
-	mov ebx, eax		; Save it to EBX
+	lodsd				; Load the BSP ID
+	mov ebx, eax			; Save it to EBX
 	mov rsi, 0x5012
-	lodsw			; Load the number of activated cores
-	mov cx, ax		; Save it to CX
+	lodsw				; Load the number of activated cores
+	mov cx, ax			; Save it to CX
 	mov rsi, 0x5060
 	lodsq
 	mov [os_LocalAPICAddress], rax
@@ -268,20 +268,20 @@ create_gate:
 	push rdi
 	push rax
 
-	shl rdi, 4	; quickly multiply rdi by 16
-	stosw		; store the low word (15..0)
+	shl rdi, 4			; quickly multiply rdi by 16
+	stosw				; store the low word (15..0)
 	shr rax, 16
-	add rdi, 4	; skip the gate marker
-	stosw		; store the high word (31..16)
+	add rdi, 4			; skip the gate marker
+	stosw				; store the high word (31..16)
 	shr rax, 16
-	stosd		; store the high dword (63..32)
+	stosd				; store the high dword (63..32)
 
 	pop rax
 	pop rdi
 	ret
 
 
-init_memory_map:	; Build the OS memory table
+init_memory_map:			; Build the OS memory table
 	push rax
 	push rcx
 	push rdi
@@ -351,8 +351,8 @@ ioapic_entry_write:
 	push rcx
 
 	; Calculate index for lower DWORD
-	shl rcx, 1				; Quick multiply by 2
-	add rcx, 0x10				; IO Redirection tables start at 0x10
+	shl rcx, 1			; Quick multiply by 2
+	add rcx, 0x10			; IO Redirection tables start at 0x10
 
 	; Write lower DWORD
 	call ioapic_reg_write
