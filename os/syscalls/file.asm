@@ -3,6 +3,11 @@
 ; Copyright (C) 2008-2013 Return Infinity -- see LICENSE.TXT
 ;
 ; File System Abstraction Layer
+;
+; The file system driver needs to support the following 6 commands:
+;
+; open, close, read, write, seek, query, create, delete
+;
 ; =============================================================================
 
 align 16

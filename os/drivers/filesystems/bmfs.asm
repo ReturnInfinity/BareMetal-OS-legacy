@@ -57,7 +57,7 @@ os_bmfs_file_open:
 	push rbx
 
 	; Query the existance
-	call os_bmfs_file_query
+	call os_bmfs_file_internal_query
 	jc os_bmfs_file_open_error
 	mov rax, rbx			; Slot #
 	add rax, 10			; Files start at 10
@@ -246,12 +246,47 @@ os_bmfs_file_seek:
 
 
 ; -----------------------------------------------------------------------------
-; os_bmfs_file_query -- Search for a file name and return information
+; os_bmfs_file_internal_query -- Search for a file name and return information
 ; IN:	RSI = Pointer to file name
 ; OUT:	RAX = Staring block number
 ;	RBX = Offset to entry
 ;	RCX = File size in bytes
 ;	RDX = Reserved blocks
+;	Carry set if not found. If carry is set then ignore returned values
+os_bmfs_file_internal_query:
+	push rdi
+
+	clc				; Clear carry
+	mov rdi, bmfs_directory		; Beginning of directory structure
+
+os_bmfs_file_internal_query_next:
+	call os_string_compare
+	jc os_bmfs_file_internal_query_found
+	add rdi, 64			; Next record
+	cmp rdi, bmfs_directory + 0x1000	; End of directory
+	jne os_bmfs_file_internal_query_next
+	stc				; Set flag for file not found
+	pop rdi
+	ret
+
+os_bmfs_file_internal_query_found:
+	clc				; Clear flag for file found
+	mov rbx, rdi
+	sub rbx, bmfs_directory
+	shr rbx, 6				; Quick divide by 64 for offset (entry) number
+	mov rdx, [rdi + BMFS_DirEnt.reserved]	; Reserved blocks
+	mov rcx, [rdi + BMFS_DirEnt.size]	; Size in bytes
+	mov rax, [rdi + BMFS_DirEnt.start]	; Starting block number
+
+	pop rdi
+	ret
+; -----------------------------------------------------------------------------
+
+
+; -----------------------------------------------------------------------------
+; os_bmfs_file_query -- Search for a file name and return information
+; IN:	RSI = Pointer to file name
+; OUT:	RCX = File size in bytes
 ;	Carry set if not found. If carry is set then ignore returned values
 os_bmfs_file_query:
 	push rdi
@@ -271,12 +306,7 @@ os_bmfs_file_query_next:
 
 os_bmfs_file_query_found:
 	clc				; Clear flag for file found
-	mov rbx, rdi
-	sub rbx, bmfs_directory
-	shr rbx, 6				; Quick divide by 64 for offset (entry) number
-	mov rdx, [rdi + BMFS_DirEnt.reserved]	; Reserved blocks
 	mov rcx, [rdi + BMFS_DirEnt.size]	; Size in bytes
-	mov rax, [rdi + BMFS_DirEnt.start]	; Starting block number
 
 	pop rdi
 	ret
@@ -307,7 +337,7 @@ os_bmfs_file_delete:
 	push rbx
 	push rax
 
-	call os_bmfs_file_query
+	call os_bmfs_file_internal_query
 	jc os_bmfs_file_delete_notfound
 
 	mov byte [rbx + BMFS_DirEnt.filename], 0x01 ; Add deleted marker to file name
