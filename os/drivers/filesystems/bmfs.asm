@@ -271,9 +271,9 @@ os_bmfs_file_query_next:
 
 os_bmfs_file_query_found:
 	clc				; Clear flag for file found
-	sub rdi, bmfs_directory
 	mov rbx, rdi
-	shr rbx, 6
+	sub rbx, bmfs_directory
+	shr rbx, 6				; Quick divide by 64 for offset (entry) number
 	mov rdx, [rdi + BMFS_DirEnt.reserved]	; Reserved blocks
 	mov rcx, [rdi + BMFS_DirEnt.size]	; Size in bytes
 	mov rax, [rdi + BMFS_DirEnt.start]	; Starting block number
