@@ -21,6 +21,13 @@ clearmem:
 	cmp rcx, 122880			; Clear 960 KiB
 	jne clearmem
 
+	mov rsi, 0x5080
+	lodsd
+	cmp eax, 0
+	je nographics
+	call init_screen
+nographics:
+
 	mov ax, 0x0000
 	call os_move_cursor
 	call os_screen_clear		; Clear screen and display cursor

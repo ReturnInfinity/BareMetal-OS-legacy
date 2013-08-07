@@ -58,7 +58,7 @@ programlocation:	equ 0x0000000000200000	; Location in memory where programs are 
 os_LocalAPICAddress:	equ os_SystemVariables + 0x00
 os_IOAPICAddress:	equ os_SystemVariables + 0x08
 os_ClockCounter:	equ os_SystemVariables + 0x10
-os_RandomSeed:		equ os_SystemVariables + 0x18	; Seed for RNG
+os_VideoBase:		equ os_SystemVariables + 0x18
 screen_cursor_offset:	equ os_SystemVariables + 0x20
 os_StackBase:		equ os_SystemVariables + 0x28
 os_net_transmit:	equ os_SystemVariables + 0x30
@@ -89,6 +89,8 @@ os_QueueLen:		equ os_SystemVariables + 264
 os_QueueLock:		equ os_SystemVariables + 266	; Bit 0 clear for unlocked, set for locked.
 os_NetIOAddress:	equ os_SystemVariables + 268
 os_EthernetBusyLock:	equ os_SystemVariables + 270
+os_VideoX:		equ os_SystemVariables + 272
+os_VideoY:		equ os_SystemVariables + 274
 
 ; DB - Starting at offset 384, increments by 1
 cursorx:		equ os_SystemVariables + 384	; cursor row location
@@ -108,6 +110,7 @@ os_EthernetBuffer_C2:	equ os_SystemVariables + 397	; Counter 2 for the Ethernet 
 os_DiskEnabled:		equ os_SystemVariables + 398
 os_DiskActivity:	equ os_SystemVariables + 399
 app_argc:		equ os_SystemVariables + 400
+os_VideoDepth:		equ os_SystemVariables + 401
 
 cpuqueuemax:		dw 256
 screen_rows: 		db 25 ; x
