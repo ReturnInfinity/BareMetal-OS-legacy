@@ -333,6 +333,23 @@ system_failure_hang:
 	jmp system_failure_hang
 	ret
 
+
+; -----------------------------------------------------------------------------
+init_screen:
+	mov rsi, 0x5080
+	xor eax, eax
+	lodsd				; VIDEO_BASE
+	mov [os_VideoBase], rax
+	lodsw				; VIDEO_X
+	mov [os_VideoX], ax
+	lodsw				; VIDEO_Y
+	mov [os_VideoY], ax
+	lodsb				; VIDEO_DEPTH
+	mov [os_VideoDepth], al
+	ret
+; -----------------------------------------------------------------------------
+
+
 ; -----------------------------------------------------------------------------
 ; ioapic_reg_write -- Write to an I/O APIC register
 ;  IN:	EAX = Value to write
