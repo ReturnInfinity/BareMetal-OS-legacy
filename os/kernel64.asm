@@ -170,6 +170,7 @@ ap_process:				; Set the status byte to "Busy" and run the code
 %include "drivers.asm"
 %include "interrupt.asm"
 %include "cli.asm"
+%include "font.asm"
 %include "sysvar.asm"			; Include this last to keep the read/write variables away from the code
 
 times 16384-($-$$) db 0			; Set the compiled kernel binary to at least this size in bytes

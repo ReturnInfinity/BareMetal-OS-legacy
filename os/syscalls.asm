@@ -13,6 +13,7 @@ align 16
 %include "syscalls/debug.asm"
 %include "syscalls/ethernet.asm"
 %include "syscalls/file.asm"
+%include "syscalls/glyph.asm"
 %include "syscalls/graphics.asm"
 %include "syscalls/input.asm"
 %include "syscalls/memory.asm"
