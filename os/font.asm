@@ -12,6 +12,8 @@ align 16
 ; Fonts are defined in HxW (Pixel height x Pixel width)
 ; 8x6 padded to 8x8
 
+font:
+
 ; Space
 db 00000000b
 db 00000000b
@@ -896,11 +898,11 @@ db 10001000b
 db 00000000b
 db 00000000b
 db 00000000b
-db 00000000b
-db 00000000b
-db 00000000b
-db 00000000b
-db 00000000b
+db 10001000b
+db 10011000b
+db 01101000b
+db 00001000b
+db 01110000b
 
 ; z
 db 00000000b
