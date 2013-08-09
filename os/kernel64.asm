@@ -77,19 +77,17 @@ start:
 
 	mov word [os_Screen_Cursor_Row], 1
 	mov word [os_Screen_Cursor_Col], 1
-	mov eax, 'A'
+	mov eax, 0x20
+	mov ecx, 96
 	mov ebx, 0x00FFFFFF
+
+nextglyph:
 	call os_glyph_put
-	mov word [os_Screen_Cursor_Row], 1
-	mov word [os_Screen_Cursor_Col], 2
-	mov eax, 'b'
-	mov ebx, 0x00FFFFFF
-	call os_glyph_put
-	mov word [os_Screen_Cursor_Row], 1
-	mov word [os_Screen_Cursor_Col], 3
-	mov eax, 'c'
-	mov ebx, 0x00FFFFFF
-	call os_glyph_put
+	add word [os_Screen_Cursor_Col], 1
+	add eax, 1
+	sub ecx, 1
+	cmp ecx, 0
+	jne nextglyph
 
 	; Fall through to ap_clear as align fills the space with No-Ops
 	; At this point the BSP is just like one of the AP's
