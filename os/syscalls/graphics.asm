@@ -25,6 +25,7 @@ os_pixel_put_32:
 os_pixel_put_24:
 	push rdi
 	push rcx
+	push rdx
 	push rbx
 	push rax
 
@@ -54,6 +55,7 @@ os_pixel_put_24:
 
 	pop rax
 	pop rbx
+	pop rdx
 	pop rcx
 	pop rdi
 	ret

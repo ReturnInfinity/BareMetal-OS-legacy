@@ -66,18 +66,24 @@ start:
 	mov rax, os_command_line	; Start the CLI
 	call os_smp_enqueue
 
-	mov ebx, 0x00000000
-	mov eax, 0x00FF0000
-	call os_pixel_put
-	mov ebx, 0x00010001
-	mov eax, 0x0000FF00
-	call os_pixel_put
-	mov ebx, 0x00020002
-	mov eax, 0x000000FF
-	call os_pixel_put
-	mov ebx, 0x00030003
-	mov eax, 0xF0FFFFFF
-	call os_pixel_put
+;	mov ebx, 0x00000000
+;	mov eax, 0x00FF0000
+;	call os_pixel_put
+;	mov ebx, 0x00010001
+;	mov eax, 0x0000FF00
+;	call os_pixel_put
+;	mov ebx, 0x00020002
+;	mov eax, 0x000000FF
+;	call os_pixel_put
+;	mov ebx, 0x00030003
+;	mov eax, 0xF0FFFFFF
+;	call os_pixel_put
+
+	xor eax, eax
+	mov al, 'A'
+	mov ebx, 0x00FFFFFF
+	call os_glyph_put
+
 	; Fall through to ap_clear as align fills the space with No-Ops
 	; At this point the BSP is just like one of the AP's
 

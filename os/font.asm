@@ -12,12 +12,15 @@ align 16
 ; Fonts are defined in HxW (Pixel height x Pixel width)
 ; 8x6 padded to 8x8
 
-font:
+font_height: db 8
+font_width: db 6
+
+font_data:
 
 ; Space
-db 00000000b
-db 00000000b
-db 00000000b
+db 10101000b
+db 01010000b
+db 00100000b
 db 00000000b
 db 00000000b
 db 00000000b
@@ -34,6 +37,16 @@ db 00100000b
 db 00000000b
 db 00100000b
 
+; "
+db 00000000b
+db 01010000b
+db 01010000b
+db 00000000b
+db 00000000b
+db 00000000b
+db 00000000b
+db 00000000b
+
 ; #
 db 00000000b
 db 00000000b
@@ -44,15 +57,15 @@ db 11111000b
 db 01010000b
 db 00000000b
 
-; Pound
+; $
 db 00000000b
-db 00110000b
-db 01001000b
-db 01000000b
-db 11110000b
-db 01000000b
-db 01000000b
-db 11111000b
+db 01110000b
+db 10101000b
+db 10100000b
+db 01110000b
+db 00101000b
+db 10101000b
+db 01110000b
 
 ; %
 db 00000000b
@@ -913,6 +926,14 @@ db 00010000b
 db 00100000b
 db 01000000b
 db 11111000b
+
+; {
+
+; |
+
+; }
+
+; ~
 
 ; block
 db 11111000b
