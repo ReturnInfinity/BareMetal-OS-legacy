@@ -75,8 +75,19 @@ start:
 ;	mov eax, 0xF0FFFFFF
 ;	call os_pixel_put
 
-	xor eax, eax
-	mov al, 'A'
+	mov word [os_Screen_Cursor_Row], 1
+	mov word [os_Screen_Cursor_Col], 1
+	mov eax, 'A'
+	mov ebx, 0x00FFFFFF
+	call os_glyph_put
+	mov word [os_Screen_Cursor_Row], 1
+	mov word [os_Screen_Cursor_Col], 2
+	mov eax, 'b'
+	mov ebx, 0x00FFFFFF
+	call os_glyph_put
+	mov word [os_Screen_Cursor_Row], 1
+	mov word [os_Screen_Cursor_Col], 3
+	mov eax, 'c'
 	mov ebx, 0x00FFFFFF
 	call os_glyph_put
 

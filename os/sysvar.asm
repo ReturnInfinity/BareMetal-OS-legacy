@@ -93,6 +93,8 @@ os_VideoX:		equ os_SystemVariables + 272
 os_VideoY:		equ os_SystemVariables + 274
 os_Screen_Rows:		equ os_SystemVariables + 276
 os_Screen_Cols:		equ os_SystemVariables + 278
+os_Screen_Cursor_Row:	equ os_SystemVariables + 280
+os_Screen_Cursor_Col:	equ os_SystemVariables + 282
 
 ; DB - Starting at offset 384, increments by 1
 cursorx:		equ os_SystemVariables + 384	; cursor row location

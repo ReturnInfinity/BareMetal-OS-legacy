@@ -28,8 +28,23 @@ os_glyph_put:
 	mov rsi, font_data
 	add rsi, rax		; add offset to correct glyph
 
-	xor eax, eax
+; Calculate pixel co-ords for character
 	xor ebx, ebx
+	xor edx, edx
+	xor eax, eax
+	mov ax, [os_Screen_Cursor_Row]
+	mov cx, 8
+	mul cx
+	mov bx, ax
+	shl ebx, 16
+	xor edx, edx
+	xor eax, eax
+	mov ax, [os_Screen_Cursor_Col]
+	mov cx, 6
+	mul cx
+	mov bx, ax
+
+	xor eax, eax
 	xor ecx, ecx		; x counter
 	xor edx, edx		; y counter
 
