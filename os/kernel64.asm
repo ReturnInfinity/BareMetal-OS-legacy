@@ -40,11 +40,7 @@ kernel_start:
 	dq os_file_delete	; 0x00A8
 	dq os_system_config	; 0x00B0
 	dq os_system_misc	; 0x00B8
-	dq os_pixel_put		; 0x00C0
-	dq os_pixel_get		; 0x00C8
-
-
-align 16
+	align 16
 
 start:
 	call init_64			; After this point we are in a working 64-bit enviroment

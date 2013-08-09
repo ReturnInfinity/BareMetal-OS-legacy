@@ -340,10 +340,20 @@ init_screen:
 	xor eax, eax
 	lodsd				; VIDEO_BASE
 	mov [os_VideoBase], rax
+	xor eax, eax
+	xor ecx, ecx
+	xor edx, edx
 	lodsw				; VIDEO_X
 	mov [os_VideoX], ax
+	mov cl, [font_height]
+	div cx
+	mov [os_Screen_Cols], ax
+	xor edx, edx
 	lodsw				; VIDEO_Y
 	mov [os_VideoY], ax
+	mov cl, [font_width]
+	div cx
+	mov [os_Screen_Rows], ax
 	lodsb				; VIDEO_DEPTH
 	mov [os_VideoDepth], al
 	ret

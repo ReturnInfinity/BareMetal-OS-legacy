@@ -91,6 +91,8 @@ os_NetIOAddress:	equ os_SystemVariables + 268
 os_EthernetBusyLock:	equ os_SystemVariables + 270
 os_VideoX:		equ os_SystemVariables + 272
 os_VideoY:		equ os_SystemVariables + 274
+os_Screen_Rows:		equ os_SystemVariables + 276
+os_Screen_Cols:		equ os_SystemVariables + 278
 
 ; DB - Starting at offset 384, increments by 1
 cursorx:		equ os_SystemVariables + 384	; cursor row location
