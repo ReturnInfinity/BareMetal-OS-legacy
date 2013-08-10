@@ -83,11 +83,21 @@ start:
 
 nextglyph:
 	call os_glyph_put
-	add word [os_Screen_Cursor_Col], 1
 	add eax, 1
 	sub ecx, 1
 	cmp ecx, 0
 	jne nextglyph
+
+	mov word [os_Screen_Cursor_Row], 10
+	mov word [os_Screen_Cursor_Col], 10
+	mov rsi, readymsg
+nextgl:
+	lodsb
+	cmp al, 0
+	je stringend
+	call os_glyph_put
+	jmp nextgl
+stringend:
 
 	; Fall through to ap_clear as align fills the space with No-Ops
 	; At this point the BSP is just like one of the AP's

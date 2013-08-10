@@ -53,7 +53,7 @@ nextline1:
 
 nextpixel:
 	cmp ecx, 6
-	je bailout
+	je bailout		; Glyph row complete
 	rol al, 1
 	bt ax, 0
 	jc os_glyph_put_pixel
@@ -76,6 +76,18 @@ bailout:
 	add edx, 1
 	cmp edx, 8
 	jne nextline1
+
+updatecursor:
+	add word [os_Screen_Cursor_Col], 1	; Increment the cursor column by 1
+	mov ax, [os_Screen_Cursor_Col]
+	cmp ax, [os_Screen_Cols]		; Is it past the egde
+	jne glyph_done				; If not, bail out!
+	xor eax, eax
+	mov word [os_Screen_Cursor_Col], ax	; Reset row to 0
+	add word [os_Screen_Cursor_Row], 1	; Increment the cursor row by 1
+	; check to see if scroll is required
+
+glyph_done:
 
 	pop rax
 	pop rbx
