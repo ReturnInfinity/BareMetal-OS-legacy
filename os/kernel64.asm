@@ -51,13 +51,10 @@ start:
 
 	call init_net			; Initialize the network
 
-	mov ax, 0x0016			; Print the "ready" message
-	call os_move_cursor
+	mov word [os_Screen_Cursor_Row], 10
+	mov word [os_Screen_Cursor_Col], 0
 	mov rsi, readymsg
 	call os_output
-
-	mov ax, 0x0018			; Set the cursor to the bottom left-hand corner
-	call os_move_cursor
 
 	mov rax, os_command_line	; Start the CLI
 	call os_smp_enqueue
@@ -75,29 +72,36 @@ start:
 ;	mov eax, 0xF0FFFFFF
 ;	call os_pixel_put
 
-	mov word [os_Screen_Cursor_Row], 1
-	mov word [os_Screen_Cursor_Col], 1
-	mov eax, 0x20
-	mov ecx, 96
-	mov ebx, 0x00FFFFFF
+;	mov word [os_Screen_Cursor_Row], 1
+;	mov word [os_Screen_Cursor_Col], 1
+;	mov eax, 0x20
+;	mov ecx, 96
+;	mov ebx, 0x00FFFFFF
+;
+;nextglyph:
+;	call os_glyph_put
+;	add eax, 1
+;	sub ecx, 1
+;	cmp ecx, 0
+;	jne nextglyph
+;
+;	mov word [os_Screen_Cursor_Row], 10
+;	mov word [os_Screen_Cursor_Col], 10
+;	mov rsi, readymsg
+;nextgl:
+;	lodsb
+;	cmp al, 0
+;	je stringend
+;	call os_glyph_put
+;	jmp nextgl
+;stringend:
 
-nextglyph:
-	call os_glyph_put
-	add eax, 1
-	sub ecx, 1
-	cmp ecx, 0
-	jne nextglyph
 
-	mov word [os_Screen_Cursor_Row], 10
-	mov word [os_Screen_Cursor_Col], 10
-	mov rsi, readymsg
-nextgl:
-	lodsb
-	cmp al, 0
-	je stringend
-	call os_glyph_put
-	jmp nextgl
-stringend:
+;mov al, 'A'
+;call os_output_char
+;mov al, 'b'
+;call os_output_char
+
 
 	; Fall through to ap_clear as align fills the space with No-Ops
 	; At this point the BSP is just like one of the AP's

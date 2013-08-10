@@ -28,13 +28,12 @@ clearmem:
 	call init_screen
 nographics:
 
-	mov ax, 0x0000
-	call os_move_cursor
+	mov word [os_Screen_Cursor_Row], 0
+	mov word [os_Screen_Cursor_Col], 0
 	call os_screen_clear		; Clear screen and display cursor
 
 	; Display CPU information
-	mov ax, 0x0014
-	call os_move_cursor
+	mov word [os_Screen_Cursor_Row], 1
 	mov rsi, cpumsg
 	call os_output
 	xor eax, eax
@@ -323,8 +322,6 @@ init_memory_map:			; Build the OS memory table
 
 
 system_failure:
-	mov ax, 0x0016
-	call os_move_cursor
 	mov rsi, memory_message
 	mov bl, 0xF0
 	call os_output_with_color

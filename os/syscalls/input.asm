@@ -24,13 +24,13 @@ os_input:
 	mov rdx, rcx			; Max chars to accept
 	xor rcx, rcx			; Offset from start
 os_input_more:
-	push rdi			; Display a cursor during user input
-	mov rdi, [screen_cursor_offset]	; Offset within the screen buffer
-	sub rdi, 0xC8000		; Write directly to video memory (0xB8000)
-	add rdi, 1			; Add 1 to get to the attribute byte
-	mov al, 0x70			; Gray background, black foreground
-	stosb
-	pop rdi
+;	push rdi			; Display a cursor during user input
+;	mov rdi, [screen_cursor_offset]	; Offset within the screen buffer
+;	sub rdi, 0xC8000		; Write directly to video memory (0xB8000)
+;	add rdi, 1			; Add 1 to get to the attribute byte
+;	mov al, 0x70			; Gray background, black foreground
+;	stosb
+;	pop rdi
 	call os_input_key
 	jnc os_input_halt		; No key entered... halt until an interrupt is received
 	cmp al, 0x1C			; If Enter key pressed, finish
@@ -51,13 +51,13 @@ os_input_more:
 os_input_backspace:
 	cmp rcx, 0			; backspace at the beginning? get a new char
 	je os_input_more
-	push rdi			; Remove the old cursor
-	mov rdi, [screen_cursor_offset]	; Offset within the screen buffer
-	sub rdi, 0xC8000		; Write directly to video memory (0xB8000)
-	add rdi, 1			; Add 1 to get to the attribute byte
-	mov al, 0x07
-	stosb
-	pop rdi
+;	push rdi			; Remove the old cursor
+;	mov rdi, [screen_cursor_offset]	; Offset within the screen buffer
+;	sub rdi, 0xC8000		; Write directly to video memory (0xB8000)
+;	add rdi, 1			; Add 1 to get to the attribute byte
+;	mov al, 0x07
+;	stosb
+;	pop rdi
 	call os_dec_cursor		; Decrement the cursor
 	mov al, 0x20			; 0x20 is the character for a space
 	call os_output_char		; Write over the last typed character with the space

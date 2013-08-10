@@ -12,8 +12,8 @@ align 16
 
 os_command_line:
 	mov rsi, prompt			; Prompt for input
-	mov bl, 0x09			; Black background, Light Red text
-	call os_output_with_color
+;	mov bl, 0x09			; Black background, Light Red text
+	call os_output	;_with_color
 
 	mov rdi, cli_temp_string
 	mov rcx, 250			; Limit the input to 250 characters
@@ -131,8 +131,8 @@ print_help:
 
 clear_screen:
 	call os_screen_clear
-	mov ax, 0x0018
-	call os_move_cursor
+;	mov ax, 0x0018
+;	call os_move_cursor
 	jmp os_command_line
 
 print_ver:
