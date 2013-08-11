@@ -21,6 +21,8 @@ clearmem:
 	cmp rcx, 122880			; Clear 960 KiB
 	jne clearmem
 
+	mov word [os_Screen_Rows], 25
+	mov word [os_Screen_Cols], 80
 	mov rsi, 0x5080
 	lodsd
 	cmp eax, 0
@@ -33,7 +35,10 @@ nographics:
 	call os_screen_clear		; Clear screen and display cursor
 
 	; Display CPU information
-	mov word [os_Screen_Cursor_Row], 1
+	mov ax, [os_Screen_Rows]
+	sub ax, 5
+	mov word [os_Screen_Cursor_Row], ax
+	mov word [os_Screen_Cursor_Col], 0
 	mov rsi, cpumsg
 	call os_output
 	xor eax, eax

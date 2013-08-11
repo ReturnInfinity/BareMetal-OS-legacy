@@ -11,37 +11,7 @@ align 16
 
 
 ; -----------------------------------------------------------------------------
-; os_move_cursor -- Moves cursor in text mode
-;  IN:	AH  = row
-;	AL  = column
-; OUT:	All registers preserved
-;os_move_cursor:
-;	push rcx
-;	push rbx
-;	push rax
-;
-;	xor rbx, rbx
-;	mov [screen_cursor_x], ah
-;	mov [screen_cursor_y], al
-;	and rax, 0x000000000000FFFF	; only keep the low 16 bits
-;	;calculate the new offset
-;	mov cl, 80			; 80 columns per row
-;	mul cl				; AX = AL * CL
-;	mov bl, [screen_cursor_x]
-;	add ax, bx
-;	shl ax, 1			; multiply by 2
-;	add rax, os_screen		; Address of the screen buffer
-;	mov [screen_cursor_offset], rax
-;
-;	pop rax
-;	pop rbx
-;	pop rcx
-;	ret
-; -----------------------------------------------------------------------------
-
-
-; -----------------------------------------------------------------------------
-; os_inc_cursor -- Increment the cursor by one
+; os_inc_cursor -- Increment the cursor by one, scroll if needed
 ;  IN:	Nothing
 ; OUT:	All registers preserved
 os_inc_cursor:
@@ -56,7 +26,7 @@ os_inc_cursor:
 	mov ax, [os_Screen_Cursor_Row]
 	cmp ax, [os_Screen_Rows]
 	jne os_inc_cursor_done
-	; call os_screen_scroll
+	call os_screen_scroll
 	sub word [os_Screen_Cursor_Row], 1
 
 os_inc_cursor_done:
@@ -93,21 +63,18 @@ os_print_newline:
 	push rax
 
 	mov word [os_Screen_Cursor_Col], 0
+
+	mov ax, [os_Screen_Rows]
+	sub ax, 1
+	cmp ax, [os_Screen_Cursor_Row]
+	je os_print_newline_scroll
 	add word [os_Screen_Cursor_Row], 1
+	jmp os_print_newline_done
 
+os_print_newline_scroll:
+	call os_screen_scroll
 
-;	mov ah, 0			; Set the cursor x value to 0
-;	mov al, [screen_cursor_y]	; Grab the cursor y value
-;	cmp al, 24			; Compare to see if we are on the last line
-;	je os_print_newline_scroll	; If so then we need to scroll the sreen
-;	inc al				; If not then we can go ahead an increment the y value
-;	jmp os_print_newline_done
-;
-;os_print_newline_scroll:
-;	call os_screen_scroll
-;
-;os_print_newline_done:
-;	call os_move_cursor		; Update the cursor
+os_print_newline_done:
 
 	pop rax
 	ret
@@ -178,6 +145,58 @@ os_output_char:
 	pop rbx
 	pop rcx
 	pop rdx
+	pop rdi
+	ret
+; -----------------------------------------------------------------------------
+
+
+; -----------------------------------------------------------------------------
+; os_pixel_put -- Put a pixel on the screen
+;  IN:	EBX = Packed X & Y coordinates (YYYYXXXX)
+;	EAX = Pixel Details (AARRGGBB)
+; OUT:	All registers preserved
+os_pixel_put:
+	cmp byte [os_VideoDepth], 32
+	je os_pixel_put_32
+	cmp byte [os_VideoDepth], 24
+	je os_pixel_put_24
+	ret
+os_pixel_put_32:
+os_pixel_put_24:
+	push rdi
+	push rcx
+	push rdx
+	push rbx
+	push rax
+
+	push rax
+	mov rax, rbx
+	shr eax, 16
+	xor ecx, ecx
+	mov cx, [os_VideoX]
+	mul ecx
+	and ebx, 0x0000FFFF
+	add eax, ebx
+	mov ecx, 3
+	mul ecx
+	mov rdi, [os_VideoBase]
+	add rdi, rax
+	pop rax
+
+; multiply Y by os_VideoX
+; add X
+; multiply by 3 or 4
+
+	stosb
+	shr eax, 8
+	stosb
+	shr eax, 8
+	stosb
+
+	pop rax
+	pop rbx
+	pop rdx
+	pop rcx
 	pop rdi
 	ret
 ; -----------------------------------------------------------------------------
@@ -363,39 +382,20 @@ os_screen_scroll:
 	push rcx
 	push rax
 
-;	cld				; Clear the direction flag as we want to increment through memory
-;
-;	cmp byte [os_show_sysstatus], 0
-;	je os_screen_scroll_no_sysstatus
-;
-;	mov rsi, os_screen 		; Start of video text memory for row 2
-;	add rsi, 0xa0
-;	mov rdi, os_screen 		; Start of video text memory for row 1
-;	mov rcx, 72			; 80 - 8
-;;	rep movsw			; Copy the Character and Attribute
-;	mov rsi, os_screen		; Start of video text memory for row 3
-;	add rsi, 0x140
-;	mov rdi, os_screen		; Start of video text memory for row 2
-;	add rdi, 0xa0
-;	mov rcx, 1840			; 80 x 23
-;	rep movsw			; Copy the Character and Attribute
-;	jmp os_screen_scroll_lastline
-;
-;os_screen_scroll_no_sysstatus:
-;	mov rsi, os_screen 		; Start of video text memory for row 2
-;	add rsi, 0xa0
-;	mov rdi, os_screen 		; Start of video text memory for row 1
-;	mov rcx, 1920			; 80 x 24
-;	rep movsw			; Copy the Character and Attribute
-;
-;os_screen_scroll_lastline:		; Clear the last line in video memory
-;	mov ax, 0x0720			; 0x07 for black background/white foreground, 0x20 for space (black) character
-;	mov rdi, os_screen
-;	add rdi, 0xf00
-;	mov rcx, 80
-;	rep stosw			; Store word in AX to RDI, RCX times
-;
-;	call os_screen_update
+	cld				; Clear the direction flag as we want to increment through memory
+
+	mov rsi, 0xB8000 		; Start of video text memory for row 2
+	add rsi, 0xa0
+	mov rdi, 0xB8000 		; Start of video text memory for row 1
+	mov rcx, 1920			; 80 x 24
+	rep movsw			; Copy the Character and Attribute
+
+os_screen_scroll_lastline:		; Clear the last line in video memory
+	mov ax, 0x0720			; 0x07 for black background/white foreground, 0x20 for space (black) character
+	mov rdi, 0xB8000
+	add rdi, 0xf00
+	mov rcx, 80
+	rep stosw			; Store word in AX to RDI, RCX times
 
 	pop rax
 	pop rcx
@@ -423,27 +423,6 @@ os_screen_clear:
 	pop rcx
 	pop rdi
 	ret
-; -----------------------------------------------------------------------------
-
-
-; -----------------------------------------------------------------------------
-; os_screen_update -- Manually refresh the screen from the frame buffer
-;  IN:	Nothing
-; OUT:	All registers perserved
-;os_screen_update:
-;	push rsi
-;	push rdi
-;	push rcx
-;
-;	mov rsi, os_screen
-;	mov rdi, 0xb8000
-;	mov rcx, 2000
-;	rep movsw
-;
-;	pop rcx
-;	pop rdi
-;	pop rsi
-;	ret
 ; -----------------------------------------------------------------------------
 
 

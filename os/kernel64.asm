@@ -51,10 +51,17 @@ start:
 
 	call init_net			; Initialize the network
 
-	mov word [os_Screen_Cursor_Row], 10
+	mov ax, [os_Screen_Rows]
+	sub ax, 3
+	mov word [os_Screen_Cursor_Row], ax
 	mov word [os_Screen_Cursor_Col], 0
 	mov rsi, readymsg
 	call os_output
+
+	mov ax, [os_Screen_Rows]
+	sub ax, 1
+	mov word [os_Screen_Cursor_Row], ax
+	mov word [os_Screen_Cursor_Col], 0
 
 	mov rax, os_command_line	; Start the CLI
 	call os_smp_enqueue

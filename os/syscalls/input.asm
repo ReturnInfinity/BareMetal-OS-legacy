@@ -31,6 +31,7 @@ os_input_more:
 ;	mov al, 0x70			; Gray background, black foreground
 ;	stosb
 ;	pop rdi
+
 	call os_input_key
 	jnc os_input_halt		; No key entered... halt until an interrupt is received
 	cmp al, 0x1C			; If Enter key pressed, finish
