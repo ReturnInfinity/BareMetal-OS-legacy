@@ -47,7 +47,7 @@ os_dec_cursor:
 	jne os_dec_cursor_done
 	sub word [os_Screen_Cursor_Row], 1
 	mov ax, [os_Screen_Cols]
-	mov ax, [os_Screen_Cursor_Col]
+	mov word [os_Screen_Cursor_Col], ax
 
 os_dec_cursor_done:
 	pop rax
