@@ -93,17 +93,17 @@ start:
 ;	cmp ecx, 0
 ;	jne nextglyph
 
-	mov word [os_Screen_Cursor_Row], 10
-	mov word [os_Screen_Cursor_Col], 10
-	mov rsi, readymsg
-nextgl:
-	lodsb
-	cmp al, 0
-	je stringend
-	call os_glyph_put
-	call os_inc_cursor
-	jmp nextgl
-stringend:
+;	mov word [os_Screen_Cursor_Row], 10
+;	mov word [os_Screen_Cursor_Col], 0
+;	mov rsi, readymsg
+;nextgl:
+;	lodsb
+;	cmp al, 0
+;	je stringend
+;	call os_glyph_put
+;	call os_inc_cursor
+;	jmp nextgl
+;stringend:
 
 
 ;mov al, 'A'

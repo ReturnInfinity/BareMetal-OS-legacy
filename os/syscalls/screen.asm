@@ -146,6 +146,7 @@ os_output_char:
 
 os_output_char_graphics:
 	mov ebx, 0x00FFFFFF
+	and eax, 0x000000FF
 	call os_glyph_put
 
 os_output_char_done:
@@ -264,6 +265,10 @@ nextpixel:
 	rol al, 1
 	bt ax, 0
 	jc os_glyph_put_pixel
+	push rax
+	mov eax, 0x00000000
+	call os_pixel_put
+	pop rax
 	jmp os_glyph_put_skip
 
 os_glyph_put_pixel:
@@ -439,8 +444,8 @@ os_screen_clear:
 
 os_screen_clear_graphics:
 	mov rdi, [os_VideoBase]
-	xor eax, eax
-	mov rcx, 0x2000
+	mov eax, 0x00000000
+	mov rcx, 0x20000	; FIX THIS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 	rep stosq
 
 os_screen_clear_done:
