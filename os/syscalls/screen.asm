@@ -114,7 +114,7 @@ os_output_with_color:
 
 
 ; -----------------------------------------------------------------------------
-; os_print_char -- Displays a char
+; os_output_char -- Displays a char
 ;  IN:	AL  = char to display
 ; OUT:	All registers perserved
 os_output_char:
@@ -123,6 +123,9 @@ os_output_char:
 	push rcx
 	push rbx
 	push rax
+
+	cmp byte [os_VideoEnabled], 1
+	je os_output_char_graphics
 
 	mov ah, 0x07		; Store the attribute into AH so STOSW can be used later on
 
@@ -139,6 +142,13 @@ os_output_char:
 	pop rax
 
 	stosw			; Write the character and attribute with one call
+	jmp os_output_char_done
+
+os_output_char_graphics:
+	mov ebx, 0x00FFFFFF
+	call os_glyph_put
+
+os_output_char_done:
 	call os_inc_cursor
 
 	pop rax
@@ -215,6 +225,7 @@ os_glyph_put:
 	push rbx
 	push rax
 
+	and eax, 0x000000FF
 	sub rax, 0x20
 	shl rax, 3		; Quick multiply by 8
 	mov rsi, font_data
@@ -235,6 +246,10 @@ os_glyph_put:
 	mov cx, 6
 	mul cx
 	mov bx, ax
+	add bx, 1
+
+;mov eax, 0x0000FFFF
+;	call os_pixel_put
 
 	xor eax, eax
 	xor ecx, ecx		; x counter
@@ -414,11 +429,21 @@ os_screen_clear:
 	push rcx
 	push rax
 
+	cmp byte [os_VideoEnabled], 1
+	je os_screen_clear_graphics
 	mov ax, 0x0720		; 0x07 for black background/white foreground, 0x20 for space (black) character
 	mov rdi, 0xB8000	; Address for start of color video memory
 	mov rcx, 2000
 	rep stosw		; Clear the screen. Store word in AX to RDI, RCX times
+	jmp os_screen_clear_done
 
+os_screen_clear_graphics:
+	mov rdi, [os_VideoBase]
+	xor eax, eax
+	mov rcx, 0x2000
+	rep stosq
+
+os_screen_clear_done:
 	pop rax
 	pop rcx
 	pop rdi

@@ -358,6 +358,8 @@ init_screen:
 	mov [os_Screen_Rows], ax
 	lodsb				; VIDEO_DEPTH
 	mov [os_VideoDepth], al
+	mov al, 1
+	mov [os_VideoEnabled], al
 	ret
 ; -----------------------------------------------------------------------------
 

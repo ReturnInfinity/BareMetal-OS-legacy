@@ -115,6 +115,7 @@ os_DiskEnabled:		equ os_SystemVariables + 398
 os_DiskActivity:	equ os_SystemVariables + 399
 app_argc:		equ os_SystemVariables + 400
 os_VideoDepth:		equ os_SystemVariables + 401
+os_VideoEnabled:	equ os_SystemVariables + 402
 
 cpuqueuemax:		dw 256
 screen_rows: 		db 25 ; x
