@@ -228,7 +228,9 @@ os_glyph_put:
 
 	and eax, 0x000000FF
 	sub rax, 0x20
-	shl rax, 3		; Quick multiply by 8
+;	shl rax, 3		; Quick multiply by 8
+	mov ecx, 12
+	mul ecx
 	mov rsi, font_data
 	add rsi, rax		; add offset to correct glyph
 
@@ -237,7 +239,7 @@ os_glyph_put:
 	xor edx, edx
 	xor eax, eax
 	mov ax, [os_Screen_Cursor_Row]
-	mov cx, 8
+	mov cx, 12
 	mul cx
 	mov bx, ax
 	shl ebx, 16
@@ -247,7 +249,7 @@ os_glyph_put:
 	mov cx, 6
 	mul cx
 	mov bx, ax
-	add bx, 1
+;	add bx, 1	; offset
 
 ;mov eax, 0x0000FFFF
 ;	call os_pixel_put
@@ -286,7 +288,7 @@ bailout:
 	sub ebx, 6		; column start
 	add ebx, 0x00010000	; next row
 	add edx, 1
-	cmp edx, 8
+	cmp edx, 12
 	jne nextline1
 
 glyph_done:
@@ -404,18 +406,26 @@ os_screen_scroll:
 
 	cld				; Clear the direction flag as we want to increment through memory
 
+	cmp byte [os_VideoEnabled], 1
+	je os_screen_scroll_graphics
+
 	mov rsi, 0xB8000 		; Start of video text memory for row 2
 	add rsi, 0xa0
 	mov rdi, 0xB8000 		; Start of video text memory for row 1
 	mov rcx, 1920			; 80 x 24
 	rep movsw			; Copy the Character and Attribute
-
-os_screen_scroll_lastline:		; Clear the last line in video memory
+	; Clear the last line in video memory
 	mov ax, 0x0720			; 0x07 for black background/white foreground, 0x20 for space (black) character
 	mov rdi, 0xB8000
 	add rdi, 0xf00
 	mov rcx, 80
 	rep stosw			; Store word in AX to RDI, RCX times
+	jmp os_screen_scroll_done
+
+os_screen_scroll_graphics:
+
+
+os_screen_scroll_done:
 
 	pop rax
 	pop rcx

@@ -344,20 +344,22 @@ init_screen:
 	mov [os_VideoBase], rax
 	xor eax, eax
 	xor ecx, ecx
-	xor edx, edx
 
 	lodsw				; VIDEO_X
-	mov [os_VideoX], ax
-;	mov cl, [font_height]
-;	div cx
-;	mov [os_Screen_Cols], ax
-;	xor edx, edx
+	mov [os_VideoX], ax		; ex: 1024
+
+	xor edx, edx
+	mov cl, [font_width]
+	div cx
+	mov [os_Screen_Cols], ax
 
 	lodsw				; VIDEO_Y
-	mov [os_VideoY], ax
-;	mov cl, [font_width]
-;	div cx
-;	mov [os_Screen_Rows], ax
+	mov [os_VideoY], ax		; ex: 768
+
+	xor edx, edx
+	mov cl, [font_height]
+	div cx
+	mov [os_Screen_Rows], ax
 
 	lodsb				; VIDEO_DEPTH
 	mov [os_VideoDepth], al

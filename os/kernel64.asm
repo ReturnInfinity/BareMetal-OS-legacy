@@ -106,6 +106,18 @@ start:
 ;stringend:
 
 
+;	xor eax, eax
+;	xor edx, edx
+;	mov ax, [os_VideoY]
+;	mov cl, [font_height]
+;	div cx
+;	call os_debug_dump_reg
+;	call os_debug_dump_ax
+
+;	mov [os_Screen_Rows], ax
+;	xor edx, edx
+;jmp $
+
 ;mov al, 'A'
 ;call os_output_char
 ;mov al, 'b'
