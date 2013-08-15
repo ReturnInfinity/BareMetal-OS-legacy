@@ -162,48 +162,49 @@ os_output_char_done:
 
 
 ; -----------------------------------------------------------------------------
-; os_pixel_put -- Put a pixel on the screen
+; os_pixel -- Put a pixel on the screen
 ;  IN:	EBX = Packed X & Y coordinates (YYYYXXXX)
 ;	EAX = Pixel Details (AARRGGBB)
 ; OUT:	All registers preserved
-os_pixel_put:
-	cmp byte [os_VideoDepth], 32
-	je os_pixel_put_32
-	cmp byte [os_VideoDepth], 24
-	je os_pixel_put_24
-	ret
-os_pixel_put_32:
-os_pixel_put_24:
+os_pixel:
 	push rdi
 	push rcx
 	push rdx
 	push rbx
 	push rax
 
-	push rax
+	push rax			; Save the pixel details
 	mov rax, rbx
-	shr eax, 16
+	shr eax, 16			; Isolate Y coord
 	xor ecx, ecx
 	mov cx, [os_VideoX]
-	mul ecx
-	and ebx, 0x0000FFFF
-	add eax, ebx
-	mov ecx, 3
-	mul ecx
+	mul ecx				; Multiply Y by os_VideoX
+	and ebx, 0x0000FFFF		; Isolate X coord
+	add eax, ebx			; Add X
 	mov rdi, [os_VideoBase]
-	add rdi, rax
-	pop rax
 
-; multiply Y by os_VideoX
-; add X
-; multiply by 3 or 4
+	cmp byte [os_VideoDepth], 32
+	je os_pixel_32
 
+os_pixel_24:
+	mov ecx, 3
+	mul ecx				; Multiply by 3 as each pixel is 3 bytes
+	add rdi, rax			; Add offset to pixel video memory
+	pop rax				; Restore pixel details
 	stosb
 	shr eax, 8
 	stosb
 	shr eax, 8
 	stosb
+	jmp os_pixel_done
 
+os_pixel_32:
+	shl eax, 2			; Quickly multiply by 4
+	add rdi, rax			; Add offset to pixel video memory
+	pop rax				; Restore pixel details
+	stosd
+
+os_pixel_done:
 	pop rax
 	pop rbx
 	pop rdx
@@ -248,10 +249,6 @@ os_glyph_put:
 	mov cx, 6		; Font width
 	mul cx
 	mov bx, ax
-;	add bx, 1	; offset
-
-;mov eax, 0x0000FFFF
-;	call os_pixel_put
 
 	xor eax, eax
 	xor ecx, ecx		; x counter
@@ -268,14 +265,14 @@ nextpixel:
 	jc os_glyph_put_pixel
 	push rax
 	mov eax, 0x00000000
-	call os_pixel_put
+	call os_pixel
 	pop rax
 	jmp os_glyph_put_skip
 
 os_glyph_put_pixel:
 	push rax
 	mov eax, 0x00FFFFFF
-	call os_pixel_put
+	call os_pixel
 	pop rax
 os_glyph_put_skip:
 	add ebx, 1
