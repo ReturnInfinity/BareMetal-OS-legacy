@@ -21,13 +21,24 @@ clearmem:
 	cmp rcx, 122880			; Clear 960 KiB
 	jne clearmem
 
-	mov ax, 0x0000
-	call os_move_cursor
+	mov word [os_Screen_Rows], 25
+	mov word [os_Screen_Cols], 80
+	mov rsi, 0x5080
+	lodsd
+	cmp eax, 0
+	je nographics
+	call init_screen
+nographics:
+
+	mov word [os_Screen_Cursor_Row], 0
+	mov word [os_Screen_Cursor_Col], 0
 	call os_screen_clear		; Clear screen and display cursor
 
 	; Display CPU information
-	mov ax, 0x0014
-	call os_move_cursor
+	mov ax, [os_Screen_Rows]
+	sub ax, 5
+	mov word [os_Screen_Cursor_Row], ax
+	mov word [os_Screen_Cursor_Col], 0
 	mov rsi, cpumsg
 	call os_output
 	xor eax, eax
@@ -316,8 +327,6 @@ init_memory_map:			; Build the OS memory table
 
 
 system_failure:
-	mov ax, 0x0016
-	call os_move_cursor
 	mov rsi, memory_message
 	mov bl, 0xF0
 	call os_output_with_color
@@ -325,6 +334,64 @@ system_failure_hang:
 	hlt
 	jmp system_failure_hang
 	ret
+
+
+; -----------------------------------------------------------------------------
+init_screen:
+	mov rsi, 0x5080
+	xor eax, eax
+	lodsd				; VIDEO_BASE
+	mov [os_VideoBase], rax
+	xor eax, eax
+	xor ecx, ecx
+
+	lodsw				; VIDEO_X
+	mov [os_VideoX], ax		; ex: 1024
+
+	xor edx, edx
+	mov cl, [font_width]
+	div cx
+	mov [os_Screen_Cols], ax
+
+	lodsw				; VIDEO_Y
+	mov [os_VideoY], ax		; ex: 768
+
+	xor edx, edx
+	mov cl, [font_height]
+	div cx
+	mov [os_Screen_Rows], ax
+
+	lodsb				; VIDEO_DEPTH
+	mov [os_VideoDepth], al
+
+	xor eax, eax
+	xor ecx, ecx
+	mov ax, [os_VideoX]
+	mov cx, [os_VideoY]
+	mul ecx
+	mov [os_Screen_Pixels], eax
+	xor ecx, ecx
+	mov cl, [os_VideoDepth]
+	shr cl, 3
+	mul ecx
+	mov [os_Screen_Bytes], eax
+
+	xor eax, eax
+	xor ecx, ecx
+	mov ax, [os_VideoX]
+	mov cl, [font_height]
+	mul cx
+	mov cl, [os_VideoDepth]
+	shr cl, 3
+	mul ecx
+	mov dword [os_Screen_Row_2], eax
+
+	mov al, 1
+	mov [os_VideoEnabled], al
+
+	ret
+; -----------------------------------------------------------------------------
+
 
 ; -----------------------------------------------------------------------------
 ; ioapic_reg_write -- Write to an I/O APIC register
