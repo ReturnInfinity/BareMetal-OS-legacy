@@ -66,64 +66,6 @@ start:
 	mov rax, os_command_line	; Start the CLI
 	call os_smp_enqueue
 
-;	mov ebx, 0x00000000
-;	mov eax, 0x00FF0000
-;	call os_pixel_put
-;	mov ebx, 0x00010001
-;	mov eax, 0x0000FF00
-;	call os_pixel_put
-;	mov ebx, 0x00020002
-;	mov eax, 0x000000FF
-;	call os_pixel_put
-;	mov ebx, 0x00030003
-;	mov eax, 0xF0FFFFFF
-;	call os_pixel_put
-
-;	mov word [os_Screen_Cursor_Row], 1
-;	mov word [os_Screen_Cursor_Col], 1
-;	mov eax, 0x20
-;	mov ecx, 96
-;	mov ebx, 0x00FFFFFF
-;
-;nextglyph:
-;	call os_glyph_put
-;call os_inc_cursor
-;	add eax, 1
-;	sub ecx, 1
-;	cmp ecx, 0
-;	jne nextglyph
-
-	mov word [os_Screen_Cursor_Row], 10
-;	mov word [os_Screen_Cursor_Col], 0
-;	mov rsi, readymsg
-;nextgl:
-;	lodsb
-;	cmp al, 0
-;	je stringend
-;	call os_glyph_put
-;	call os_inc_cursor
-;	jmp nextgl
-;stringend:
-
-
-;	xor eax, eax
-;	xor edx, edx
-;	mov ax, [os_VideoY]
-;	mov cl, [font_height]
-;	div cx
-;	call os_debug_dump_reg
-;	call os_debug_dump_ax
-
-;	mov [os_Screen_Rows], ax
-;	xor edx, edx
-;jmp $
-
-;mov al, 'A'
-;call os_output_char
-;mov al, 'b'
-;call os_output_char
-
-
 	; Fall through to ap_clear as align fills the space with No-Ops
 	; At this point the BSP is just like one of the AP's
 

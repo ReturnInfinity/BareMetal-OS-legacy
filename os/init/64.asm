@@ -376,6 +376,16 @@ init_screen:
 	mul ecx
 	mov [os_Screen_Bytes], eax
 
+	xor eax, eax
+	xor ecx, ecx
+	mov ax, [os_VideoX]
+	mov cl, [font_height]
+	mul cx
+	mov cl, [os_VideoDepth]
+	shr cl, 3
+	mul ecx
+	mov dword [os_Screen_Row_2], eax
+
 	mov al, 1
 	mov [os_VideoEnabled], al
 

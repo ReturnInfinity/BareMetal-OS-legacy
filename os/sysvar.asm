@@ -82,6 +82,7 @@ ahci_port:		equ os_SystemVariables + 152
 hd1_size:		equ os_SystemVariables + 156	; in MiB
 os_Screen_Pixels:	equ os_SystemVariables + 160
 os_Screen_Bytes:	equ os_SystemVariables + 164
+os_Screen_Row_2:	equ os_SystemVariables + 168
 
 ; DW - Starting at offset 256, increments by 2
 os_NumCores:		equ os_SystemVariables + 258

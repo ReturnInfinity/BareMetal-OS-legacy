@@ -228,8 +228,7 @@ os_glyph_put:
 
 	and eax, 0x000000FF
 	sub rax, 0x20
-;	shl rax, 3		; Quick multiply by 8
-	mov ecx, 12
+	mov ecx, 12		; Font height
 	mul ecx
 	mov rsi, font_data
 	add rsi, rax		; add offset to correct glyph
@@ -239,14 +238,14 @@ os_glyph_put:
 	xor edx, edx
 	xor eax, eax
 	mov ax, [os_Screen_Cursor_Row]
-	mov cx, 12
+	mov cx, 12		; Font height
 	mul cx
 	mov bx, ax
 	shl ebx, 16
 	xor edx, edx
 	xor eax, eax
 	mov ax, [os_Screen_Cursor_Col]
-	mov cx, 6
+	mov cx, 6		; Font width
 	mul cx
 	mov bx, ax
 ;	add bx, 1	; offset
@@ -262,7 +261,7 @@ nextline1:
 	lodsb			; Load a line
 
 nextpixel:
-	cmp ecx, 6
+	cmp ecx, 6		; Font width
 	je bailout		; Glyph row complete
 	rol al, 1
 	bt ax, 0
@@ -288,7 +287,7 @@ bailout:
 	sub ebx, 6		; column start
 	add ebx, 0x00010000	; next row
 	add edx, 1
-	cmp edx, 12
+	cmp edx, 12		; Font height
 	jne nextline1
 
 glyph_done:
@@ -410,21 +409,24 @@ os_screen_scroll:
 	je os_screen_scroll_graphics
 
 	mov rsi, 0xB80A0 		; Start of video text memory for row 2
-;	add rsi, 0xa0
 	mov rdi, 0xB8000 		; Start of video text memory for row 1
 	mov rcx, 1920			; 80 x 24
 	rep movsw			; Copy the Character and Attribute
 	; Clear the last line in video memory
 	mov ax, 0x0720			; 0x07 for black background/white foreground, 0x20 for space (black) character
-	mov rdi, 0xB8000
-	add rdi, 0xf00
+	mov rdi, 0xB8F00
 	mov rcx, 80
 	rep stosw			; Store word in AX to RDI, RCX times
 	jmp os_screen_scroll_done
 
 os_screen_scroll_graphics:
-;	mov rdi, [os_VideoBase]
-
+	xor esi, esi
+	xor ecx, ecx
+	mov rdi, [os_VideoBase]
+	mov esi, [os_Screen_Row_2]
+	add rsi, rdi
+	mov ecx, [os_Screen_Bytes]
+	rep movsb
 
 os_screen_scroll_done:
 
