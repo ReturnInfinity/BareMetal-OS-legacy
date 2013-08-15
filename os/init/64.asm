@@ -328,8 +328,7 @@ init_memory_map:			; Build the OS memory table
 
 system_failure:
 	mov rsi, memory_message
-	mov bl, 0xF0
-	call os_output_with_color
+	call os_output
 system_failure_hang:
 	hlt
 	jmp system_failure_hang
@@ -385,6 +384,9 @@ init_screen:
 	shr cl, 3
 	mul ecx
 	mov dword [os_Screen_Row_2], eax
+
+	mov eax, 0x00FFFFFF
+	mov [os_Font_Color], eax
 
 	mov al, 1
 	mov [os_VideoEnabled], al

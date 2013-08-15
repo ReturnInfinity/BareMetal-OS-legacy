@@ -12,8 +12,11 @@ align 16
 
 os_command_line:
 	mov rsi, prompt			; Prompt for input
-;	mov bl, 0x09			; Black background, Light Red text
-	call os_output	;_with_color
+	mov ebx, 0x00FF0000
+	mov [os_Font_Color], ebx
+	call os_output
+	mov ebx, 0x00FFFFFF
+	mov [os_Font_Color], ebx
 
 	mov rdi, cli_temp_string
 	mov rcx, 250			; Limit the input to 250 characters

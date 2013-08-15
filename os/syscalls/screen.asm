@@ -97,23 +97,6 @@ os_output:
 
 
 ; -----------------------------------------------------------------------------
-; os_print_string_with_color -- Displays text with color
-;  IN:	RSI = message location (zero-terminated string)
-;	BL  = color
-; OUT:	All registers perserved
-; This function uses the the os_print_string function to do the actual printing
-os_output_with_color:
-	push rcx
-
-	call os_string_length
-	call os_output_chars_with_color
-
-	pop rcx
-	ret
-; -----------------------------------------------------------------------------
-
-
-; -----------------------------------------------------------------------------
 ; os_output_char -- Displays a char
 ;  IN:	AL  = char to display
 ; OUT:	All registers perserved
@@ -145,7 +128,7 @@ os_output_char:
 	jmp os_output_char_done
 
 os_output_char_graphics:
-	mov ebx, 0x00FFFFFF
+	mov ebx, [os_Font_Color]
 	and eax, 0x000000FF
 	call os_glyph_put
 
@@ -271,7 +254,7 @@ nextpixel:
 
 os_glyph_put_pixel:
 	push rax
-	mov eax, 0x00FFFFFF
+	mov eax, [os_Font_Color]
 	call os_pixel
 	pop rax
 os_glyph_put_skip:
@@ -367,26 +350,6 @@ os_output_chars_done:
 	pop rsi
 	pop rdi
 	ret
-; -----------------------------------------------------------------------------
-
-
-; -----------------------------------------------------------------------------
-; os_print_chars_with_color -- Displays text with color
-;  IN:	RSI = message location (A string, not zero-terminated)
-;	BL  = color
-;	RCX = number of chars to print
-; OUT:	All registers perserved
-; This function uses the the os_print_chars function to do the actual printing
-os_output_chars_with_color:
-	push rdi
-	push rsi
-	push rcx
-	push rax
-
-	cld				; Clear the direction flag.. we want to increment through the string
-	mov ah, bl			; Store the attribute into AH so STOSW can be used later on
-
-	jmp os_output_chars_nextchar	; Use the logic from os_print_chars
 ; -----------------------------------------------------------------------------
 
 

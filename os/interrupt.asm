@@ -391,16 +391,15 @@ exception_gate_main:
 	push rsi
 	push rax			; Save RAX since os_smp_get_id clobers it
 	call os_print_newline
-	mov bl, 0x0F
 	mov rsi, int_string00
-	call os_output_with_color
+	call os_output
 	call os_smp_get_id		; Get the local CPU ID and print it
 	mov rdi, os_temp_string
 	mov rsi, rdi
 	call os_int_to_string
-	call os_output_with_color
+	call os_output
 	mov rsi, int_string01
-	call os_output_with_color
+	call os_output
 	mov rsi, exc_string00
 	pop rax
 	and rax, 0x00000000000000FF	; Clear out everything in RAX except for AL
@@ -410,7 +409,7 @@ exception_gate_main:
 	add rsi, rax			; Use the value in RAX as an offset to get to the right message
 	pop rax
 	mov bl, 0x0F
-	call os_output_with_color
+	call os_output
 	call os_print_newline
 	pop rsi
 	pop rdi
