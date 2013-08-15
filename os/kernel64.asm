@@ -40,9 +40,7 @@ kernel_start:
 	dq os_file_delete	; 0x00A8
 	dq os_system_config	; 0x00B0
 	dq os_system_misc	; 0x00B8
-
-
-align 16
+	align 16
 
 start:
 	call init_64			; After this point we are in a working 64-bit enviroment
@@ -53,13 +51,17 @@ start:
 
 	call init_net			; Initialize the network
 
-	mov ax, 0x0016			; Print the "ready" message
-	call os_move_cursor
+	mov ax, [os_Screen_Rows]
+	sub ax, 3
+	mov word [os_Screen_Cursor_Row], ax
+	mov word [os_Screen_Cursor_Col], 0
 	mov rsi, readymsg
 	call os_output
 
-	mov ax, 0x0018			; Set the cursor to the bottom left-hand corner
-	call os_move_cursor
+	mov ax, [os_Screen_Rows]
+	sub ax, 1
+	mov word [os_Screen_Cursor_Row], ax
+	mov word [os_Screen_Cursor_Col], 0
 
 	mov rax, os_command_line	; Start the CLI
 	call os_smp_enqueue
@@ -156,6 +158,7 @@ ap_process:				; Set the status byte to "Busy" and run the code
 %include "drivers.asm"
 %include "interrupt.asm"
 %include "cli.asm"
+%include "font.asm"
 %include "sysvar.asm"			; Include this last to keep the read/write variables away from the code
 
 times 16384-($-$$) db 0			; Set the compiled kernel binary to at least this size in bytes
