@@ -370,11 +370,6 @@ init_screen:
 	mov cx, [os_VideoY]
 	mul ecx
 	mov [os_Screen_Pixels], eax
-	xor ecx, ecx
-	mov cl, [os_VideoDepth]
-	shr cl, 3
-	mul ecx
-	mov [os_Screen_Bytes], eax
 
 	mov al, 1
 	mov [os_VideoEnabled], al

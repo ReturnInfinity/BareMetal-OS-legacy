@@ -446,10 +446,8 @@ os_screen_clear:
 	push rax
 
 	xor ecx, ecx
-
 	cmp byte [os_VideoEnabled], 1
 	je os_screen_clear_graphics
-
 	mov ax, 0x0720		; 0x07 for black background/white foreground, 0x20 for space (black) character
 	mov rdi, 0xB8000	; Address for start of color video memory
 	mov cx, 2000

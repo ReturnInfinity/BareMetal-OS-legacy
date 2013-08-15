@@ -93,7 +93,7 @@ start:
 ;	cmp ecx, 0
 ;	jne nextglyph
 
-;	mov word [os_Screen_Cursor_Row], 10
+	mov word [os_Screen_Cursor_Row], 10
 ;	mov word [os_Screen_Cursor_Col], 0
 ;	mov rsi, readymsg
 ;nextgl:
