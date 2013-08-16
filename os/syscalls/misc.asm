@@ -21,7 +21,6 @@ system_status:
 
 	; Display the dark grey bar
 	mov ax, 0x8720			; 0x87 for dark grey background/white foreground, 0x20 for space (blank) character
-;	mov rdi, os_screen		; Draw to screen buffer
 	mov rdi, 0xB8000
 	add rdi, 144
 	push rdi
@@ -69,14 +68,6 @@ system_status_rtc_flash_hi:
 	mov al, 0x8F			; White on Dark Gray
 system_status_rtc_flash_lo:
 	stosb				; Store the color (attribute) byte
-
-	; Copy the system status to the screen
-;	mov rsi, os_screen
-;	add rsi, 144
-;	mov rdi, 0xB8000
-;	add rdi, 144
-;	mov rcx, 8
-;	rep movsw
 
 	pop rax
 	pop rcx
@@ -155,6 +146,14 @@ os_system_config:
 	je os_system_config_networkcallback_set
 	cmp rdx, 10
 	je os_system_config_statusbar
+	cmp rdx, 20
+	je os_system_config_video_base
+	cmp rdx, 21
+	je os_system_config_video_x
+	cmp rdx, 22
+	je os_system_config_video_y
+	cmp rdx, 23
+	je os_system_config_video_bpp
 	ret
 
 os_system_config_timecounter:
@@ -181,6 +180,25 @@ os_system_config_networkcallback_set:
 os_system_config_statusbar:
 	mov byte [os_show_sysstatus], al
 	ret
+
+os_system_config_video_base:
+	mov rax, os_VideoBase
+	ret
+
+os_system_config_video_x:
+	xor eax, eax
+	mov ax, [os_VideoX]
+	ret
+
+os_system_config_video_y:
+	xor eax, eax
+	mov ax, [os_VideoY]
+	ret
+
+os_system_config_video_bpp:
+	xor eax, eax
+	mov al, [os_VideoDepth]
+	ret	
 ; -----------------------------------------------------------------------------
 
 
