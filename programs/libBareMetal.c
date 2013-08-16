@@ -15,7 +15,7 @@
 // gcc -c -m64 -nostdlib -nostartfiles -nodefaultlibs -fomit-frame-pointer -mno-red-zone -o libBareMetal.o libBareMetal.c
 // gcc -c -m64 -nostdlib -nostartfiles -nodefaultlibs -fomit-frame-pointer -mno-red-zone -o yourapp.o yourapp.c
 // Link:
-// ld -T app.ld -o yourapp.app yourapp.o
+// ld -T app.ld -o yourapp.app yourapp.o libBareMetal.o
 //
 //
 // Windows compile:

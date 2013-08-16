@@ -182,7 +182,7 @@ os_system_config_statusbar:
 	ret
 
 os_system_config_video_base:
-	mov rax, os_VideoBase
+	mov rax, [os_VideoBase]
 	ret
 
 os_system_config_video_x:
