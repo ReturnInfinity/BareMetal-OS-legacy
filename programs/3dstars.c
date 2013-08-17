@@ -19,7 +19,7 @@ int PER = 256;
 
 typedef struct {
 	double x, y, z;
-	int dx, dy;
+	int dx, dy, dx1, dy1;
 } stardata;
 
 int main()
@@ -76,51 +76,49 @@ int main()
 		}
 		a1+=0.01;
 		a2+=0.00001;
-		clear_screen();
+
 		for (n=0; n<numstars; n++)
 		{
-			if (star[n].dx >= 0 && star[n].dx < VideoX && star[n].dy >= 0 && star[n].dy < VideoY)
-				put_pixel(star[n].dx, star[n].dy, 255, 255, 255);
+			put_pixel(star[n].dx1, star[n].dy1, 0, 0, 0);
+			put_pixel(star[n].dx, star[n].dy, 255, 255, 255);
+			star[n].dx1 = star[n].dx;
+			star[n].dy1 = star[n].dy;
 		}
 	}
 }
 
 void clear_screen()
 {
-	int offset = 0;
 	int bytes = VideoX * VideoY;
 
 	if (VideoBPP == 24)
-	{
 		bytes = bytes * 3;
-	}
 	else if (VideoBPP == 32)
-	{
 		bytes = bytes * 4;
-	}
 
-//	for (offset=0; offset<bytes; offset++)
-//		VideoMemory[offset] = 0x00;
 	memset(VideoMemory, 0x00, bytes);
 }
 
 void put_pixel(unsigned int x, unsigned int y, unsigned char red, unsigned char blue, unsigned char green)
 {
 	int offset = 0;
-	offset = y * VideoX + x;
-	if (VideoBPP == 24)
+	if (x >= 0 && x < VideoX && y >= 0 && y < VideoY) // Sanity check
 	{
-		offset = offset * 3;
-		VideoMemory[offset] = red;
-		VideoMemory[offset+1] = blue;
-		VideoMemory[offset+2] = green;
-	}
-	else if (VideoBPP == 32)
-	{
-		offset = offset * 4;
-		VideoMemory[offset] = 0x00;
-		VideoMemory[offset+1] = red;
-		VideoMemory[offset+3] = blue;
-		VideoMemory[offset+4] = green;
+		offset = y * VideoX + x;
+		if (VideoBPP == 24)
+		{
+			offset = offset * 3;
+			VideoMemory[offset] = red;
+			VideoMemory[offset+1] = blue;
+			VideoMemory[offset+2] = green;
+		}
+		else if (VideoBPP == 32)
+		{
+			offset = offset * 4;
+			VideoMemory[offset] = 0x00;
+			VideoMemory[offset+1] = red;
+			VideoMemory[offset+3] = blue;
+			VideoMemory[offset+4] = green;
+		}
 	}
 }
