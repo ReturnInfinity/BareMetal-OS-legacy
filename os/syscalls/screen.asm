@@ -42,7 +42,6 @@ os_inc_cursor_done:
 os_dec_cursor:
 	push rax
 
-	sub word [os_Screen_Cursor_Col], 1
 	cmp word [os_Screen_Cursor_Col], 0
 	jne os_dec_cursor_done
 	sub word [os_Screen_Cursor_Row], 1
@@ -50,6 +49,8 @@ os_dec_cursor:
 	mov word [os_Screen_Cursor_Col], ax
 
 os_dec_cursor_done:
+	sub word [os_Screen_Cursor_Col], 1
+
 	pop rax
 	ret
 ; -----------------------------------------------------------------------------
