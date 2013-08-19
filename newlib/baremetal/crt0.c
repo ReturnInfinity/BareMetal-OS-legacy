@@ -1,14 +1,14 @@
 #include <stdio.h> // fflush()
 
 extern int main(int argc, char *argv[]);
-unsigned long b_system_config(unsigned long function, unsigned long var);
+unsigned long b_system_config_crt0(unsigned long function, unsigned long var);
 
 extern char __bss_start, _end; // BSS should be the last think before _end
 
 _start()
 {
 	int argc, i, retval;
-	argc = (int)b_system_config(1, 0);
+	argc = (int)b_system_config_crt0(1, 0);
 	char *argv[argc], *c, *tchar;
 
 	// zero BSS
@@ -19,7 +19,7 @@ _start()
 
 	// Parse argv[*]
 	for(i=0; i<argc; i++)
-		argv[i] = (char *)b_system_config(2, (unsigned long)i);
+		argv[i] = (char *)b_system_config_crt0(2, (unsigned long)i);
 
 	retval = main(argc, argv);
 
@@ -28,7 +28,7 @@ _start()
 	return retval;
 }
 
-unsigned long b_system_config(unsigned long function, unsigned long var)
+unsigned long b_system_config_crt0(unsigned long function, unsigned long var)
 {
 	unsigned long tlong;
 	asm volatile ("call *0x001000B0" : "=a"(tlong) : "d"(function), "a"(var));
