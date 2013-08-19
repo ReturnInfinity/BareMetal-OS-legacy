@@ -25,6 +25,9 @@ os_input:
 	xor rcx, rcx			; Offset from start
 
 os_input_more:
+	mov al, '_'
+	call os_output_char
+	call os_dec_cursor
 	call os_input_key
 	jnc os_input_halt		; No key entered... halt until an interrupt is received
 	cmp al, 0x1C			; If Enter key pressed, finish
@@ -45,10 +48,10 @@ os_input_more:
 os_input_backspace:
 	cmp rcx, 0			; backspace at the beginning? get a new char
 	je os_input_more
-	call os_dec_cursor		; Decrement the cursor
-	mov al, 0x20			; 0x20 is the character for a space
+	mov al, ' '			; 0x20 is the character for a space
 	call os_output_char		; Write over the last typed character with the space
 	call os_dec_cursor		; Decrement the cursor again
+	call os_dec_cursor		; Decrement the cursor
 	dec rdi				; go back one in the string
 	mov byte [rdi], 0x00		; NULL out the char
 	dec rcx				; decrement the counter by one
@@ -58,9 +61,11 @@ os_input_halt:
 	hlt				; Halt until another keystroke is received
 	jmp os_input_more
 
-os_input_done:
+os_input_done:	
 	mov al, 0x00
 	stosb				; We NULL terminate the string
+	mov al, ' '
+	call os_output_char
 
 	pop rax
 	pop rdx
