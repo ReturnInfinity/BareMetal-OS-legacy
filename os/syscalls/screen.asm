@@ -64,7 +64,6 @@ os_print_newline:
 	push rax
 
 	mov word [os_Screen_Cursor_Col], 0
-
 	mov ax, [os_Screen_Rows]
 	sub ax, 1
 	cmp ax, [os_Screen_Cursor_Row]
@@ -76,7 +75,6 @@ os_print_newline_scroll:
 	call os_screen_scroll
 
 os_print_newline_done:
-
 	pop rax
 	ret
 ; -----------------------------------------------------------------------------
@@ -111,6 +109,7 @@ os_output_char:
 	cmp byte [os_VideoEnabled], 1
 	je os_output_char_graphics
 
+os_output_char_text:
 	mov ah, 0x07		; Store the attribute into AH so STOSW can be used later on
 
 	push rax
@@ -152,8 +151,8 @@ os_output_char_done:
 ; OUT:	All registers preserved
 os_pixel:
 	push rdi
-	push rcx
 	push rdx
+	push rcx
 	push rbx
 	push rax
 
@@ -191,8 +190,8 @@ os_pixel_32:
 os_pixel_done:
 	pop rax
 	pop rbx
-	pop rdx
 	pop rcx
+	pop rdx
 	pop rdi
 	ret
 ; -----------------------------------------------------------------------------
@@ -272,7 +271,6 @@ bailout:
 	jne nextline1
 
 glyph_done:
-
 	pop rax
 	pop rbx
 	pop rcx
@@ -345,7 +343,6 @@ os_output_chars_tab_next:
 	jmp os_output_chars_nextchar
 
 os_output_chars_done:
-
 	pop rax
 	pop rcx
 	pop rsi
@@ -369,6 +366,7 @@ os_screen_scroll:
 	cmp byte [os_VideoEnabled], 1
 	je os_screen_scroll_graphics
 
+os_screen_scroll_text:
 	mov rsi, 0xB80A0 		; Start of video text memory for row 2
 	mov rdi, 0xB8000 		; Start of video text memory for row 1
 	mov rcx, 1920			; 80 x 24
@@ -390,7 +388,6 @@ os_screen_scroll_graphics:
 	rep movsb
 
 os_screen_scroll_done:
-
 	pop rax
 	pop rcx
 	pop rdi
@@ -413,6 +410,7 @@ os_screen_clear:
 	cmp byte [os_VideoEnabled], 1
 	je os_screen_clear_graphics
 
+os_screen_clear_text:
 	mov ax, 0x0720		; 0x07 for black background/white foreground, 0x20 for space (black) character
 	mov rdi, 0xB8000	; Address for start of color video memory
 	mov cx, 2000
