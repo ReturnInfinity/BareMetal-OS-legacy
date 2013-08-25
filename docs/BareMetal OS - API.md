@@ -37,9 +37,10 @@ Version 0.6.0 - April 17, 2013
 
 ## Output ##
 
-**b\_output**
 
-Output text to the screen (The string must be null-terminated)
+### b\_output ###
+
+Output text to the screen (The string must be null-terminated - also known as ASCIIZ)
 
 Assembly Registers:
 
@@ -61,7 +62,7 @@ C/C++ Example:
 	b_output("This is a another test");
 
 
-**b\_output\_chars**
+### b\_output\_chars ###
 
 Output a number of characters to the screen
 
@@ -86,7 +87,8 @@ C/C++ Example:
 
 ## Input ##
 
-**b\_input**
+
+### b\_input ###
 
 Accept a number of keys from the keyboard. The resulting string will automatically be null-terminated
 
@@ -111,7 +113,7 @@ C/C++ Example:
 	b_input(Input, 20);
 
 
-**b\_input\_key**
+### b\_input\_key ###
 
 Scans keyboard for input
 
@@ -131,42 +133,51 @@ Assembly Example:
 C/C++ Example:
 
 	char KeyChar;
-	KeyChar = b_input_key
+	KeyChar = b_input_key();
+	if (KeyChar == 'a')
+	...
 
 
-## SMP ##
+## SMP
 
-**b\_smp\_enqueue**
+
+### b\_smp\_enqueue
 
 Add a workload to the processing queue
 
-**b\_smp\_dequeue**
+
+### b\_smp\_dequeue
 
 Dequeue a workload from the processing queue
 
-**b\_smp\_run**
+
+### b\_smp\_run
 
 Call the code address stored in RAX
 
-**b\_smp\_wait**
+
+### b\_smp\_wait
 
 Wait until all other CPU Cores are finished processing
 
 
-## Memory ##
+## Memory
 
-**b\_mem\_allocate**
+
+### b\_mem\_allocate
 
 Allocate pages of memory
 
-**b\_mem\_release**
+
+### b\_mem\_release
 
 Release pages of memory
 
 
-## Network ##
+## Network
 
-**b\_ethernet\_tx**
+
+### b\_ethernet\_tx
 
 Transmit data via Ethernet
 
@@ -190,7 +201,8 @@ Assembly Example:
 
 The packet must contain a proper 14-byte header.
 
-**b\_ethernet\_rx**
+
+### b\_ethernet\_rx
 
 Receive data via Ethernet
 
@@ -208,9 +220,11 @@ Assembly Example:
 
 Notes: BareMetal OS does not keep a buffer of received packets. This means that the OS will overwrite the last packet received as soon as it receives a new one. You can continuously poll the network by checking b_ethernet_rx often, but this is not ideal. BareMetal OS allows for a network interrupt callback handler to be run whenever a packet is received. With a callback, your program will always be aware of when a packet was received. Check programs/ethtool.asm for an example of using a callback.
 
-## File ##
 
-**b\_file\_open**
+## File
+
+
+### b\_file\_open
 
 Open a file
 
@@ -230,7 +244,7 @@ Assembly Example:
 	Filenumber: dq 0
 
 
-**b\_file\_close**
+### b\_file\_close
 
 Close a file
 
@@ -244,7 +258,8 @@ Assembly Example:
 	mov rax, [Filenumber]
 	call b_file_close
 
-**b\_file\_read**
+
+### b\_file\_read
 
 Read a number of bytes from a file to memory
 
@@ -256,7 +271,8 @@ Assembly Registers:
 	OUT:	RCX = Number of bytes read
 			All other registers preserved
 
-**b\_file\_write**
+
+### b\_file\_write
 
 Write a number of bytes from memory to a file
 
@@ -268,7 +284,8 @@ Assembly Registers:
 	OUT:	RCX = Number of bytes written
 			All other registers preserved
 
-**b\_file\_seek**
+
+### b\_file\_seek
 
 Seek to a specific part of a file
 
@@ -279,11 +296,13 @@ Assembly Registers:
 			RDX = Origin
 	OUT:	All registers preserved
 
-**b\_file\_query**
+
+### b\_file\_query
 
 Query the existence of a file
 
-**b\_file\_create**
+
+### b\_file\_create
 
 Create a file on disk
 
@@ -293,7 +312,8 @@ Assembly Registers:
 			RSI = File name (zero-terminated string)
 	OUT:	All registers preserved
 
-**b\_file\_delete**
+
+### b\_file\_delete
 
 Delete a file from disk
 
@@ -303,9 +323,10 @@ Assembly Registers:
 	OUT:	All registers preserved
 
 
-## Misc ##
+## Misc
 
-**b\_system\_config**
+
+### b\_system\_config
 
 View or modify system configuration options
 
@@ -317,7 +338,8 @@ Assembly Registers:
 
 Function numbers come in pairs (one for reading a parameter, and one for writing a parameter). b_system_config should be called with a function alias and not a direct function number.
 
-**b\_system\_misc**
+
+### b\_system\_misc
 
 Call miscellaneous OS sub-functions
 
@@ -328,3 +350,4 @@ Assembly Registers:
 			RCX = Variable 2 
 	OUT:	RAX = Result 1
 			RCX = Result 2
+
