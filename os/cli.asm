@@ -457,13 +457,28 @@ os_hex_string_to_int_exit:
 ; IN:	RDI = location to store list
 ; OUT:	RDI = pointer to end of list
 os_bmfs_file_list:
+	push rdi
 	push rsi
-	push rdx
 	push rcx
 	push rbx
 	push rax
 
-	mov rsi, dir_title_string	; Copy the header string
+	mov rsi, Disk_Size_MSG
+	call os_string_length
+	call os_string_copy
+	add rdi, rcx
+
+	mov eax, [hd1_size]
+	call os_int_to_string
+	dec rdi
+	mov al, 0
+
+	mov rsi, MiB_MSG
+	call os_string_length
+	call os_string_copy
+	add rdi, rcx
+
+	mov rsi, List_MSG
 	call os_string_length
 	call os_string_copy
 	add rdi, rcx
@@ -471,18 +486,19 @@ os_bmfs_file_list:
 	mov rsi, bmfs_directory
 	mov rbx, rsi
 
-os_bmfs_file_list_next:
+os_bmfs_list_next:
 	cmp byte [rbx], 0x00
-	je os_bmfs_file_list_done
+	je os_bmfs_list_done
+
 	cmp byte [rbx], 0x01
-	jle os_bmfs_file_list_skip
+	jle os_bmfs_list_skip
 
-	mov rsi, rbx			; Copy filename to destination
-	call os_string_length		; Get the length before copying
+	mov rsi, rbx
+	call os_string_length
 	call os_string_copy
-	add rdi, rcx			; Remove terminator
+	add rdi, rcx
 
-	sub rcx, 32			; Pad out to 32 characters
+	sub rcx, 34
 	neg rcx
 	mov al, ' '
 	rep stosb
@@ -490,27 +506,40 @@ os_bmfs_file_list_next:
 	mov rax, [rbx + BMFS_DirEnt.size]
 	call os_int_to_string
 	dec rdi
+
+	sub rcx, 20		; 20 ?
+	neg rcx
+	mov al, ' '
+	rep stosb
+
+	mov rax, [rbx + BMFS_DirEnt.reserved]
+	add rax, rax
+	call os_int_to_string
+	dec rdi
 	mov al, 13
 	stosb
 
-os_bmfs_file_list_skip:
-	add rbx, 64			; Next record
-	cmp rbx, bmfs_directory + 0x1000	; End of directory
-	jne os_bmfs_file_list_next
+os_bmfs_list_skip:
+	add rbx, 64
+	cmp rbx, bmfs_directory + 0x1000
+	jne os_bmfs_list_next
 
-os_bmfs_file_list_done:
-	mov al, 0x00			; Terminate the string
+os_bmfs_list_done:
+	mov al, 0x00
 	stosb
 
 	pop rax
 	pop rbx
 	pop rcx
-	pop rdx
-	pop rsi
+	pop rsi		
+	pop rdi		
+
 	ret
 
-dir_title_string: db "Name                            Size", 13, \
-	"====================================", 13, 0
+Disk_Size_MSG: db 'Disk Size: ', 0
+MiB_MSG: db ' MiB', 13, 0
+List_MSG: db 'Name                            | Size (Byte)        | Reserved (MiB)', 13, \
+		'==========================================================================', 13, 0
 ; -----------------------------------------------------------------------------
 
 
