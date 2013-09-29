@@ -38,10 +38,11 @@ b_system_misc		equ 0x00000000001000B8	; Call a misc system function. IN: RDX = F
 
 ; Index for b_system_config calls
 timecounter		equ 0
-networkcallback_get	equ 1
-networkcallback_set	equ 2
-statusbar_hide		equ 10
-statusbar_show		equ 11
+config_argc		equ 1
+config_argv		equ 2
+networkcallback_get	equ 3
+networkcallback_set	equ 4
+statusbar		equ 10
 
 
 ; Index for b_system_misc calls
