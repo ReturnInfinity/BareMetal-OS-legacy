@@ -42,5 +42,24 @@ unsigned long b_file_delete(const unsigned char *name);
 unsigned long b_system_config(unsigned long function, unsigned long var);
 void b_system_misc(unsigned long function, unsigned long *var1, unsigned long *var2);
 
+
+// Index for b_system_config calls
+#define timecounter 0
+#define config_argc 1
+#define config_argv 2
+#define networkcallback_get 3
+#define networkcallback_set 4
+#define statusbar 10
+
+
+// Index for b_system_misc calls
+#define smp_get_id 1
+#define smp_lock 2
+#define smp_unlock 3
+#define debug_dump_mem 4
+#define debug_dump_rax 5
+#define get_argc 6
+#define get_argv 7
+
 // =============================================================================
 // EOF

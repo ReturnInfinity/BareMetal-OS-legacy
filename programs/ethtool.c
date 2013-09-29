@@ -10,7 +10,7 @@ int main(void)
 {
 	b_output("EthTool: S to send a packet, Q to quit.\nReceived packets will display automatically.");
 	// Configure the network callback
-	b_system_config(2, (unsigned long int)ethtool_receive);
+	b_system_config(networkcallback_set, (unsigned long int)ethtool_receive);
 
 	while (running == 1)
 	{
@@ -21,7 +21,7 @@ int main(void)
 			running = 0;
 	}
 
-	b_system_config(2, 0);
+	b_system_config(networkcallback_set, 0);
 
 	return 0;
 }
