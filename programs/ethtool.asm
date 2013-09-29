@@ -61,7 +61,7 @@ ethtool_receive:
 	call [b_output]
 	mov rdi, EthernetBuffer
 	call [b_ethernet_rx]
-	mov rsi, EthernetBuffer
+	mov rax, EthernetBuffer
 	mov rdx, debug_dump_mem
 	call [b_system_misc]
 	ret
