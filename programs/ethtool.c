@@ -3,7 +3,9 @@
 void ethtool_send();
 void ethtool_receive();
 
-int running = 1;
+char packet[1500];
+
+int running = 1, len = 0;
 char key;
 
 int main(void)
@@ -21,6 +23,8 @@ int main(void)
 			running = 0;
 	}
 
+	b_output("\n");
+	// Clear the network callback
 	b_system_config(networkcallback_set, 0);
 
 	return 0;
@@ -29,10 +33,12 @@ int main(void)
 void ethtool_send()
 {
 	b_output("\nSending packet, ");
+	b_ethernet_tx(packet, 1500);
 	b_output("Sent!");
 }
 
 void ethtool_receive()
 {
 	b_output("\nReceived packet");
+	len = b_ethernet_rx(packet);
 }
