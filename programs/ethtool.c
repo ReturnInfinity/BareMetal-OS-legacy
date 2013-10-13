@@ -1,7 +1,7 @@
 #include "libBareMetal.h"
 
 void ethtool_send();
-void ethtool_receive();
+//void ethtool_receive();
 
 char packet[1500];
 
@@ -12,10 +12,16 @@ int main(void)
 {
 	b_output("EthTool: S to send a packet, Q to quit.\nReceived packets will display automatically.");
 	// Configure the network callback
-	b_system_config(networkcallback_set, (unsigned long int)ethtool_receive);
+//	b_system_config(networkcallback_set, (unsigned long int)ethtool_receive);
 
 	while (running == 1)
 	{
+		len = b_ethernet_rx(packet);
+		if (len != 0)
+		{
+			b_output("\nReceived packet\n");
+			b_system_misc(debug_dump_mem, packet, len);
+		}
 		key = b_input_key();
 		if (key == 's')
 			ethtool_send();
@@ -25,7 +31,7 @@ int main(void)
 
 	b_output("\n");
 	// Clear the network callback
-	b_system_config(networkcallback_set, 0);
+//	b_system_config(networkcallback_set, 0);
 
 	return 0;
 }
@@ -37,8 +43,8 @@ void ethtool_send()
 	b_output("Sent!");
 }
 
-void ethtool_receive()
-{
-	b_output("\nReceived packet");
-	len = b_ethernet_rx(packet);
-}
+//void ethtool_receive()
+//{
+//	b_output("\nReceived packet\n");
+//	len = b_ethernet_rx(packet);
+//}
