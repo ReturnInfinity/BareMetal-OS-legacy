@@ -164,9 +164,9 @@ unsigned long b_system_config(unsigned long function, unsigned long var)
 	return tlong;
 }
 
-void b_system_misc(unsigned long function, void* var1, unsigned long var2)
+void b_system_misc(unsigned long function, void* var1, void* var2)
 {
-	asm volatile ("call *0x001000B8" : "=a"(var1) : "d"(function), "a"(var1), "c"(var2));
+	asm volatile ("call *0x001000B8" : "=a"(var1), "=c"(var2) : "d"(function), "a"(var1), "c"(var2));
 }
 
 
