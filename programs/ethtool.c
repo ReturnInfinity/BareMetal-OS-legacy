@@ -47,4 +47,5 @@ void ethtool_send()
 //{
 //	b_output("\nReceived packet\n");
 //	len = b_ethernet_rx(packet);
+//	b_system_misc(debug_dump_mem, packet, len);
 //}
