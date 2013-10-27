@@ -13,71 +13,80 @@ align 16
 ; -----------------------------------------------------------------------------
 ; os_mem_allocate -- Allocates the requested number of 2 MiB pages
 ;  IN:	RCX = Number of pages to allocate
-; OUT:	RAX = Starting address
-;	RCX = Number of pages allocated (Set to the value asked for or 0 on failure)
+; OUT:	RAX = Starting address (Set to 0 on failure)
+; 		RCX = deprecated: Number of pages allocated (Set to the value asked for or 0 on failure)
 ; This function will only allocate continous pages
 os_mem_allocate:
-	push rdi
 	push rsi
 	push rdx
 	push rbx
 
 	cmp rcx, 0
 	je os_mem_allocate_fail		; At least 1 page must be allocated
-	xor rax, rax
-	mov rsi, os_MemoryMap
-	mov ax, word [os_MemAmount]
-	shr ax, 1			; Divide actual memory by 2
-	add rsi, rax			; RSI now points to the last page
-	sub rsi, 1
-	std				; Set direction flag to backward
 
-os_mem_allocate_start:			; Find a free page of memory
-	lodsb
-	cmp rsi, os_MemoryMap		; We have hit the start of the memory map, no free pages
-	je os_mem_allocate_fail
-	cmp al, 1			; If the byte is one then we found a free memory page
-	jne os_mem_allocate_start
-	mov rbx, rcx			; RBX is our temporary counter
-	sub rbx, 1			; One free page was already found
-	cmp rbx, 0			; Was only one page requested?
-	je os_mem_allocate_mark
+	; Here, we'll load the last existing page of memory in RSI.
+	; RAX and RSI instructions are purposefully interleaved.
+
+	xor rax, rax
+	mov rsi, os_MemoryMap		; First available memory block
+	mov eax, [os_MemAmount]		; Total memory in MiB from a doubleword
+	mov rdx, rsi				; Keep os_MemoryMap unmodified for later in RDX					
+	shr eax, 1					; Divide actual memory by 2
+
+	sub rsi, 1
+	std							; Set direction flag to backward
+	add rsi, rax				; RSI now points to the last page
+
+os_mem_allocate_start:			; Find a free page of memory, from the end.
+	mov rbx, rcx				; RBX is our temporary counter
 
 os_mem_allocate_nextpage:
 	lodsb
-	cmp rsi, os_MemoryMap		; We have hit the start of the memory map, no more free pages
+	cmp rsi, rdx				; We have hit the start of the memory map, no more free pages
 	je os_mem_allocate_fail
-	cmp al, 1
-	jne os_mem_allocate_start
-	sub rbx, 1
-	cmp rbx, 0
-	jne os_mem_allocate_nextpage
 
-os_mem_allocate_mark:
-	; We have a suitable free series of pages. Allocate them.
-	cld				; Set direction flag to forward
-	mov rdi, rsi
-	add rdi, 1
-	mov rdx, rdi			; RDX points to the starting page
-	mov al, 2
-	push rcx
-	rep stosb
-	pop rcx
-	sub rdx, os_MemoryMap		; RDX now contains the memory page number
-	shl rdx, 21			; Quick multiply by 2097152 (2 MiB) to get the starting memory address
-	mov rax, rdx			; Return the starting address in RAX
+	cmp al, 1
+	jne os_mem_allocate_start	; Page is taken, start counting from scratch
+
+	dec rbx						; We found a page! Any page left to find?
+	jnz os_mem_allocate_nextpage
+
+os_mem_allocate_mark:			; We have a suitable free series of pages. Allocate them.
+	cld							; Set direction flag to forward
+
+	xor rdi, rsi				; We swap rdi and rsi to keep rdi contents.
+	xor rsi, rdi
+	xor rdi, rsi
+	
+	; Instructions are purposefully swapped at some places here to avoid 
+	; direct dependencies line after line.
+
+	push rcx					; Keep RCX as is for the 'rep stosb' to come	
+		add rdi, 1
+		mov al, 2
+		mov rbx, rdi			; RBX points to the starting page
+		
+		rep stosb
+
+		mov rdi, rsi			; Restoring RDI
+		sub rbx, rdx			; RBX now contains the memory page number
+	pop rcx 					; Restore RCX.
+	
+
+	; Only dependency left is between the two next lines.
+	shl rbx, 21					; Quick multiply by 2097152 (2 MiB) to get the starting memory address
+	mov rax, rbx				; Return the starting address in RAX
 	jmp os_mem_allocate_end
 
 os_mem_allocate_fail:
 	cld				; Set direction flag to forward
-	xor rcx, rcx			; Failure so set RCX to 0 (No pages allocated)
-	xor rax, rax
+	xor rax, rax	; Failure so set RAX to 0 (No pages allocated)
+	xor rcx, rcx 	; Deprecated: Set RCX to 0 (No pages allocated)
 
 os_mem_allocate_end:
 	pop rbx
 	pop rdx
 	pop rsi
-	pop rdi
 	ret
 ; -----------------------------------------------------------------------------
 
@@ -120,12 +129,12 @@ os_mem_get_free:
 
 os_mem_get_free_next:
 	lodsb
-	add rcx, 1
+	inc rcx
 	cmp rcx, 65536
 	je os_mem_get_free_end
 	cmp al, 1
 	jne os_mem_get_free_next
-	add rbx, 1
+	inc rbx
 	jmp os_mem_get_free_next
 
 os_mem_get_free_end:

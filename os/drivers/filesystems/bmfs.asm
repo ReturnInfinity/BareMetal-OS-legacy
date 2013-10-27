@@ -374,8 +374,7 @@ os_bmfs_block_read_loop:
 	mov rcx, 4096			; Read 2MiB at a time (4096 512-byte sectors = 2MiB)
 	call readsectors
 	sub rbx, 4096
-	cmp rbx, 0
-	jne os_bmfs_block_read_loop
+	jnz os_bmfs_block_read_loop
 
 os_bmfs_block_read_done:
 	ret
@@ -403,8 +402,7 @@ os_bmfs_block_write_loop:
 	mov rcx, 4096			; Write 2MiB at a time (4096 512-byte sectors = 2MiB)
 	call writesectors
 	sub rbx, 4096
-	cmp rbx, 0
-	jne os_bmfs_block_write_loop
+	jnz os_bmfs_block_write_loop
 
 os_bmfs_block_write_done:
 	ret
