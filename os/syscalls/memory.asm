@@ -30,58 +30,54 @@ os_mem_allocate:
 	xor rax, rax
 	mov rsi, os_MemoryMap		; First available memory block
 	mov eax, [os_MemAmount]		; Total memory in MiB from a doubleword
-	mov rdx, rsi				; Keep os_MemoryMap unmodified for later in RDX					
-	shr eax, 1					; Divide actual memory by 2
+	mov rdx, rsi			; Keep os_MemoryMap unmodified for later in RDX					
+	shr eax, 1			; Divide actual memory by 2
 
 	sub rsi, 1
-	std							; Set direction flag to backward
-	add rsi, rax				; RSI now points to the last page
+	std				; Set direction flag to backward
+	add rsi, rax			; RSI now points to the last page
 
 os_mem_allocate_start:			; Find a free page of memory, from the end.
-	mov rbx, rcx				; RBX is our temporary counter
+	mov rbx, rcx			; RBX is our temporary counter
 
 os_mem_allocate_nextpage:
 	lodsb
-	cmp rsi, rdx				; We have hit the start of the memory map, no more free pages
+	cmp rsi, rdx			; We have hit the start of the memory map, no more free pages
 	je os_mem_allocate_fail
 
 	cmp al, 1
 	jne os_mem_allocate_start	; Page is taken, start counting from scratch
 
-	dec rbx						; We found a page! Any page left to find?
+	dec rbx				; We found a page! Any page left to find?
 	jnz os_mem_allocate_nextpage
 
 os_mem_allocate_mark:			; We have a suitable free series of pages. Allocate them.
-	cld							; Set direction flag to forward
+	cld				; Set direction flag to forward
 
-	xor rdi, rsi				; We swap rdi and rsi to keep rdi contents.
+	xor rdi, rsi			; We swap rdi and rsi to keep rdi contents.
 	xor rsi, rdi
 	xor rdi, rsi
 	
 	; Instructions are purposefully swapped at some places here to avoid 
 	; direct dependencies line after line.
 
-	push rcx					; Keep RCX as is for the 'rep stosb' to come	
-		add rdi, 1
-		mov al, 2
-		mov rbx, rdi			; RBX points to the starting page
-		
-		rep stosb
-
-		mov rdi, rsi			; Restoring RDI
-		sub rbx, rdx			; RBX now contains the memory page number
-	pop rcx 					; Restore RCX.
-	
+	push rcx			; Keep RCX as is for the 'rep stosb' to come
+	add rdi, 1
+	mov al, 2
+	mov rbx, rdi			; RBX points to the starting page
+	rep stosb
+	mov rdi, rsi			; Restoring RDI
+	sub rbx, rdx			; RBX now contains the memory page number
+	pop rcx 			; Restore RCX.
 
 	; Only dependency left is between the two next lines.
-	shl rbx, 21					; Quick multiply by 2097152 (2 MiB) to get the starting memory address
-	mov rax, rbx				; Return the starting address in RAX
+	shl rbx, 21			; Quick multiply by 2097152 (2 MiB) to get the starting memory address
+	mov rax, rbx			; Return the starting address in RAX
 	jmp os_mem_allocate_end
 
 os_mem_allocate_fail:
 	cld				; Set direction flag to forward
-	xor rax, rax	; Failure so set RAX to 0 (No pages allocated)
-	xor rcx, rcx 	; Deprecated: Set RCX to 0 (No pages allocated)
+	xor rax, rax			; Failure so set RAX to 0 (No pages allocated)
 
 os_mem_allocate_end:
 	pop rbx
