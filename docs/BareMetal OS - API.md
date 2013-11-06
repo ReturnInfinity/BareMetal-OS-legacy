@@ -2,7 +2,7 @@
 
 Version 0.6.0 - April 17, 2013
 
-### Contents ###
+### Contents
 
 1. Output
 	- b\_output
@@ -35,10 +35,10 @@ Version 0.6.0 - April 17, 2013
 	- b\_system\_misc
 
 
-## Output ##
+## Output
 
 
-### b\_output ###
+### b\_output
 
 Output text to the screen (The string must be null-terminated - also known as ASCIIZ)
 
@@ -62,7 +62,7 @@ C/C++ Example:
 	b_output("This is a another test");
 
 
-### b\_output\_chars ###
+### b\_output\_chars
 
 Output a number of characters to the screen
 
@@ -85,10 +85,10 @@ C/C++ Example:
 	b_output_chars("This is a test", 4);	// Output 'This'
 
 
-## Input ##
+## Input
 
 
-### b\_input ###
+### b\_input
 
 Accept a number of keys from the keyboard. The resulting string will automatically be null-terminated
 
@@ -113,7 +113,7 @@ C/C++ Example:
 	b_input(Input, 20);
 
 
-### b\_input\_key ###
+### b\_input\_key
 
 Scans keyboard for input
 
@@ -168,10 +168,36 @@ Wait until all other CPU Cores are finished processing
 
 Allocate pages of memory
 
+Assembly Registers:
+
+	 IN:	RCX = Number of pages to allocate
+	OUT:	RAX = Starting address (Set to 0 on failure)
+			All other registers preserved
+
+Assembly Example:
+
+	mov rcx, 2		; Allocate 2 2MiB pages (4MiB in total)
+	call b_mem_allocate
+	jz mem_fail
+	mov rsi, rax	; Copy memory address to RSI
+
 
 ### b\_mem\_release
 
 Release pages of memory
+
+Assembly Registers:
+
+	 IN:	RAX = Starting address
+				RCX = Number of pages to free
+	OUT:	RCX = Number of pages freed
+			All other registers preserved
+
+Assembly Example:
+
+	mov rax, rsi	; Copy memory address to RAX
+	mov rcx, 2		; Free 2 2MiB pages (4MiB in total)
+	call b_mem_release
 
 
 ## Network
