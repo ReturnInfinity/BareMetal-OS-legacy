@@ -15,9 +15,7 @@ init_64:
 	mov rdi, os_SystemVariables
 	mov rcx, 122880            ; Clear 960 KiB
 	xor rax, rax
-clearmem:
-	stosq
-	loop clearmem              ; Decrement RCX by 1 and jump if greater than 0
+	rep stosq	; put rax at rdi address, rcx - 1, rdi + 8, if rcx > 0 then do it again
 
 	mov word [os_Screen_Rows], 25
 	mov word [os_Screen_Cols], 80
