@@ -25,12 +25,7 @@ os_net_i8254x_init:
 	; Grab the Base I/O Address of the device
 	mov dl, 0x04				; BAR0
 	call os_pci_read_reg
-;	bt eax, 0
-;	jc os_net_i8254x_init_pio
-;	bt eax, 2
-;	jc os_net_i8253x_init_64_bit
 	and eax, 0xFFFFFFF0			; EAX now holds the Base Memory IO Address (clear the low 4 bits)
-
 	mov dword [os_NetIOBaseMem], eax
 
 	; Grab the IRQ of the device
@@ -81,10 +76,6 @@ os_net_i8254x_init_get_MAC_via_EPROM:
 	mov [os_NetMAC+5], al
 os_net_i8254x_init_done_MAC:
 
-	; Enable the Network IRQ in the PIC
-;	mov al, [os_NetIRQ]
-;	call interrupt_enable
-
 	; Reset the device
 	call os_net_i8254x_reset
 
@@ -93,9 +84,6 @@ os_net_i8254x_init_done_MAC:
 	pop rdx
 	pop rsi
 	ret
-
-;os_net_i8254x_init_pio:
-;	jmp $
 ; -----------------------------------------------------------------------------
 
 

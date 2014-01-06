@@ -51,28 +51,6 @@ os_net_rtl8169_init:
 	in al, dx
 	mov [os_NetMAC+5], al
 
-	; Enable the Network IRQ in the PIC 
-	; IRQ value 0-7 set to zero bit 0-7 in 0x21 and value 8-15 set to zero bit 0-7 in 0xa1
-;	in al, 0x21				; low byte target 0x21
-;	mov bl, al
-;	mov al, [os_NetIRQ]
-;	mov dx, 0x21				; Use the low byte pic
-;	cmp al, 8
-;	jl os_net_rtl8169_init_low
-;	sub al, 8				; IRQ 8-16
-;	push ax
-;	in al, 0xA1				; High byte target 0xA1
-;	mov bl, al
-;	pop ax
-;	mov dx, 0xA1				; Use the high byte pic
-;os_net_rtl8169_init_low:
-;	mov cl, al
-;	mov al, 1
-;	shl al, cl
-;	not al
-;	and al, bl
-;	out dx, al
-
 	; Reset the device
 	call os_net_rtl8169_reset
 
@@ -271,7 +249,6 @@ os_net_rtl8169_ack_int:
 	mov dx, word [os_NetIOAddress]		; Clear active interrupt sources
 	add dx, RTL8169_REG_ISR
 	in ax, dx
-;	call os_debug_dump_ax			; Display the interrupt type
 	out dx, ax
 	shr eax, 2
 	ret
@@ -331,13 +308,6 @@ os_net_rtl8169_ack_int:
 ; BMCR (address 0x00) 
 	RTL8169_BIT_ANE		equ 12		; Auto-Negotiation Enable
 
-PHYConfig:
-dd 0x801f0001, 0x80151000, 0x801865c7, 0x80040000, 0x800300a1, 0x80020008, 0x80011020, 0x80001000
-dd 0x80040800, 0x80040000, 0x80047000, 0x8003ff41, 0x8002de60, 0x80010140, 0x80000077, 0x80047800
-dd 0x80047000, 0x8004a000, 0x8003df01, 0x8002df20, 0x8001ff95, 0x8000fa00, 0x8004a800, 0x8004a000
-dd 0x8004b000, 0x8003ff41, 0x8002de20, 0x80010140, 0x800000bb, 0x8004b800, 0x8004b000, 0x8004f000
-dd 0x8003df01, 0x8002df20, 0x8001ff95, 0x8000bf00, 0x8004f800, 0x8004f000, 0x80040000, 0x801f0000
-dd 0x800b0000
 
 ; =============================================================================
 ; EOF
