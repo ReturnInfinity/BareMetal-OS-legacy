@@ -57,21 +57,19 @@ keyboard:
 
 keydown:
 	cmp byte [key_shift], 0x00
-	jne keyboard_lowercase
-	jmp keyboard_uppercase
+	je keyboard_lowercase
 
-keyboard_lowercase:
+keyboard_uppercase:
 	mov rbx, keylayoutupper
 	jmp keyboard_processkey
 
-keyboard_uppercase:	
+keyboard_lowercase:	
 	mov rbx, keylayoutlower
 
 keyboard_processkey:			; Convert the scancode
 	add rbx, rax
 	mov bl, [rbx]
 	mov [key], bl
-	mov al, [key]
 	jmp keyboard_done
 
 keyboard_escape:
