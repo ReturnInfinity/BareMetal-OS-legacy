@@ -88,9 +88,8 @@ keyboard_noshift:
 
 keyboard_done:
 	mov rdi, [os_LocalAPICAddress]	; Acknowledge the IRQ on APIC
-	add rdi, 0xB0
 	xor eax, eax
-	stosd
+	mov dword [rdi+0xB0], eax
 	call os_smp_wakeup_all		; A terrible hack
 
 	pop rax
@@ -160,9 +159,9 @@ network:
 	cld				; Clear direction flag
 	call os_ethernet_ack_int	; Call the driver function to acknowledge the interrupt internally
 
-	bt ax, 0			; TX bit set (caused the IRQ?)
+	bt ax, 0				; TX bit set (caused the IRQ?)
 	jc network_tx			; If so then jump past RX section
-	bt ax, 7			; RX bit set
+	bt ax, 7				; RX bit set
 	jnc network_end
 network_rx_as_well:
 	mov byte [os_NetActivity_RX], 1
@@ -387,7 +386,7 @@ exception_gate_main:
 	push rbx
 	push rdi
 	push rsi
-	push rax			; Save RAX since os_smp_get_id clobers it
+	push rax				; Save RAX since os_smp_get_id clobers it
 	call os_print_newline
 	mov rsi, int_string00
 	call os_output
@@ -418,7 +417,7 @@ exception_gate_main:
 	mov rsi, rip_string
 	call os_output
 	push rax
-	mov rax, [rsp+0x08] 	; RIP of caller
+	mov rax, [rsp+0x08] 		; RIP of caller
 	call os_debug_dump_rax
 	pop rax
 	call os_print_newline
