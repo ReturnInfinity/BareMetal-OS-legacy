@@ -18,14 +18,14 @@ readymsg:		db 'BareMetal is ready', 0
 cpumsg:			db '[cpu: ', 0
 memmsg:			db ']  [mem: ', 0
 networkmsg:		db ']  [net: ', 0
-diskmsg:		db ']  [hdd: ', 0
+diskmsg:			db ']  [hdd: ', 0
 mibmsg:			db ' MiB', 0
 mhzmsg:			db ' MHz', 0
 coresmsg:		db ' x ', 0
 namsg:			db 'N/A', 0
-closebracketmsg:	db ']', 0
+closebracketmsg:		db ']', 0
 space:			db ' ', 0
-newline:		db 13, 0
+newline:			db 13, 0
 tab:			db 9, 0
 memory_message:		db 'Not enough system memory for CPU stacks! System halted.', 0
 startupapp:		db 'startup.app', 0
@@ -34,18 +34,18 @@ startupapp:		db 'startup.app', 0
 ahci_cmdlist:		equ 0x0000000000070000	; 4096 bytes	0x070000 -> 0x071FFF
 ahci_receivedfis:	equ 0x0000000000071000	; 4096 bytes	0x071000 -> 0x072FFF
 ahci_cmdtable:		equ 0x0000000000072000	; 57344 bytes	0x072000 -> 0x07FFFF
-cli_temp_string:	equ 0x0000000000080000	; 1024 bytes	0x080000 -> 0x0803FF
+cli_temp_string:		equ 0x0000000000080000	; 1024 bytes	0x080000 -> 0x0803FF
 os_temp_string:		equ 0x0000000000080400	; 1024 bytes	0x080400 -> 0x0807FF
-os_args:		equ 0x0000000000080C00
+os_args:			equ 0x0000000000080C00
 bmfs_directory:		equ 0x0000000000090000	; 4096 bytes	0x090000 -> 0x090FFF
-os_filehandlers:	equ 0x0000000000091000	; 64 bytes (1x64)
+os_filehandlers:		equ 0x0000000000091000	; 64 bytes (1x64)
 os_filehandlers_seek:	equ 0x0000000000092000	; 512 bytes (8x64)
 os_KernelStart:		equ 0x0000000000100000	; 65536 bytes	0x100000 -> 0x10FFFF - Location of Kernel
 os_SystemVariables:	equ 0x0000000000110000	; 65536 bytes	0x110000 -> 0x11FFFF - Location of System Variables
 os_MemoryMap:		equ 0x0000000000120000	; 131072 bytes	0x120000 -> 0x13FFFF - Location of Memory Map - Room to map 256 GiB with 2 MiB pages
 os_EthernetBuffer:	equ 0x0000000000140000	; 262144 bytes	0x140000 -> 0x17FFFF - Location of Ethernet RX Ring Buffer - Room for 170 packets
 os_screen:		equ 0x0000000000180000	; 4096 bytes	80x25x2 = 4000
-os_temp:		equ 0x0000000000190000
+os_temp:			equ 0x0000000000190000
 os_ethernet_rx_buffer:	equ 0x00000000001C0000
 os_eth_rx_buffer:	equ 0x00000000001C8000
 os_ethernet_tx_buffer:	equ 0x00000000001D0000
@@ -57,14 +57,14 @@ programlocation:	equ 0x0000000000200000	; Location in memory where programs are 
 ; DQ - Starting at offset 0, increments by 0x8
 os_LocalAPICAddress:	equ os_SystemVariables + 0x00
 os_IOAPICAddress:	equ os_SystemVariables + 0x08
-os_ClockCounter:	equ os_SystemVariables + 0x10
+os_ClockCounter:		equ os_SystemVariables + 0x10
 os_VideoBase:		equ os_SystemVariables + 0x18
 screen_cursor_offset:	equ os_SystemVariables + 0x20
 os_StackBase:		equ os_SystemVariables + 0x28
-os_net_transmit:	equ os_SystemVariables + 0x30
+os_net_transmit:		equ os_SystemVariables + 0x30
 os_net_poll:		equ os_SystemVariables + 0x38
 os_net_ack_int:		equ os_SystemVariables + 0x40
-os_NetIOBaseMem:	equ os_SystemVariables + 0x48
+os_NetIOBaseMem:		equ os_SystemVariables + 0x48
 os_NetMAC:		equ os_SystemVariables + 0x50
 os_HPETAddress:		equ os_SystemVariables + 0x58
 ahci_base:		equ os_SystemVariables + 0x60
@@ -81,8 +81,8 @@ os_MemAmount:		equ os_SystemVariables + 148	; in MiB
 ahci_port:		equ os_SystemVariables + 152
 hd1_size:		equ os_SystemVariables + 156	; in MiB
 os_Screen_Pixels:	equ os_SystemVariables + 160
-os_Screen_Bytes:	equ os_SystemVariables + 164
-os_Screen_Row_2:	equ os_SystemVariables + 168
+os_Screen_Bytes:		equ os_SystemVariables + 164
+os_Screen_Row_2:		equ os_SystemVariables + 168
 os_Font_Color:		equ os_SystemVariables + 172
 
 ; DW - Starting at offset 256, increments by 2
@@ -91,7 +91,7 @@ cpuqueuestart:		equ os_SystemVariables + 260
 cpuqueuefinish:		equ os_SystemVariables + 262
 os_QueueLen:		equ os_SystemVariables + 264
 os_QueueLock:		equ os_SystemVariables + 266	; Bit 0 clear for unlocked, set for locked.
-os_NetIOAddress:	equ os_SystemVariables + 268
+os_NetIOAddress:		equ os_SystemVariables + 268
 os_EthernetBusyLock:	equ os_SystemVariables + 270
 os_VideoX:		equ os_SystemVariables + 272
 os_VideoY:		equ os_SystemVariables + 274
@@ -101,13 +101,13 @@ os_Screen_Cursor_Row:	equ os_SystemVariables + 280
 os_Screen_Cursor_Col:	equ os_SystemVariables + 282
 
 ; DB - Starting at offset 384, increments by 1
-cursorx:		equ os_SystemVariables + 384	; cursor row location
-cursory:		equ os_SystemVariables + 385	; cursor column location
+cursorx:			equ os_SystemVariables + 384	; cursor row location
+cursory:			equ os_SystemVariables + 385	; cursor column location
 scancode:		equ os_SystemVariables + 386
 key:			equ os_SystemVariables + 387
 key_shift:		equ os_SystemVariables + 388
-screen_cursor_x:	equ os_SystemVariables + 389
-screen_cursor_y:	equ os_SystemVariables + 390
+screen_cursor_x:		equ os_SystemVariables + 389
+screen_cursor_y:		equ os_SystemVariables + 390
 os_PCIEnabled:		equ os_SystemVariables + 391	; 1 if PCI is detected
 os_NetEnabled:		equ os_SystemVariables + 392	; 1 if a supported network card was enabled
 os_NetIRQ:		equ os_SystemVariables + 393	; Set to Interrupt line that NIC is connected to
@@ -116,10 +116,10 @@ os_NetActivity_RX:	equ os_SystemVariables + 395
 os_EthernetBuffer_C1:	equ os_SystemVariables + 396	; Counter 1 for the Ethernet RX Ring Buffer
 os_EthernetBuffer_C2:	equ os_SystemVariables + 397	; Counter 2 for the Ethernet RX Ring Buffer
 os_DiskEnabled:		equ os_SystemVariables + 398
-os_DiskActivity:	equ os_SystemVariables + 399
+os_DiskActivity:		equ os_SystemVariables + 399
 app_argc:		equ os_SystemVariables + 400
 os_VideoDepth:		equ os_SystemVariables + 401
-os_VideoEnabled:	equ os_SystemVariables + 402
+os_VideoEnabled:		equ os_SystemVariables + 402
 
 cpuqueuemax:		dw 256
 screen_rows: 		db 25 ; x

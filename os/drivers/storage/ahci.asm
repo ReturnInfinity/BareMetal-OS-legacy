@@ -19,7 +19,7 @@ init_ahci:
 	xor ebx, ebx			; Clear the Bus number
 	xor ecx, ecx			; Clear the Device/Slot number
 	mov edx, 2			; Register 2 for Class code/Subclass
-	
+
 init_ahci_probe_next:
 	call os_pci_read_reg
 	shr eax, 16			; Move the Class/Subclass code to AX
@@ -29,7 +29,7 @@ init_ahci_probe_next:
 	cmp ecx, 256			; Maximum 256 devices/functions per bus
 	je init_ahci_probe_next_bus
 	jmp init_ahci_probe_next
-	
+
 init_ahci_probe_next_bus:
 	xor ecx, ecx
 	add ebx, 1
@@ -73,7 +73,7 @@ founddrive:
 	mov [ahci_port], ecx
 	mov rdi, rsi
 	add rdi, 0x100			; Offset to port 0
-	push rcx			; Save port number
+	push rcx				; Save port number
 	shl rcx, 7			; Quick multiply by 0x80
 	add rdi, rcx
 	pop rcx				; Restore port number
@@ -131,7 +131,7 @@ iddrive:
 	shl rcx, 7			; Quick multiply by 0x80
 	add rcx, 0x100			; Offset to port 0
 
-	push rdi			; Save the destination memory address
+	push rdi				; Save the destination memory address
 
 	mov rsi, [ahci_base]
 
@@ -226,9 +226,9 @@ readsectors:
 	push rcx
 	push rax
 
-	push rcx			; Save the sector count
-	push rdi			; Save the destination memory address
-	push rax			; Save the block number
+	push rcx				; Save the sector count
+	push rdi				; Save the destination memory address
+	push rax				; Save the block number
 	push rax
 
 	shl rdx, 7			; Quick multiply by 0x80
@@ -343,9 +343,9 @@ writesectors:
 	push rcx
 	push rax
 
-	push rcx			; Save the sector count
-	push rsi			; Save the source memory address
-	push rax			; Save the block number
+	push rcx				; Save the sector count
+	push rsi				; Save the source memory address
+	push rax				; Save the block number
 	push rax
 
 	shl rdx, 7			; Quick multiply by 0x80
