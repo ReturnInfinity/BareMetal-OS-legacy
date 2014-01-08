@@ -363,23 +363,24 @@ os_screen_scroll:
 
 	cld				; Clear the direction flag as we want to increment through memory
 
+	xor ecx, ecx
+
 	cmp byte [os_VideoEnabled], 1
 	je os_screen_scroll_graphics
 
 os_screen_scroll_text:
 	mov rsi, 0xB80A0 		; Start of video text memory for row 2
 	mov rdi, 0xB8000 		; Start of video text memory for row 1
-	mov rcx, 1920			; 80 x 24
+	mov cx, 1920			; 80 x 24
 	rep movsw			; Copy the Character and Attribute
 	; Clear the last line in video memory
 	mov ax, 0x0720			; 0x07 for black background/white foreground, 0x20 for space (black) character
-	mov rcx, 80
+	mov cx, 80
 	rep stosw			; Store word in AX to RDI, RCX times
 	jmp os_screen_scroll_done
 
 os_screen_scroll_graphics:
 	xor esi, esi
-	xor ecx, ecx
 	mov rdi, [os_VideoBase]
 	mov esi, [os_Screen_Row_2]
 	add rsi, rdi
