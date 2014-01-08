@@ -63,12 +63,12 @@ os_dec_cursor_done:
 os_print_newline:
 	push rax
 
-	mov word [os_Screen_Cursor_Col], 0
-	mov ax, [os_Screen_Rows]
-	sub ax, 1
-	cmp ax, [os_Screen_Cursor_Row]
-	je os_print_newline_scroll
-	add word [os_Screen_Cursor_Row], 1
+	mov word [os_Screen_Cursor_Col], 0	; Reset column to 0
+	mov ax, [os_Screen_Rows]		; Grab max rows on screen
+	sub ax, 1				; and subtract 1
+	cmp ax, [os_Screen_Cursor_Row]		; Is the cursor already on the bottom row?
+	je os_print_newline_scroll		; If so, then scroll
+	add word [os_Screen_Cursor_Row], 1	; If not, increment the cursor to next row
 	jmp os_print_newline_done
 
 os_print_newline_scroll:
@@ -110,7 +110,7 @@ os_output_char:
 	je os_output_char_graphics
 
 os_output_char_text:
-	mov ah, 0x07		; Store the attribute into AH so STOSW can be used later on
+	mov ah, 0x07			; Store the attribute into AH so STOSW can be used later on
 
 	push rax
 	mov ax, [os_Screen_Cursor_Row]
@@ -124,7 +124,7 @@ os_output_char_text:
 	add rdi, rax
 	pop rax
 
-	stosw			; Write the character and attribute with one call
+	stosw				; Write the character and attribute with one call
 	jmp os_output_char_done
 
 os_output_char_graphics:
@@ -212,37 +212,37 @@ os_glyph_put:
 
 	and eax, 0x000000FF
 	sub rax, 0x20
-	mov ecx, 12		; Font height
+	mov ecx, 12			; Font height
 	mul ecx
 	mov rsi, font_data
-	add rsi, rax		; add offset to correct glyph
+	add rsi, rax			; add offset to correct glyph
 
 ; Calculate pixel co-ords for character
 	xor ebx, ebx
 	xor edx, edx
 	xor eax, eax
 	mov ax, [os_Screen_Cursor_Row]
-	mov cx, 12		; Font height
+	mov cx, 12			; Font height
 	mul cx
 	mov bx, ax
 	shl ebx, 16
 	xor edx, edx
 	xor eax, eax
 	mov ax, [os_Screen_Cursor_Col]
-	mov cx, 6		; Font width
+	mov cx, 6			; Font width
 	mul cx
 	mov bx, ax
 
 	xor eax, eax
-	xor ecx, ecx		; x counter
-	xor edx, edx		; y counter
+	xor ecx, ecx			; x counter
+	xor edx, edx			; y counter
 
 nextline1:
-	lodsb			; Load a line
+	lodsb				; Load a line
 
 nextpixel:
-	cmp ecx, 6		; Font width
-	je bailout		; Glyph row complete
+	cmp ecx, 6			; Font width
+	je bailout			; Glyph row complete
 	rol al, 1
 	bt ax, 0
 	jc os_glyph_put_pixel
@@ -264,10 +264,10 @@ os_glyph_put_skip:
 
 bailout:
 	xor ecx, ecx
-	sub ebx, 6		; column start
-	add ebx, 0x00010000	; next row
+	sub ebx, 6			; column start
+	add ebx, 0x00010000		; next row
 	add edx, 1
-	cmp edx, 12		; Font height
+	cmp edx, 12			; Font height
 	jne nextline1
 
 glyph_done:
@@ -405,16 +405,18 @@ os_screen_clear:
 	push rcx
 	push rax
 
+	cld				; Clear the direction flag as we want to increment through memory
+
 	xor ecx, ecx
 
 	cmp byte [os_VideoEnabled], 1
 	je os_screen_clear_graphics
 
 os_screen_clear_text:
-	mov ax, 0x0720		; 0x07 for black background/white foreground, 0x20 for space (black) character
-	mov rdi, 0xB8000	; Address for start of color video memory
-	mov cx, 2000
-	rep stosw		; Clear the screen. Store word in AX to RDI, RCX times
+	mov ax, 0x0720			; 0x07 for black background/white foreground, 0x20 for space (black) character
+	mov rdi, 0xB8000		; Address for start of color video memory
+	mov cx, 2000			; 80 x 25
+	rep stosw			; Clear the screen. Store word in AX to RDI, RCX times
 	jmp os_screen_clear_done
 
 os_screen_clear_graphics:
