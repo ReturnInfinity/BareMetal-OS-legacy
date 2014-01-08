@@ -21,7 +21,7 @@ system_status:
 
 	; Display the dark grey bar
 	mov ax, 0x8720			; 0x87 for dark grey background/white foreground, 0x20 for space (blank) character
-	mov rdi, 0xB8000
+	mov rdi, os_screen
 	add rdi, 144
 	push rdi
 	mov rcx, 8

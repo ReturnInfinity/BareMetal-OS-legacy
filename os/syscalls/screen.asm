@@ -120,11 +120,12 @@ os_output_char_text:
 	mov bx, [os_Screen_Cursor_Col]
 	add ax, bx
 	shl ax, 1			; multiply by 2
-	mov rdi, 0xB8000		; Address of the screen buffer
+	mov rdi, os_screen		; Address of the screen buffer
 	add rdi, rax
 	pop rax
 
 	stosw				; Write the character and attribute with one call
+	call os_screen_update
 	jmp os_output_char_done
 
 os_output_char_graphics:
@@ -369,14 +370,16 @@ os_screen_scroll:
 	je os_screen_scroll_graphics
 
 os_screen_scroll_text:
-	mov rsi, 0xB80A0 		; Start of video text memory for row 2
-	mov rdi, 0xB8000 		; Start of video text memory for row 1
+	mov rsi, os_screen 		; Start of video text memory for row 2
+	add rsi, 0xa0	
+	mov rdi, os_screen 		; Start of video text memory for row 1
 	mov cx, 1920			; 80 x 24
 	rep movsw			; Copy the Character and Attribute
 	; Clear the last line in video memory
 	mov ax, 0x0720			; 0x07 for black background/white foreground, 0x20 for space (black) character
 	mov cx, 80
 	rep stosw			; Store word in AX to RDI, RCX times
+	call os_screen_update
 	jmp os_screen_scroll_done
 
 os_screen_scroll_graphics:
@@ -414,9 +417,10 @@ os_screen_clear:
 
 os_screen_clear_text:
 	mov ax, 0x0720			; 0x07 for black background/white foreground, 0x20 for space (black) character
-	mov rdi, 0xB8000		; Address for start of color video memory
+	mov rdi, os_screen		; Address for start of frame buffer
 	mov cx, 2000			; 80 x 25
 	rep stosw			; Clear the screen. Store word in AX to RDI, RCX times
+	call os_screen_update
 	jmp os_screen_clear_done
 
 os_screen_clear_graphics:
@@ -429,6 +433,27 @@ os_screen_clear_done:
 	pop rax
 	pop rcx
 	pop rdi
+	ret
+; -----------------------------------------------------------------------------
+
+
+; -----------------------------------------------------------------------------
+; os_screen_update -- Manually refresh the screen from the frame buffer
+;  IN:	Nothing
+; OUT:	All registers perserved
+os_screen_update:
+	push rsi
+	push rdi
+	push rcx
+
+	mov rsi, os_screen
+	mov rdi, 0xb8000
+	mov rcx, 2000
+	rep movsw
+
+	pop rcx
+	pop rdi
+	pop rsi
 	ret
 ; -----------------------------------------------------------------------------
 
