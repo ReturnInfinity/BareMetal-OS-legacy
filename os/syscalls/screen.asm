@@ -373,7 +373,6 @@ os_screen_scroll_text:
 	rep movsw			; Copy the Character and Attribute
 	; Clear the last line in video memory
 	mov ax, 0x0720			; 0x07 for black background/white foreground, 0x20 for space (black) character
-	mov rdi, 0xB8F00
 	mov rcx, 80
 	rep stosw			; Store word in AX to RDI, RCX times
 	jmp os_screen_scroll_done
