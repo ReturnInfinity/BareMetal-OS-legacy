@@ -51,36 +51,23 @@ put_pixel:
 
 ; TODO - Add checks to make sure the pixel should actually be on screen.
 
-	push rax			; Save the pixel details
-	mov rax, rbx
-	shr eax, 16			; Isolate Y coord
-	xor ecx, ecx
-	mov cx, [VideoX]
-	mul ecx				; Multiply Y by os_VideoX
-	and ebx, 0x0000FFFF		; Isolate X coord
-	add eax, ebx			; Add X
-	mov rdi, [VideoBase]
+	movzx ecx, word [VideoX]
+	movzx edi, byte [VideoBPP]
+	mov edx, ebx
+	shr ebx, 16			; Isolate Y coord
+	movzx edx, dl			; Isolate X coord
+	mul ecx, ebx			; Multiply Y by os_VideoX
+	mov rdx, [VideoBase]
+	add ecx, edx			; Add X
 
-	cmp byte [VideoBPP], 32
-	je put_pixel_32
-
-put_pixel_24:
-	mov ecx, 3
-	mul ecx				; Multiply by 3 as each pixel is 3 bytes
-	add rdi, rax			; Add offset to pixel video memory
-	pop rax				; Restore pixel details
-	stosb
-	shr eax, 8
-	stosb
-	shr eax, 8
-	stosb
-	jmp put_pixel_done
-
-put_pixel_32:
-	shl eax, 2			; Quickly multiply by 4
-	add rdi, rax			; Add offset to pixel video memory
-	pop rax				; Restore pixel details
-	stosd
+	lea edx, [ecx+ecx*4]		; EDX=5*ECX
+	shl ecx, 2			; ECX=4*ECX
+	mov ebx, eax
+	and eax, 0x00FFFFFF		
+	cmp dil, 32
+	cmove eax, ebx
+	cmovne ecx, edx
+	mov [rdx+rcx], eax
 
 put_pixel_done:
 	pop rax
