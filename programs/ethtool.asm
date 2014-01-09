@@ -34,14 +34,13 @@ ethtool_command:
 	cmp al, 's'
 	je ethtool_send
 	cmp al, 'q'
-	je ethtool_finish
-	jmp ethtool_command			; Didn't get any key we were expecting so try again.
+	jne ethtool_command			; Didn't get any key we were expecting so try again.
 
 ethtool_finish:
 	mov rsi, endstring
 	call [b_output]
 	; Clear the network callback
-	mov rax, 0
+	xor eax, eax
 	mov rdx, networkcallback_set
 	call [b_system_config]
 	ret					; Back to OS
@@ -50,7 +49,7 @@ ethtool_send:
 	mov rsi, sendstring
 	call [b_output]
 	mov rsi, packet
-	mov rcx, 1522
+	mov ecx, 1522
 	call [b_ethernet_tx]
 	mov rsi, sentstring
 	call [b_output]
