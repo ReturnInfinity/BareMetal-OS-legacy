@@ -39,57 +39,48 @@ keyboard:
 	push rax
 
 	xor eax, eax
-
+	xor ebx, ebx
+	xor ecx, ecx
+	xor edx, edx
+	movzx edi, byte [key_shift]	
+	mov r9, [os_LocalAPICAddress]
 	in al, 0x60			; Get the scancode from the keyboard
 	cmp al, 0x01
-	je keyboard_escape
+	je reboot
 	cmp al, 0x2A			; Left Shift Make
-	je keyboard_shift
+	sete bl
 	cmp al, 0x36			; Right Shift Make
-	je keyboard_shift
+	sete cl
+	or ecx, ebx			; ECX=1 if L/R Shift Make
 	cmp al, 0xAA			; Left Shift Break
-	je keyboard_noshift
+	sete bl
 	cmp al, 0xB6			; Right Shift Break
-	je keyboard_noshift
+	sete dl
+	or edx, ebx			; EDX=1 if L/R Shift Break
+	add edx, ecx			; Add+jmp insted of or+jmp for macrofusion to check for shifts
+	jnz keyboard_shift
 	test al, 0x80
-	jz keydown
-	jmp keyup
+	jnz keyboard_done
 
 keydown:
-	cmp byte [key_shift], 0x00
-	je keyboard_lowercase
-
-keyboard_uppercase:
 	mov rbx, keylayoutupper
-	jmp keyboard_processkey
-
-keyboard_lowercase:	
-	mov rbx, keylayoutlower
+	mov r8,	 keylayoutlower
+	test edi, edi
+	cmove rbx, r8
 
 keyboard_processkey:			; Convert the scancode
-	add rbx, rax
-	mov bl, [rbx]
+	movzx ebx, byte [rax+rbx]
 	mov [key], bl
 	jmp keyboard_done
 
-keyboard_escape:
-	jmp reboot
-
-keyup:
-	jmp keyboard_done
-
 keyboard_shift:
-	mov byte [key_shift], 0x01
-	jmp keyboard_done
-
-keyboard_noshift:
-	mov byte [key_shift], 0x00
-	jmp keyboard_done
-
+	xor edi, edi
+	test ecx,ecx
+	cmovnz edi, ecx
+	mov byte [key_shift], dil
 keyboard_done:
-	mov rdi, [os_LocalAPICAddress]	; Acknowledge the IRQ on APIC
-	xor eax, eax
-	mov dword [rdi+0xB0], eax
+	xor eax, eax 			; Acknowledge the IRQ on APIC
+	mov dword [r9+0xB0], eax
 	call os_smp_wakeup_all		; A terrible hack
 
 	pop rax
