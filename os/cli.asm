@@ -66,19 +66,17 @@ os_command_line:
 	call os_string_compare
 	jc near testzone
 
-; At this point it is not one of the built-in CLI functions. Prepare to check the filesystem.
+	; At this point it is not one of the built-in CLI functions. Prepare to check the filesystem.
 	call os_file_open
 	cmp rax, 0
 	je fail
 	mov rcx, 1
 	mov rdi, programlocation
+	; Program found, load and execute
 	call os_file_read
 	call os_file_close
-
-	mov rax, programlocation	; 0x00200000 : at the 2MB mark
-	xor rbx, rbx			; No arguements required (The app can get them with os_get_argc and os_get_argv)
-	call os_smp_enqueue		; Queue the application to run on the next available core
-	jmp exit			; The CLI can quit now. IRQ 8 will restart it when the program is finished
+	call programlocation		; Call the program just loaded
+	jmp os_command_line		; Jump back to the CLI on program completion
 
 fail:					; We didn't get a valid command or program name
 	mov rsi, not_found_msg
@@ -152,6 +150,7 @@ debug_dump_reg:
 	jmp os_command_line
 
 exit:
+	call os_screen_clear
 	ret
 
 ; Strings

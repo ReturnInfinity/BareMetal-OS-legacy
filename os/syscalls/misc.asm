@@ -69,6 +69,8 @@ system_status_rtc_flash_hi:
 system_status_rtc_flash_lo:
 	stosb				; Store the color (attribute) byte
 
+	call os_screen_update
+
 	pop rax
 	pop rcx
 	pop rdi
