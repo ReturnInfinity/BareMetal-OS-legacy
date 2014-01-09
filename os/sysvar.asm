@@ -190,8 +190,6 @@ os_debug_dump_flag_string3:	db ' D:', 0
 os_debug_dump_flag_string4:	db ' O:', 0
 
 
-cli_command_string:	times 14 db 0
-
 align 16
 this_is_the_end:	db 'This is the end.'
 

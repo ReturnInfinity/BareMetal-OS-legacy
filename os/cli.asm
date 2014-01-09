@@ -29,35 +29,15 @@ os_command_line:
 	jrcxz os_command_line		; os_string_parse stores the number of words in RCX
 	mov byte [app_argc], cl		; Store the number of words in the string
 
-; Copy the first word in the string to a new string. This is the command/application to run
-	xor rcx, rcx
-	mov rsi, cli_temp_string
-	mov rdi, cli_command_string
-	push rdi			; Push the command string
-nextbyte1:
-	add rcx, 1
-	lodsb
-	cmp al, ' '			; End of the word
-	je endofcommand
-	cmp al, 0x00			; End of the string
-	je endofcommand
-	cmp rcx, 13			; More than 12 bytes
-	je endofcommand
-	stosb
-	jmp nextbyte1
-endofcommand:
-	mov al, 0x00
-	stosb				; Terminate the string
-
 ; At this point cli_command_string holds at least "a" and at most "abcdefgh.ijk"
 
 	; Break the contents of cli_temp_string into individual strings
 	mov rsi, cli_temp_string
+	push rsi
 	mov al, 0x20
 	mov bl, 0x00
 	call os_string_change_char
-
-	pop rsi				; Pop the command string
+	pop rsi
 
 	mov rdi, cls_string		; 'CLS' entered?
 	call os_string_compare
@@ -92,23 +72,7 @@ endofcommand:
 	jc near testzone
 
 ; At this point it is not one of the built-in CLI functions. Prepare to check the filesystem.
-	mov al, '.'
-	call os_string_find_char	; Check for a '.' in the string
-	cmp rax, 0
-	jne full_name			; If there was a '.' then a suffix is present
-
-; No suffix was present so we add the default application suffix of ".APP"
-add_suffix:
-	call os_string_length
-	cmp rcx, 8
-	jg fail				; If the string is longer than 8 chars we can't add a suffix
-	mov rdi, cli_command_string
-	mov rsi, appextension		; '.app'
-	call os_string_append		; Append the extension to the command string
-
-; cli_command_string now contains a full filename
-full_name:
-	mov rsi, cli_command_string
+	mov rsi, cli_temp_string
 	call os_file_open
 	cmp rax, 0
 	je fail
