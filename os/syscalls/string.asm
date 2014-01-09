@@ -98,12 +98,17 @@ os_string_length:
 
 	xor ecx, ecx
 	xor eax, eax
-	mov rdi, rsi
-	not rcx
-	cld
-	repne scasb	; compare byte at RDI to value in AL
-	not rcx
-	dec rcx
+	xorps xmm0, xmm0
+scan_loop:	
+	movdqu xmm1, [rsi+rcx]	
+	pcmpeqb xmm1, xmm0
+	pmovmskb eax, xmm1
+	add ecx, 16
+	test eax, eax
+	jz scan_loop
+	bsf eax, eax
+	sub ecx, 16		; remove last increment
+	add ecx, eax
 
 	pop rax
 	pop rdi
@@ -121,13 +126,20 @@ os_string_copy:
 	push rsi
 	push rdi
 	push rax
-
+	xor eax, eax
+	xorps xmm0, xmm0
 os_string_copy_more:
-	lodsb				; Load a character from the source string
-	stosb
-	cmp al, 0			; If source string is empty, quit out
-	jne os_string_copy_more
-
+	movdqu xmm1, [rsi+rcx]
+	pcmpeqb xmm1, xmm0		; Check for 0 
+	pmovmskb eax, xmm1
+	add ecx, 16
+	test eax, eax
+	jnz os_string_copy_more
+	bsf eax, eax
+	sub ecx, 16
+	add ecx, eax
+	rep movsb
+	
 	pop rax
 	pop rdi
 	pop rsi
@@ -145,35 +157,40 @@ os_string_compare:
 	push rdi
 	push rbx
 	push rax
-
+	xorps xmm0, xmm0
+	xor ebx, ebx
 os_string_compare_more:
-	mov al, [rsi]			; Store string contents
-	mov bl, [rdi]
-	cmp al, 0			; End of first string?
-	je os_string_compare_terminated
-	cmp al, bl
-	jne os_string_compare_not_same
-	inc rsi
-	inc rdi
-	jmp os_string_compare_more
+	movdqu xmm1, [rsi]		
+	movdqu xmm2, [rdi]
+	movdqa xmm3, xmm1			; save 2° string for last check
+	movdqa xmm4, xmm2
+	pcmpeqb xmm2, xmm1			
+	pmovmskb eax, xmm2
+	not eax					; EAX=0 if strings agree
+	setnz bl
+	pcmpeqb xmm1, xmm0
+	pvmomskb eax, xmm1
+	add rsi, 16
+	add rdi, 16
+	add  eax, ebx				; either EAX or EBX !=0?
+	jz os_string_compare_more
 
 os_string_compare_not_same:
+	pcmpeqb xmm3, xmm0
+	pcmpeqb xmm4, xmm0
+	pmovmskb edi, xmm3
+	xor eax, eax
+	neg ebx					; EBX=-1 if equal strings
+	pmovmskb esi, xmm4
+	test edi, esi
+	setnz al
+	and  eax, ebx
+	shl eax , 1                            ; put LSB in CF
 	pop rax
 	pop rbx
 	pop rdi
 	pop rsi
 	clc
-	ret
-
-os_string_compare_terminated:
-	cmp bl, 0			; End of second string?
-	jne os_string_compare_not_same
-
-	pop rax
-	pop rbx
-	pop rdi
-	pop rsi
-	stc
 	ret
 ; -----------------------------------------------------------------------------
 
