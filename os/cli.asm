@@ -12,10 +12,10 @@ align 16
 
 os_command_line:
 	mov rsi, prompt			; Prompt for input
-	mov ebx, 0x00FF0000
+	mov ebx, 0x00FF0000		; Red prompt in graphics mode
 	mov [os_Font_Color], ebx
 	call os_output
-	mov ebx, 0x00FFFFFF
+	mov ebx, 0x00FFFFFF		; White text in graphics mode
 	mov [os_Font_Color], ebx
 
 	mov rdi, cli_temp_string
@@ -29,15 +29,10 @@ os_command_line:
 	jrcxz os_command_line		; os_string_parse stores the number of words in RCX
 	mov byte [app_argc], cl		; Store the number of words in the string
 
-; At this point cli_command_string holds at least "a" and at most "abcdefgh.ijk"
-
 	; Break the contents of cli_temp_string into individual strings
-	mov rsi, cli_temp_string
-	push rsi
 	mov al, 0x20
 	mov bl, 0x00
 	call os_string_change_char
-	pop rsi
 
 	mov rdi, cls_string		; 'CLS' entered?
 	call os_string_compare
@@ -72,7 +67,6 @@ os_command_line:
 	jc near testzone
 
 ; At this point it is not one of the built-in CLI functions. Prepare to check the filesystem.
-	mov rsi, cli_temp_string
 	call os_file_open
 	cmp rax, 0
 	je fail
@@ -348,7 +342,7 @@ os_string_parse_done:
 	pop rax
 	pop rdi
 	pop rsi
-ret
+	ret
 ; -----------------------------------------------------------------------------
 
 
