@@ -44,21 +44,18 @@ kernel_start:
 
 start:
 	call init_64			; After this point we are in a working 64-bit enviroment
-
-	call init_pci
-
+	call init_pci			; Initialize the PCI bus
 	call init_hdd			; Initialize the disk
-
 	call init_net			; Initialize the network
 
-	mov ax, [os_Screen_Rows]
+	mov ax, [os_Screen_Rows]	; Display the "ready" message and reset cursor to bottom left
+	push ax
 	sub ax, 3
 	mov word [os_Screen_Cursor_Row], ax
 	mov word [os_Screen_Cursor_Col], 0
 	mov rsi, readymsg
 	call os_output
-
-	mov ax, [os_Screen_Rows]
+	pop ax
 	sub ax, 1
 	mov word [os_Screen_Cursor_Row], ax
 	mov word [os_Screen_Cursor_Col], 0
