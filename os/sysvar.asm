@@ -31,6 +31,12 @@ memory_message:		db 'Not enough system memory for CPU stacks! System halted.', 0
 startupapp:		db 'startup.app', 0
 
 ; Memory addresses
+sys_idt:		equ 0x0000000000000000	; 4096 bytes	0x000000 -> 0x000FFF	Interrupt descriptor table
+sys_gdt:		equ 0x0000000000001000	; 4096 bytes	0x001000 -> 0x001FFF	Global descriptor table
+sys_pml4:		equ 0x0000000000002000	; 4096 bytes	0x002000 -> 0x002FFF	PML4 table
+sys_pdp:		equ 0x0000000000003000	; 4096 bytes	0x003000 -> 0x003FFF	PDP table
+sys_Pure64:		equ 0x0000000000004000	; 16384 bytes	0x004000 -> 0x007FFF	Pure64 system data
+sys_pd:			equ 0x0000000000010000	; 262144 bytes	0x010000 -> 0x04FFFF	Page directory
 ahci_cmdlist:		equ 0x0000000000070000	; 4096 bytes	0x070000 -> 0x071FFF
 ahci_receivedfis:	equ 0x0000000000071000	; 4096 bytes	0x071000 -> 0x072FFF
 ahci_cmdtable:		equ 0x0000000000072000	; 57344 bytes	0x072000 -> 0x07FFFF
@@ -40,10 +46,11 @@ os_args:		equ 0x0000000000080C00
 bmfs_directory:		equ 0x0000000000090000	; 4096 bytes	0x090000 -> 0x090FFF
 os_filehandlers:	equ 0x0000000000091000	; 64 bytes (1x64)
 os_filehandlers_seek:	equ 0x0000000000092000	; 512 bytes (8x64)
-os_KernelStart:		equ 0x0000000000100000	; 65536 bytes	0x100000 -> 0x10FFFF - Location of Kernel
-os_SystemVariables:	equ 0x0000000000110000	; 65536 bytes	0x110000 -> 0x11FFFF - Location of System Variables
-os_MemoryMap:		equ 0x0000000000120000	; 131072 bytes	0x120000 -> 0x13FFFF - Location of Memory Map - Room to map 256 GiB with 2 MiB pages
-os_EthernetBuffer:	equ 0x0000000000140000	; 262144 bytes	0x140000 -> 0x17FFFF - Location of Ethernet RX Ring Buffer - Room for 170 packets
+sys_ROM:		equ 0x00000000000A0000	; 393216 bytes	0x0A0000 -> 0x0FFFFF
+os_KernelStart:		equ 0x0000000000100000	; 65536 bytes	0x100000 -> 0x10FFFF	Location of Kernel
+os_SystemVariables:	equ 0x0000000000110000	; 65536 bytes	0x110000 -> 0x11FFFF	Location of System Variables
+os_MemoryMap:		equ 0x0000000000120000	; 131072 bytes	0x120000 -> 0x13FFFF	Location of Memory Map - Room to map 256 GiB with 2 MiB pages
+os_EthernetBuffer:	equ 0x0000000000140000	; 262144 bytes	0x140000 -> 0x17FFFF	Location of Ethernet RX Ring Buffer - Room for 170 packets
 os_screen:		equ 0x0000000000180000	; 4096 bytes	80x25x2 = 4000
 os_temp:		equ 0x0000000000190000
 os_ethernet_rx_buffer:	equ 0x00000000001C0000
