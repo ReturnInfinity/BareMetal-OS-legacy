@@ -40,9 +40,11 @@ BareMetal OS development is being guided by three main goals.
 The architecture of BareMetal OS isn't anything new. In fact if you have been around computers long enough it should remind you of something like [DOS](http://en.wikipedia.org/wiki/DOS). What is new is that we are applying this concept to today's 64-bit computers.
 
 ![](https://raw.github.com/ReturnInfinity/BareMetal-OS/master/docs/images/OS%20Diagram%20-%20BareMetal.png)
+
 As you can see in the above diagram both the running application as well as the OS have full access to the underlying hardware. In BareMetal OS the kernel as well as the running application are in "[Ring 0](http://en.wikipedia.org/wiki/Ring_%28computer_security%29)". Mono-tasking allows us to keep costly [context switches](http://en.wikipedia.org/wiki/Context_switch) to an absolute minimum. While the application is running the OS mainly stays out of the way, only providing system calls if the application asks.
 
 ![](https://raw.github.com/ReturnInfinity/BareMetal-OS/master/docs/images/OS%20Diagram%20-%20Standard.png)
+
 As you can see in the above diagram the application runs on top of the OS. Only the OS has full access to the underlying hardware. In this configuration the OS kernel runs in "Ring 0" and the application(s) run in "Ring 3". This layout works very well for multi-tasking OS's as it keeps the application from doing any damage to the OS or causing a complete system crash.
 
 
