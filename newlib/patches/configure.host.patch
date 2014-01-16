@@ -1,0 +1,12 @@
+--- configure.host	2013-12-20 05:27:49.000000000 -0500
++++ configure.host	2014-01-16 16:21:35.287128425 -0500
+@@ -539,6 +539,9 @@
+   z8k-*-coff)
+ 	sys_dir=z8ksim
+ 	;;
++  x86_64-*-baremetal*)
++	sys_dir=baremetal
++	;;
+ esac
+ 
+ # Host specific flag settings -- usually for features that are not

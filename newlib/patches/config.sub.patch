@@ -1,0 +1,10 @@
+--- config.sub	2013-04-29 11:13:53.000000000 -0400
++++ config.sub	2014-01-16 16:06:07.983904734 -0500
+@@ -1355,6 +1355,7 @@
+ 	      | -sym* | -kopensolaris* | -plan9* \
+ 	      | -amigaos* | -amigados* | -msdos* | -newsos* | -unicos* | -aof* \
+ 	      | -aos* | -aros* \
++	      | -baremetal* \
+ 	      | -nindy* | -vxsim* | -vxworks* | -ebmon* | -hms* | -mvs* \
+ 	      | -clix* | -riscos* | -uniplus* | -iris* | -rtu* | -xenix* \
+ 	      | -hiux* | -386bsd* | -knetbsd* | -mirbsd* | -netbsd* \

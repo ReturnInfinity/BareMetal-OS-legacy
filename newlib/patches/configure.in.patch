@@ -1,0 +1,10 @@
+--- configure.in	2012-02-21 17:34:31.000000000 -0500
++++ configure.in	2014-01-16 16:23:51.641414220 -0500
+@@ -47,6 +47,7 @@
+ 	tic80) AC_CONFIG_SUBDIRS(tic80) ;;
+ 	w65) AC_CONFIG_SUBDIRS(w65) ;;
+ 	z8ksim) AC_CONFIG_SUBDIRS(z8ksim) ;;
++	baremetal) AC_CONFIG_SUBDIRS(baremetal) ;;
+   esac;
+ fi
+ 
