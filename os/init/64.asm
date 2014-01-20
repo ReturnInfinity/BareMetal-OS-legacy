@@ -90,6 +90,9 @@ make_exception_gates:
 	mov rdi, 0x21
 	mov rax, keyboard
 	call create_gate
+	mov rdi, 0x22
+	mov rax, cascade
+	call create_gate
 	mov rdi, 0x28
 	mov rax, rtc
 	call create_gate
@@ -222,49 +225,12 @@ no_more_aps:
 	call os_output
 
 	; Enable specific interrupts
-	mov rcx, 1			; Enable Keyboard
-	mov rax, 0x21
-	call ioapic_entry_write
-
-	mov rcx, 8			; Enable RTC
-	mov rax, 0x0100000000000928	; Lowest priority
-;	mov rax, 0x28			; Handled by APIC ID 0 (BSP)
-	call ioapic_entry_write
-
-;	; Set up the HPET (if it exists)
-;	mov rsi, [os_HPETAddress]
-;	cmp rsi, 0
-;	je noHPET
-;
-;	mov rax, [rsi]			; General Capabilities and ID Register
-;	shr rax, 32
-;	mov [os_HPETRate], eax		; Period at which the counter increments in femptoseconds (10^-15 seconds)
-;
-;	mov rax, [rsi+0x10]		; General Configuration Register
-;	btc rax, 0			; ENABLE_CNF - Disable the HPET
-;	mov [rsi+0x10], rax
-;
-;	xor eax, eax
-;	mov [rsi+0xF0], rax		; Clear the Main Counter Register
-;
-;; HPET enable breaks qemu
-;	; Configure and enable Timer 0 (n = 0)
-;	mov rax, [rsi+0x100]
-;	bts rax, 1			; Tn_INT_TYPE_CNF - Interrupt Type Level
-;	bts rax, 3			; Tn_TYPE_CNF - Periodic Enable
-;	bts rax, 6			; Tn_VAL_SET_CNF
-;	mov [rsi+0x100], rax
-;
-;	mov rax, 0xFFFFFFFFFFFFFFFF	; Set the Timer 0 Comparator Register
-;	mov [rsi+0x108], rax
-;
-;	mov rax, [rsi+0x10]		; General Configuration Register
-;	bts rax, 0			; ENABLE_CNF - Enable the HPET
-;	mov [rsi+0x10], rax
-;
-;noHPET:
-
-;	call os_seed_random		; Seed the RNG
+	in al, 0x21
+	mov al, 11111001b		; Enable Cascade, Keyboard
+	out 0x21, al
+	in al, 0xA1
+	mov al, 11111110b		; Enable RTC
+	out 0xA1, al
 
 	ret
 
@@ -387,48 +353,6 @@ init_screen:
 	mov al, 1
 	mov [os_VideoEnabled], al
 
-	ret
-; -----------------------------------------------------------------------------
-
-
-; -----------------------------------------------------------------------------
-; ioapic_reg_write -- Write to an I/O APIC register
-;  IN:	EAX = Value to write
-;	ECX = Index of register
-; OUT:	Nothing. All registers preserved
-ioapic_reg_write:
-	push rsi
-	mov rsi, [os_IOAPICAddress]
-	mov dword [rsi], ecx		; Write index to register selector
-	mov dword [rsi + 0x10], eax	; Write data to window register
-	pop rsi
-	ret
-; -----------------------------------------------------------------------------
-
-
-; -----------------------------------------------------------------------------
-; ioapic_entry_write -- Write to an I/O APIC entry in the redirection table
-;  IN:	RAX = Data to write to entry
-;	ECX = Index of the entry
-; OUT:	Nothing. All registers preserved
-ioapic_entry_write:
-	push rax
-	push rcx
-
-	; Calculate index for lower DWORD
-	shl rcx, 1			; Quick multiply by 2
-	add rcx, 0x10			; IO Redirection tables start at 0x10
-
-	; Write lower DWORD
-	call ioapic_reg_write
-
-	; Write higher DWORD
-	shr rax, 32
-	add rcx, 1
-	call ioapic_reg_write
-
-	pop rcx
-	pop rax
 	ret
 ; -----------------------------------------------------------------------------
 

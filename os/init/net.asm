@@ -86,17 +86,41 @@ init_net_probe_found_i8254x:
 init_net_probe_found_finish:
 	xor eax, eax
 	mov al, [os_NetIRQ]
-	push rax			; Save the IRQ
+
+;	push rax			; Save the IRQ
 	add al, 0x20
 	mov rdi, rax
 	mov rax, network
 	call create_gate
-	pop rax				; Restore the IRQ
-	mov rcx, rax
-	add rax, 0x20
-	bts rax, 13			; 1=Low active
-	bts rax, 15			; 1=Level sensitive
-	call ioapic_entry_write
+;	pop rax				; Restore the IRQ
+
+	; Enable the Network IRQ in the PIC 
+	; IRQ value 0-7 set to zero bit 0-7 in 0x21 and value 8-15 set to zero bit 0-7 in 0xa1
+	in al, 0x21				; low byte target 0x21
+	mov bl, al
+	mov al, [os_NetIRQ]
+	mov dx, 0x21				; Use the low byte pic
+	cmp al, 8
+	jl os_net_irq_init_low
+	sub al, 8				; IRQ 8-16
+	push ax
+	in al, 0xA1				; High byte target 0xA1
+	mov bl, al
+	pop ax
+	mov dx, 0xA1				; Use the high byte pic
+os_net_irq_init_low:
+	mov cl, al
+	mov al, 1
+	shl al, cl
+	not al
+	and al, bl
+	out dx, al
+
+;	mov rcx, rax
+;	add rax, 0x20
+;	bts rax, 13			; 1=Low active
+;	bts rax, 15			; 1=Level sensitive
+;	call ioapic_entry_write
 
 	mov byte [os_NetEnabled], 1	; A supported NIC was found. Signal to the OS that networking is enabled
 	call os_ethernet_ack_int	; Call the driver function to acknowledge the interrupt internally

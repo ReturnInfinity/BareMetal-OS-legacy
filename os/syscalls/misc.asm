@@ -21,10 +21,11 @@ system_status:
 
 	; Display the dark grey bar
 	mov ax, 0x8720			; 0x87 for dark grey background/white foreground, 0x20 for space (blank) character
-	mov rdi, os_screen
-	add rdi, 144
+;	mov rdi, os_screen
+;	add rdi, 144
+	mov rdi, 0xb8000
 	push rdi
-	mov rcx, 8
+	mov rcx, 80
 	rep stosw
 	pop rdi
 
@@ -69,7 +70,7 @@ system_status_rtc_flash_hi:
 system_status_rtc_flash_lo:
 	stosb				; Store the color (attribute) byte
 
-	call os_screen_update
+;	call os_screen_update
 
 	pop rax
 	pop rcx

@@ -370,9 +370,10 @@ os_screen_scroll:
 	je os_screen_scroll_graphics
 
 os_screen_scroll_text:
-	mov rsi, os_screen 		; Start of video text memory for row 2
-	add rsi, 0xa0	
-	mov rdi, os_screen 		; Start of video text memory for row 1
+	mov rsi, os_screen 		; Start of video text memory for row 3
+	add rsi, 0x140	
+	mov rdi, os_screen 		; Start of video text memory for row 2
+	add rdi, 0xa0
 	mov cx, 1920			; 80 x 24
 	rep movsw			; Copy the Character and Attribute
 	; Clear the last line in video memory
@@ -418,7 +419,8 @@ os_screen_clear:
 os_screen_clear_text:
 	mov ax, 0x0720			; 0x07 for black background/white foreground, 0x20 for space (black) character
 	mov rdi, os_screen		; Address for start of frame buffer
-	mov cx, 2000			; 80 x 25
+	add rdi, 0xa0
+	mov cx, 1920			; 80 x 24
 	rep stosw			; Clear the screen. Store word in AX to RDI, RCX times
 	call os_screen_update
 	jmp os_screen_clear_done
@@ -448,7 +450,9 @@ os_screen_update:
 
 	mov rsi, os_screen
 	mov rdi, 0xb8000
-	mov rcx, 2000
+	add rsi, 0xa0
+	add rdi, 0xa0
+	mov cx, 1920			; 80 x 24
 	rep movsw
 
 	pop rcx
