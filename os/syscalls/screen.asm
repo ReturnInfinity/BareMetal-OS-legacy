@@ -120,12 +120,15 @@ os_output_char_text:
 	mov bx, [os_Screen_Cursor_Col]
 	add ax, bx
 	shl ax, 1			; multiply by 2
+	mov rbx, rax			; Save the row/col offset
 	mov rdi, os_screen		; Address of the screen buffer
 	add rdi, rax
 	pop rax
+	stosw				; Write the character and attribute to screen buffer
+	mov rdi, 0xb8000
+	add rdi, rbx
+	stosw				; Write the character and attribute to screen
 
-	stosw				; Write the character and attribute with one call
-	call os_screen_update
 	jmp os_output_char_done
 
 os_output_char_graphics:
