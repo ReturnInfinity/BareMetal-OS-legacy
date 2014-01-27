@@ -1,4 +1,4 @@
-// Prime SMP Test Program (v1.5, June 30 2013)
+// Prime SMP Test Program (v1.6, January 27 2014)
 // Written by Ian Seyler @ Return Infinity
 //
 // This program checks all odd numbers between 3 and 'maxn' and determines if they are prime.
@@ -32,7 +32,7 @@
 void *prime_process(void *param);
 
 // primes is set to 1 since we don't calculate for '2' as it is a known prime number
-unsigned long max_number=0, primes=1, local=0, process_stage=0, processes=0, max_processes=0, singletime=0;
+unsigned long max_number=0, primes=1, local=0, process_stage=0, processes=0, max_processes=0, singletime=0, k=0;
 float speedup;
 time_t start, finish;
 
@@ -45,10 +45,12 @@ pthread_mutex_t mutex1 = PTHREAD_MUTEX_INITIALIZER;
 
 int main(int argc, char *argv[])
 {
+	printf("PrimeSMP v1.6\n");
+
 	if ((argc == 1) || (argc >= 4))
 	{
 		printf("usage: %s max_processes max_number\n", argv[0]);
-		exit(1);
+		return 1;
 	}
 	else
 	{
@@ -60,12 +62,10 @@ int main(int argc, char *argv[])
 	{
 		printf("Invalid argument(s).\n");
 		printf("usage: %s max_processes max_number\n", argv[0]);
-		exit(1);
+		return 1;
 	}
 
-	printf("PrimeSMP v1.5 - Using a maximum of %ld process(es). Searching up to %ld.\n", max_processes, max_number);
-
-	unsigned long k;
+	printf("Using a maximum of %ld process(es). Searching up to %ld.\n", max_processes, max_number);
 
 	for (processes=1; processes <= max_processes; processes*=2)
 	{
@@ -86,7 +86,7 @@ int main(int argc, char *argv[])
 		for (k=0; k<processes; k++)
 		{
 #ifdef BAREMETAL
-			b_smp_enqueue(&prime_process, tval);
+			b_smp_enqueue(prime_process, tval);
 #else
 			pthread_create(&worker[k], NULL, prime_process, NULL);
 #endif
@@ -140,7 +140,7 @@ void *prime_process(void *param)
 
 	// Lock process_stage, copy it to local var, subtract 1 from process_stage, unlock it.
 #ifdef BAREMETAL
-	b_smp_lock(lock);
+	b_system_misc(smp_lock, &lock, 0);
 #else
 	pthread_mutex_lock(&mutex1);
 #endif
@@ -149,7 +149,7 @@ void *prime_process(void *param)
 	process_stage--;
 
 #ifdef BAREMETAL
-	b_smp_unlock(lock);
+	b_system_misc(smp_unlock, &lock, 0);
 #else
 	pthread_mutex_unlock(&mutex1);
 #endif
@@ -171,7 +171,7 @@ void *prime_process(void *param)
 
 	// Add tprimes to primes.
 #ifdef BAREMETAL
-	b_smp_lock(lock);
+	b_system_misc(smp_lock, &lock, 0);
 #else
 	pthread_mutex_lock(&mutex1);
 #endif
@@ -179,7 +179,7 @@ void *prime_process(void *param)
 	primes = primes + tprimes;
 
 #ifdef BAREMETAL
-	b_smp_unlock(lock);
+	b_system_misc(smp_unlock, &lock, 0);
 #else
 	pthread_mutex_unlock(&mutex1);
 #endif
