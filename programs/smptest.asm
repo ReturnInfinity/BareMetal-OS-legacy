@@ -21,22 +21,22 @@ start:				; Start of program label
 	mov rcx, 64		; Number of instances to spawn
 
 spawn:
-	call b_smp_enqueue
+	call [b_smp_enqueue]
 	sub rcx, 1
 	cmp rcx, 0
 	jne spawn
 
 bsp:
-	call b_smp_dequeue	; Try to dequeue a workload
+	call [b_smp_dequeue]	; Try to dequeue a workload
 	cmp eax, 0
 	je emptyqueue		; If 0 is returned then the queue is empty
-	call b_smp_run		; Otherwise run the workload
+	call [b_smp_run]	; Otherwise run the workload
 	jmp bsp			; Try to do another workload
 
 emptyqueue:
-	call b_smp_wait		; Wait for all other processors to finish
+	call [b_smp_wait]	; Wait for all other processors to finish
 	mov rsi, endstring
-	call b_output
+	call [b_output]
 
 	ret			; Return to OS
 
@@ -61,11 +61,11 @@ grablock:
 	jnc grablock		; Jump if we were unsuccessful
 
 	mov rdx, 1		; Get the local APIC ID
-	call b_system_misc
+	call [b_system_misc]
 	mov rdx, 5		; Print the APIC ID
-	call b_system_misc
+	call [b_system_misc]
 	mov rsi, spacestring
-	call b_output
+	call [b_output]
 
 	bts word [mutex], 0	; Release the mutex
 	ret
