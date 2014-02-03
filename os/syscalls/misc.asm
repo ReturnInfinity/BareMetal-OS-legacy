@@ -137,7 +137,6 @@ os_get_argv_end:
 ; OUT:	RAX = Result
 ;	All other registers preserved
 os_system_config:
-	xor eax, eax
 	cmp rdx, 0
 	je os_system_config_timecounter
 	cmp rdx, 1
@@ -167,6 +166,7 @@ os_system_config_timecounter:
 	ret
 
 os_system_config_argc:
+	xor eax, eax
 	mov al, [app_argc]
 	ret
 
@@ -191,14 +191,17 @@ os_system_config_video_base:
 	ret
 
 os_system_config_video_x:
+	xor eax, eax
 	mov ax, [os_VideoX]
 	ret
 
 os_system_config_video_y:
+	xor eax, eax
 	mov ax, [os_VideoY]
 	ret
 
 os_system_config_video_bpp:
+	xor eax, eax
 	mov al, [os_VideoDepth]
 	ret
 
