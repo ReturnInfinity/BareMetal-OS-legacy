@@ -225,12 +225,12 @@ no_more_aps:
 	call os_output
 
 	; Enable specific interrupts
-	in al, 0x21
-	mov al, 11111001b		; Enable Cascade, Keyboard
-	out 0x21, al
-	in al, 0xA1
-	mov al, 11111110b		; Enable RTC
-	out 0xA1, al
+	mov al, 0x01			; Keyboard IRQ
+	call os_pic_mask_clear
+	mov al, 0x02			; Cascade IRQ
+	call os_pic_mask_clear
+	mov al, 0x08			; RTC IRQ
+	call os_pic_mask_clear
 
 	ret
 

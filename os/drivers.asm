@@ -12,6 +12,8 @@ align 16
 
 %include "drivers/pci.asm"
 
+%include "drivers/pic.asm"
+
 %include "drivers/storage/ahci.asm"
 
 %include "drivers/filesystems/bmfs.asm"
