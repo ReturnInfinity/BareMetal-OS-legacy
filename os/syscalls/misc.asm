@@ -11,76 +11,6 @@ align 16
 
 
 ; -----------------------------------------------------------------------------
-; Display Core activity with flashing blocks on screen
-; Blocks flash every quarter of a second
-system_status:
-	push rsi
-	push rdi
-	push rcx
-	push rax
-
-	; Display the dark grey bar
-	mov ax, 0x8720			; 0x87 for dark grey background/white foreground, 0x20 for space (blank) character
-;	mov rdi, os_screen
-;	add rdi, 144
-	mov rdi, 0xb8000
-	push rdi
-	mov rcx, 80
-	rep stosw
-	pop rdi
-
-	; Display network status
-	add rdi, 2
-	mov al, 'T'
-	stosb
-	add rdi, 1
-	mov al, 0xFE			; Ascii block character
-	stosb				; Put the block character on the screen
-	mov al, 0x87			; Light Gray on Dark Gray (No Activity)
-	cmp byte [os_NetActivity_TX], 1
-	jne tx_idle
-	mov al, 0x8F
-	mov byte [os_NetActivity_TX], 0
-tx_idle:
-	stosb
-	mov al, 'R'
-	stosb
-	add rdi, 1
-	mov al, 0xFE			; Ascii block character
-	stosb				; Put the block character on the screen
-	mov al, 0x87			; Light Gray on Dark Gray (No Activity)
-	cmp byte [os_NetActivity_RX], 1
-	jne rx_idle
-	mov al, 0x8F
-	mov byte [os_NetActivity_RX], 0
-rx_idle:
-	stosb
-
-	; Display the RTC pulse
-	add rdi, 2
-	mov al, 0x03			; Ascii heart character
-	stosb				; Put the block character on the screen
-	mov rax, [os_ClockCounter]
-	bt rax, 0			; Check bit 0. Store bit 0 in CF
-	jc system_status_rtc_flash_hi
-	mov al, 0x87			; Light Gray on Dark Gray
-	jmp system_status_rtc_flash_lo
-system_status_rtc_flash_hi:
-	mov al, 0x8F			; White on Dark Gray
-system_status_rtc_flash_lo:
-	stosb				; Store the color (attribute) byte
-
-;	call os_screen_update
-
-	pop rax
-	pop rcx
-	pop rdi
-	pop rsi
-	ret
-; -----------------------------------------------------------------------------
-
-
-; -----------------------------------------------------------------------------
 ; os_delay -- Delay by X eights of a second
 ; IN:	RAX = Time in eights of a second
 ; OUT:	All registers preserved
@@ -147,8 +77,6 @@ os_system_config:
 	je os_system_config_networkcallback_get
 	cmp rdx, 4
 	je os_system_config_networkcallback_set
-	cmp rdx, 10
-	je os_system_config_statusbar
 	cmp rdx, 20
 	je os_system_config_video_base
 	cmp rdx, 21
@@ -180,10 +108,6 @@ os_system_config_networkcallback_get:
 
 os_system_config_networkcallback_set:
 	mov qword [os_NetworkCallback], rax
-	ret
-
-os_system_config_statusbar:
-	mov byte [os_show_sysstatus], al
 	ret
 
 os_system_config_video_base:

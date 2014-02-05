@@ -117,28 +117,19 @@ cascade:
 ; The supervisor lives here
 align 16
 rtc:
-	push rsi
-	push rcx
 	push rax
 
-	cld				; Clear direction flag
 	add qword [os_ClockCounter], 1	; 64-bit counter started at bootup
 
-	cmp byte [os_show_sysstatus], 0
-	je rtc_end
-	call system_status		; Show System Status information on screen
-
-rtc_end:
 	mov al, 0x0C			; Select RTC register C
 	out 0x70, al			; Port 0x70 is the RTC index, and 0x71 is the RTC data
 	in al, 0x71			; Read the value in register C
+
 	mov al, 0x20			; Acknowledge the IRQ
 	out 0xA0, al
 	out 0x20, al
 
 	pop rax
-	pop rcx
-	pop rsi
 	iretq
 ; -----------------------------------------------------------------------------
 
@@ -155,9 +146,9 @@ network:
 	cld				; Clear direction flag
 	call os_ethernet_ack_int	; Call the driver function to acknowledge the interrupt internally
 
-	bt ax, 0				; TX bit set (caused the IRQ?)
+	bt ax, 0			; TX bit set (caused the IRQ?)
 	jc network_tx			; If so then jump past RX section
-	bt ax, 7				; RX bit set
+	bt ax, 7			; RX bit set
 	jnc network_end
 network_rx_as_well:
 	mov byte [os_NetActivity_RX], 1
@@ -384,7 +375,7 @@ exception_gate_main:
 	push rbx
 	push rdi
 	push rsi
-	push rax				; Save RAX since os_smp_get_id clobers it
+	push rax			; Save RAX since os_smp_get_id clobers it
 	call os_print_newline
 	mov rsi, int_string00
 	call os_output
@@ -432,9 +423,6 @@ next_stack:
 	call os_debug_dump_rax
 	mov al, ' '
 	call os_output_char
-;	call os_print_char
-;	call os_print_char
-;	call os_print_char
 	loop next_stack
 	call os_print_newline
 	pop rsi

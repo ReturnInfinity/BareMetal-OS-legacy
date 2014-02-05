@@ -131,7 +131,6 @@ os_VideoEnabled:	equ os_SystemVariables + 402
 cpuqueuemax:		dw 256
 screen_rows: 		db 25 ; x
 screen_cols: 		db 80 ; y
-os_show_sysstatus:	db 1
 
 ; Function variables
 os_debug_dump_reg_stage:	db 0x00
