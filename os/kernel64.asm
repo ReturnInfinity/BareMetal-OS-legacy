@@ -13,33 +13,33 @@ ORG 0x0000000000100000
 %DEFINE BAREMETALOS_API_VER 2
 
 kernel_start:
-	jmp start		; Skip over the function call index
+	jmp start			; Skip over the function call index
 	nop
 	db 'BAREMETAL'
 
 	align 16
-	dq os_output		; 0x0010
-	dq os_output_chars	; 0x0018
-	dq os_input		; 0x0020
-	dq os_input_key		; 0x0028
-	dq os_smp_enqueue	; 0x0030
-	dq os_smp_dequeue	; 0x0038
-	dq os_smp_run		; 0x0040
-	dq os_smp_wait		; 0x0048
-	dq os_mem_allocate	; 0x0050
-	dq os_mem_release	; 0x0058
-	dq os_ethernet_tx	; 0x0060
-	dq os_ethernet_rx	; 0x0068
-	dq os_file_open		; 0x0070
-	dq os_file_close	; 0x0078
-	dq os_file_read		; 0x0080
-	dq os_file_write	; 0x0088
-	dq os_file_seek		; 0x0090
-	dq os_file_query	; 0x0098
-	dq os_file_create	; 0x00A0
-	dq os_file_delete	; 0x00A8
-	dq os_system_config	; 0x00B0
-	dq os_system_misc	; 0x00B8
+	dq os_output			; 0x0010
+	dq os_output_chars		; 0x0018
+	dq os_input			; 0x0020
+	dq os_input_key			; 0x0028
+	dq os_smp_enqueue		; 0x0030
+	dq os_smp_dequeue		; 0x0038
+	dq os_smp_run			; 0x0040
+	dq os_smp_wait			; 0x0048
+	dq os_mem_allocate		; 0x0050
+	dq os_mem_release		; 0x0058
+	dq os_ethernet_tx		; 0x0060
+	dq os_ethernet_rx		; 0x0068
+	dq os_file_open			; 0x0070
+	dq os_file_close		; 0x0078
+	dq os_file_read			; 0x0080
+	dq os_file_write		; 0x0088
+	dq os_file_seek			; 0x0090
+	dq os_file_query		; 0x0098
+	dq os_file_create		; 0x00A0
+	dq os_file_delete		; 0x00A8
+	dq os_system_config		; 0x00B0
+	dq os_system_misc		; 0x00B8
 	align 16
 
 start:
@@ -74,10 +74,10 @@ ap_clear:				; All cores start here on first startup and after an exception
 	cli				; Disable interrupts on this core
 
 	; Get local ID of the core
-	mov rsi, [os_LocalAPICAddress]
+	mov rsi, [os_LocalAPICAddress]	; We can't use os_smp_get_id as no configured stack yet
 	xor eax, eax			; Clear Task Priority (bits 7:4) and Task Priority Sub-Class (bits 3:0)
 	mov dword [rsi+0x80], eax	; APIC Task Priority Register (TPR)
-	mov eax, dword [rsi+0x20]	; APIC ID
+	mov eax, dword [rsi+0x20]	; APIC ID in upper 8 bits
 	shr rax, 24			; Shift to the right and AL now holds the CPU's APIC ID
 
 	; Calculate offset into CPU status table
@@ -93,7 +93,7 @@ ap_clear:				; All cores start here on first startup and after an exception
 	mov al, 00000001b		; Bit 0 set for "Present", Bit 1 clear for "Ready"
 	stosb				; Set status to Ready for this CPU
 
-	sti				; Re-enable interrupts on this core
+	sti				; Enable interrupts on this core
 
 	; Clear registers. Gives us a clean slate to work with
 	xor rax, rax			; aka r0
@@ -123,17 +123,6 @@ ap_halt:				; Halt until a wakeup call is received
 	jmp ap_spin			; Try again
 
 ap_process:				; Set the status byte to "Busy" and run the code
-;	cli
-;	push rsi
-;	push rax
-;	mov rsi, [os_LocalAPICAddress]
-;	xor eax, eax
-;	mov al, 0x10
-;	mov dword [rsi+0x80], eax	; APIC Task Priority Register (TPR)
-;	pop rax
-;	pop rsi
-;	sti
-
 	push rdi			; Push RDI since it is used temporarily
 	push rax			; Push RAX since os_smp_get_id uses it
 	mov rdi, cpustatus
