@@ -61,72 +61,77 @@ cpustatus:		equ 0x00000000001FEF00	; Location of CPU status data (256 bytes) Bit
 cpuqueue:		equ 0x00000000001FF000	; Location of CPU Queue. Each queue item is 16 bytes. (4KiB before the 2MiB mark, Room for 256 entries)
 programlocation:	equ 0x0000000000200000	; Location in memory where programs are loaded (the start of 2MiB)
 
-; DQ - Starting at offset 0, increments by 0x8
-os_LocalAPICAddress:	equ os_SystemVariables + 0x00
-os_IOAPICAddress:	equ os_SystemVariables + 0x08
-os_ClockCounter:	equ os_SystemVariables + 0x10
-os_VideoBase:		equ os_SystemVariables + 0x18
-screen_cursor_offset:	equ os_SystemVariables + 0x20
-os_StackBase:		equ os_SystemVariables + 0x28
-os_net_transmit:	equ os_SystemVariables + 0x30
-os_net_poll:		equ os_SystemVariables + 0x38
-os_net_ack_int:		equ os_SystemVariables + 0x40
-os_NetIOBaseMem:	equ os_SystemVariables + 0x48
-os_NetMAC:		equ os_SystemVariables + 0x50
-os_HPETAddress:		equ os_SystemVariables + 0x58
-ahci_base:		equ os_SystemVariables + 0x60
-os_NetworkCallback:	equ os_SystemVariables + 0x68
-bmfs_TotalBlocks:	equ os_SystemVariables + 0x70
+; DQ - Starting at offset 0, increments by 8
+os_LocalAPICAddress:	equ os_SystemVariables + 0
+os_IOAPICAddress:	equ os_SystemVariables + 8
+os_ClockCounter:	equ os_SystemVariables + 16
+os_VideoBase:		equ os_SystemVariables + 24
+screen_cursor_offset:	equ os_SystemVariables + 32
+os_StackBase:		equ os_SystemVariables + 40
+os_net_transmit:	equ os_SystemVariables + 48
+os_net_poll:		equ os_SystemVariables + 56
+os_net_ack_int:		equ os_SystemVariables + 64
+os_NetIOBaseMem:	equ os_SystemVariables + 72
+os_NetMAC:		equ os_SystemVariables + 80
+os_HPETAddress:		equ os_SystemVariables + 88
+ahci_base:		equ os_SystemVariables + 96
+os_NetworkCallback:	equ os_SystemVariables + 104
+bmfs_TotalBlocks:	equ os_SystemVariables + 112
+os_KeyboardCallback:	equ os_SystemVariables + 120
+os_ClockCallback:	equ os_SystemVariables + 128
+os_net_TXBytes:		equ os_SystemVariables + 136
+os_net_TXPackets:	equ os_SystemVariables + 144
+os_net_RXBytes:		equ os_SystemVariables + 152
+os_net_RXPackets:	equ os_SystemVariables + 160
+os_hdd_BytesRead:	equ os_SystemVariables + 168
+os_hdd_BytesWrite:	equ os_SystemVariables + 176
 
-; DD - Starting at offset 128, increments by 4
-cpu_speed:		equ os_SystemVariables + 128	; in MHz
-ip:			equ os_SystemVariables + 132	; IPv4 Address
-sn:			equ os_SystemVariables + 136	; IPv4 Subnet
-gw:			equ os_SystemVariables + 140	; IPv4 Gateway
-os_HPETRate:		equ os_SystemVariables + 144
-os_MemAmount:		equ os_SystemVariables + 148	; in MiB
-ahci_port:		equ os_SystemVariables + 152
-hd1_size:		equ os_SystemVariables + 156	; in MiB
-os_Screen_Pixels:	equ os_SystemVariables + 160
-os_Screen_Bytes:	equ os_SystemVariables + 164
-os_Screen_Row_2:	equ os_SystemVariables + 168
-os_Font_Color:		equ os_SystemVariables + 172
+; DD - Starting at offset 256, increments by 4
+cpu_speed:		equ os_SystemVariables + 256	; in MHz
+os_HPETRate:		equ os_SystemVariables + 260
+os_MemAmount:		equ os_SystemVariables + 264	; in MiB
+ahci_port:		equ os_SystemVariables + 268
+hd1_size:		equ os_SystemVariables + 272	; in MiB
+os_Screen_Pixels:	equ os_SystemVariables + 276
+os_Screen_Bytes:	equ os_SystemVariables + 280
+os_Screen_Row_2:	equ os_SystemVariables + 284
+os_Font_Color:		equ os_SystemVariables + 288
 
-; DW - Starting at offset 256, increments by 2
-os_NumCores:		equ os_SystemVariables + 258
-cpuqueuestart:		equ os_SystemVariables + 260
-cpuqueuefinish:		equ os_SystemVariables + 262
-os_QueueLen:		equ os_SystemVariables + 264
-os_QueueLock:		equ os_SystemVariables + 266	; Bit 0 clear for unlocked, set for locked.
-os_NetIOAddress:	equ os_SystemVariables + 268
-os_EthernetBusyLock:	equ os_SystemVariables + 270
-os_VideoX:		equ os_SystemVariables + 272
-os_VideoY:		equ os_SystemVariables + 274
-os_Screen_Rows:		equ os_SystemVariables + 276
-os_Screen_Cols:		equ os_SystemVariables + 278
-os_Screen_Cursor_Row:	equ os_SystemVariables + 280
-os_Screen_Cursor_Col:	equ os_SystemVariables + 282
+; DW - Starting at offset 512, increments by 2
+os_NumCores:		equ os_SystemVariables + 512
+cpuqueuestart:		equ os_SystemVariables + 514
+cpuqueuefinish:		equ os_SystemVariables + 516
+os_QueueLen:		equ os_SystemVariables + 518
+os_QueueLock:		equ os_SystemVariables + 520	; Bit 0 clear for unlocked, set for locked.
+os_NetIOAddress:	equ os_SystemVariables + 522
+os_EthernetBusyLock:	equ os_SystemVariables + 524
+os_VideoX:		equ os_SystemVariables + 526
+os_VideoY:		equ os_SystemVariables + 528
+os_Screen_Rows:		equ os_SystemVariables + 530
+os_Screen_Cols:		equ os_SystemVariables + 532
+os_Screen_Cursor_Row:	equ os_SystemVariables + 534
+os_Screen_Cursor_Col:	equ os_SystemVariables + 536
 
-; DB - Starting at offset 384, increments by 1
-cursorx:		equ os_SystemVariables + 384	; cursor row location
-cursory:		equ os_SystemVariables + 385	; cursor column location
-scancode:		equ os_SystemVariables + 386
-key:			equ os_SystemVariables + 387
-key_shift:		equ os_SystemVariables + 388
-screen_cursor_x:	equ os_SystemVariables + 389
-screen_cursor_y:	equ os_SystemVariables + 390
-os_PCIEnabled:		equ os_SystemVariables + 391	; 1 if PCI is detected
-os_NetEnabled:		equ os_SystemVariables + 392	; 1 if a supported network card was enabled
-os_NetIRQ:		equ os_SystemVariables + 393	; Set to Interrupt line that NIC is connected to
-os_NetActivity_TX:	equ os_SystemVariables + 394
-os_NetActivity_RX:	equ os_SystemVariables + 395
-os_EthernetBuffer_C1:	equ os_SystemVariables + 396	; Counter 1 for the Ethernet RX Ring Buffer
-os_EthernetBuffer_C2:	equ os_SystemVariables + 397	; Counter 2 for the Ethernet RX Ring Buffer
-os_DiskEnabled:		equ os_SystemVariables + 398
-os_DiskActivity:	equ os_SystemVariables + 399
-app_argc:		equ os_SystemVariables + 400
-os_VideoDepth:		equ os_SystemVariables + 401
-os_VideoEnabled:	equ os_SystemVariables + 402
+; DB - Starting at offset 768, increments by 1
+cursorx:		equ os_SystemVariables + 768	; cursor row location
+cursory:		equ os_SystemVariables + 769	; cursor column location
+scancode:		equ os_SystemVariables + 770
+key:			equ os_SystemVariables + 771
+key_shift:		equ os_SystemVariables + 772
+screen_cursor_x:	equ os_SystemVariables + 773
+screen_cursor_y:	equ os_SystemVariables + 774
+os_PCIEnabled:		equ os_SystemVariables + 775	; 1 if PCI is detected
+os_NetEnabled:		equ os_SystemVariables + 776	; 1 if a supported network card was enabled
+os_NetIRQ:		equ os_SystemVariables + 778	; Set to Interrupt line that NIC is connected to
+os_NetActivity_TX:	equ os_SystemVariables + 779
+os_NetActivity_RX:	equ os_SystemVariables + 780
+os_EthernetBuffer_C1:	equ os_SystemVariables + 781	; Counter 1 for the Ethernet RX Ring Buffer
+os_EthernetBuffer_C2:	equ os_SystemVariables + 782	; Counter 2 for the Ethernet RX Ring Buffer
+os_DiskEnabled:		equ os_SystemVariables + 783
+os_DiskActivity:	equ os_SystemVariables + 784
+app_argc:		equ os_SystemVariables + 785
+os_VideoDepth:		equ os_SystemVariables + 786
+os_VideoEnabled:	equ os_SystemVariables + 787
 
 cpuqueuemax:		dw 256
 screen_rows: 		db 25 ; x

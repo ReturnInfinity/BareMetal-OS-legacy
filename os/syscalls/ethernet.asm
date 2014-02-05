@@ -60,6 +60,8 @@ os_ethernet_tx:
 	mov rax, os_EthernetBusyLock		; Lock the Ethernet so only one send can happen at a time
 	call os_smp_lock
 
+	add qword [os_net_TXPackets], 1
+	add qword [os_net_TXBytes], rcx
 	call qword [os_net_transmit]
 
 	mov rax, os_EthernetBusyLock

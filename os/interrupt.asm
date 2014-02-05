@@ -158,6 +158,8 @@ network_rx_as_well:
 	call os_ethernet_rx_from_interrupt
 	pop rdi
 	mov rax, rcx
+	add qword [os_net_RXPackets], 1
+	add qword [os_net_RXBytes], rax
 	stosw				; Store the size of the packet
 	cmp qword [os_NetworkCallback], 0	; Is it valid?
 	je network_end			; If not then bail out.
