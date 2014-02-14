@@ -181,7 +181,7 @@ os_net_i8254x_transmit:
 	mov rdi, os_eth_tx_buffer		; Transmit Descriptor Base Address
 	mov rax, rsi
 	stosq					; Store the data location
-	mov rax, rcx				; The packet size is in CL
+	mov rax, rcx				; The packet size is in CX
 	bts rax, 24				; EOP
 	bts rax, 25				; IFCS
 	bts rax, 27				; RS

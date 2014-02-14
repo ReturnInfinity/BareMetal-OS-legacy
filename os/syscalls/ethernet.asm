@@ -50,10 +50,13 @@ os_ethernet_tx:
 	push rcx
 	push rax
 
-	cmp byte [os_NetEnabled], 1
+	cmp byte [os_NetEnabled], 1		; Check if networking is enabled
 	jne os_ethernet_tx_fail
 	cmp rcx, 64				; An Ethernet packet must be at least 64 bytes
-	jl os_ethernet_tx_fail
+	jge os_ethernet_tx_maxcheck
+	mov rcx, 64				; If it was below 64 then set to 64 (app should pad this)
+
+os_ethernet_tx_maxcheck:	
 	cmp rcx, 1522				; Fail if more than 1522 bytes
 	jg os_ethernet_tx_fail
 
