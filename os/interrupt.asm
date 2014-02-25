@@ -374,6 +374,7 @@ exception_gate_19:
 
 align 16
 exception_gate_main:
+	mov qword [os_NetworkCallback], 0	; Reset the network callback
 	push rbx
 	push rdi
 	push rsi
