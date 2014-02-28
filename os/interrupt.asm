@@ -171,7 +171,7 @@ network_rx_as_well:
 	; finished, the execution flow will pick up back in the program.
 	mov rcx, [os_NetworkCallback]	; RCX stores the callback address
 	mov rsi, rsp			; Copy the current stack pointer to RSI
-	sub rsp, 8			; Subtract 8 since we will copy 8 registers
+	sub rsp, 8			; Subtract 8 since we add a 64-bit value to the stack
 	mov rdi, rsp			; Copy the 'new' stack pointer to RDI
 	lodsq				; RAX
 	stosq
@@ -194,7 +194,7 @@ network_rx_as_well:
 	lodsq				; SS
 	stosq
 	xchg rax, rcx
-	stosq				; Original program address
+	stosq				; Original RIP
 	jmp network_end
 
 network_tx:

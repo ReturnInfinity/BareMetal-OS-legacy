@@ -122,11 +122,8 @@ os_ethernet_rx_fail:
 ; OUT:	RAX = Type of interrupt trigger
 ;	All other registers preserved
 os_ethernet_ack_int:
-	push rdx
-
 	call qword [os_net_ack_int]
 
-	pop rdx
 	ret
 ; -----------------------------------------------------------------------------
 

@@ -227,9 +227,11 @@ os_net_i8254x_poll:
 ; -----------------------------------------------------------------------------
 ; os_net_i8254x_ack_int - Acknowledge an internal interrupt of the Intel 8254x NIC
 os_net_i8254x_ack_int:
+	push rdi
 	xor eax, eax
 	mov rdi, [os_NetIOBaseMem]
 	mov eax, [rdi+I8254X_REG_ICR]
+	pop rdi
 	ret
 ; -----------------------------------------------------------------------------
 

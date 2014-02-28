@@ -246,11 +246,13 @@ os_net_rtl8169_poll_first_descriptor:
 ; -----------------------------------------------------------------------------
 ; os_net_rtl8169_ack_int - Acknowledge an internal interrupt of the Realtek 8169 NIC
 os_net_rtl8169_ack_int:
+	push rdx
 	mov dx, word [os_NetIOAddress]		; Clear active interrupt sources
 	add dx, RTL8169_REG_ISR
 	in ax, dx
 	out dx, ax
 	shr eax, 2
+	pop rdx
 	ret
 ; -----------------------------------------------------------------------------
 
