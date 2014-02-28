@@ -100,6 +100,7 @@ keyboard_done:
 
 ; -----------------------------------------------------------------------------
 ; Cascade interrupt. IRQ 0x02, INT 0x22
+align 16
 cascade:
 	push rax
 

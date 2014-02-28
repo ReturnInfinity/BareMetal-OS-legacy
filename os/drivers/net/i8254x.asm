@@ -226,6 +226,9 @@ os_net_i8254x_poll:
 
 ; -----------------------------------------------------------------------------
 ; os_net_i8254x_ack_int - Acknowledge an internal interrupt of the Intel 8254x NIC
+;  IN:	Nothing
+; OUT:	RAX = Ethernet status
+;	Uses RDI
 os_net_i8254x_ack_int:
 	push rdi
 	xor eax, eax
