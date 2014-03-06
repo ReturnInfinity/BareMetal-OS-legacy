@@ -54,7 +54,8 @@ os_ethernet_tx:
 	jne os_ethernet_tx_fail
 	cmp rcx, 64				; An Ethernet packet must be at least 64 bytes
 	jge os_ethernet_tx_maxcheck
-	mov rcx, 64				; If it was below 64 then set to 64 (app should pad this)
+	mov rcx, 64				; If it was below 64 then set to 64
+	; FIXME - OS should pad the packet with 0's before sending if less than 64
 
 os_ethernet_tx_maxcheck:	
 	cmp rcx, 1522				; Fail if more than 1522 bytes
@@ -143,6 +144,8 @@ os_ethernet_rx_from_interrupt:
 
 ; Call the poll function of the ethernet card driver
 	call qword [os_net_poll]
+	add qword [os_net_RXPackets], 1
+	add qword [os_net_RXBytes], rcx
 
 	pop rax
 	pop rdx

@@ -14,7 +14,6 @@ align 16
 ; os_mem_allocate -- Allocates the requested number of 2 MiB pages
 ;  IN:	RCX = Number of pages to allocate
 ; OUT:	RAX = Starting address (Set to 0 on failure)
-; 		RCX = deprecated: Number of pages allocated (Set to the value asked for or 0 on failure)
 ; This function will only allocate continous pages
 os_mem_allocate:
 	push rsi
@@ -60,7 +59,6 @@ os_mem_allocate_mark:			; We have a suitable free series of pages. Allocate them
 	
 	; Instructions are purposefully swapped at some places here to avoid 
 	; direct dependencies line after line.
-
 	push rcx			; Keep RCX as is for the 'rep stosb' to come
 	add rdi, 1
 	mov al, 2
@@ -68,7 +66,7 @@ os_mem_allocate_mark:			; We have a suitable free series of pages. Allocate them
 	rep stosb
 	mov rdi, rsi			; Restoring RDI
 	sub rbx, rdx			; RBX now contains the memory page number
-	pop rcx 			; Restore RCX.
+	pop rcx 			; Restore RCX
 
 	; Only dependency left is between the two next lines.
 	shl rbx, 21			; Quick multiply by 2097152 (2 MiB) to get the starting memory address
@@ -139,6 +137,26 @@ os_mem_get_free_end:
 	pop rax
 	pop rbx
 	pop rsi
+	ret
+; -----------------------------------------------------------------------------
+
+
+; -----------------------------------------------------------------------------
+; os_mem_copy -- Copy a number of bytes
+;  IN:	RSI = Source address
+;	RDI = Destination address
+;	RCX = Number of bytes to copy
+; OUT:	Nothing, all registers preserved
+os_mem_copy:
+	push rdi
+	push rsi
+	push rcx
+
+	rep movsb			; Optimize this!
+
+	pop rcx
+	pop rsi
+	pop rdi
 	ret
 ; -----------------------------------------------------------------------------
 

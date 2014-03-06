@@ -159,8 +159,6 @@ network_rx_as_well:
 	call os_ethernet_rx_from_interrupt
 	pop rdi
 	mov rax, rcx
-	add qword [os_net_RXPackets], 1
-	add qword [os_net_RXBytes], rax
 	stosw				; Store the size of the packet
 	cmp qword [os_NetworkCallback], 0	; Is it valid?
 	je network_end			; If not then bail out.
@@ -170,30 +168,23 @@ network_rx_as_well:
 	; interrupt handler. Instead, we modify the stack so that the callback is
 	; executed after the interrupt handler has finished. Once the callback has
 	; finished, the execution flow will pick up back in the program.
-	mov rcx, [os_NetworkCallback]	; RCX stores the callback address
+	mov rcx, network_callback	; RCX stores the callback function address
 	mov rsi, rsp			; Copy the current stack pointer to RSI
 	sub rsp, 8			; Subtract 8 since we add a 64-bit value to the stack
 	mov rdi, rsp			; Copy the 'new' stack pointer to RDI
-	lodsq				; RAX
-	stosq
-	lodsq				; RCX
-	stosq
-	lodsq				; RSI
-	stosq
-	lodsq				; RDI
-	stosq
+	movsq				; RAX
+	movsq				; RCX
+	movsq				; RSI
+	movsq				; RDI
 	lodsq				; RIP
 	xchg rax, rcx
 	stosq				; Callback address
-	lodsq				; CS
-	stosq
-	lodsq				; Flags
-	stosq
+	movsq				; CS
+	movsq				; Flags
 	lodsq				; RSP
 	sub rax, 8
 	stosq
-	lodsq				; SS
-	stosq
+	movsq				; SS
 	xchg rax, rcx
 	stosq				; Original RIP
 	jmp network_end
@@ -216,6 +207,21 @@ network_ack_only_low:
 	pop rsi
 	pop rdi
 	iretq
+; -----------------------------------------------------------------------------
+
+
+; -----------------------------------------------------------------------------
+; Network interrupt.
+align 16
+network_callback:
+	push rsi
+;	mov rsi, network_callback_msg
+;	call os_output
+	call [os_NetworkCallback]
+	pop rsi
+	ret
+
+network_callback_msg db 13, 'Callback!', 0
 ; -----------------------------------------------------------------------------
 
 
