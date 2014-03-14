@@ -14,7 +14,7 @@ hextable: 		db '0123456789ABCDEF'
 
 ; Strings
 system_status_header:	db 'BareMetal v0.6.1', 0
-readymsg:		db 'BareMetal is ready, lol', 0
+readymsg:		db 'BareMetal is ready', 0
 cpumsg:			db '[cpu: ', 0
 memmsg:			db ']  [mem: ', 0
 networkmsg:		db ']  [net: ', 0
@@ -57,7 +57,7 @@ os_ethernet_rx_buffer:	equ 0x00000000001C0000
 os_eth_rx_buffer:	equ 0x00000000001C8000
 os_ethernet_tx_buffer:	equ 0x00000000001D0000
 os_eth_tx_buffer:	equ 0x00000000001D8000
-cpustatus:		equ 0x00000000001FEF00	; Location of CPU status data (256 bytes) Bit 0 = Avaiable, Bit 1 = Free/Busy
+cpustatus:		equ 0x00000000001FEF00	; Location of CPU status data (256 bytes) Bit 0 = Available, Bit 1 = Free/Busy
 cpuqueue:		equ 0x00000000001FF000	; Location of CPU Queue. Each queue item is 16 bytes. (4KiB before the 2MiB mark, Room for 256 entries)
 programlocation:	equ 0x0000000000200000	; Location in memory where programs are loaded (the start of 2MiB)
 
