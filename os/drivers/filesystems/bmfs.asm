@@ -56,7 +56,7 @@ os_bmfs_file_open:
 	push rcx
 	push rbx
 
-	; Query the existance
+	; Query the existence
 	call os_bmfs_file_internal_query
 	jc os_bmfs_file_open_error
 	mov rax, rbx			; Slot #
@@ -150,7 +150,7 @@ os_bmfs_file_read:
 
 	; Get the starting block
 	mov rsi, bmfs_directory		; Beginning of directory structure
-	shl rax, 6			; Quicky multiply by 64 (size of BMFS record)
+	shl rax, 6			; Quickly multiply by 64 (size of BMFS record)
 	add rsi, rax
 	add rsi, 32			; Offset to starting block
 	lodsq				; Load starting block in RAX

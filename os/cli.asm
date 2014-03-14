@@ -22,7 +22,7 @@ os_command_line:
 	mov rcx, 250			; Limit the input to 250 characters
 	call os_input
 	call os_print_newline		; The user hit enter so print a new line
-	jrcxz os_command_line		; os_input_string stores the number of charaters received in RCX
+	jrcxz os_command_line		; os_input_string stores the number of characters received in RCX
 
 	mov rsi, rdi
 	call os_string_parse		; Remove extra spaces
@@ -66,7 +66,7 @@ os_command_line:
 	call os_string_compare
 	jc near testzone
 
-	; At this point it is not one of the built-in CLI functions. Prepare to check the filesystem.
+	; At this point it is not one of the built-in CLI functions. Prepare to check the file system.
 	call os_file_open
 	cmp rax, 0
 	je fail
@@ -110,6 +110,7 @@ align 16
 testzone:
 	xchg bx, bx			; Bochs Magic Breakpoint
 
+	mov qword [os_ClockCallback], 1
 ;	ud2
 
 ;	xor rax, rax
@@ -273,7 +274,7 @@ os_string_chomp_start_count:		; read through string until we find a non-space ch
 	inc rsi
 	jmp os_string_chomp_start_count
 
-os_string_chomp_fail:			; In this situataion the string is all spaces
+os_string_chomp_fail:			; In this situation the string is all spaces
 	pop rdi				; We are about to bail out so make sure the stack is sane
 	mov al, 0x00
 	stosb
@@ -301,7 +302,7 @@ os_string_chomp_done:
 ; os_string_parse -- Parse a string into individual words
 ;  IN:	RSI = Address of string
 ; OUT:	RCX = word count
-; Note:	This function will remove "extra" whitespace in the source string
+; Note:	This function will remove "extra" white-space in the source string
 ;	"This is  a test. " will update to "This is a test."
 os_string_parse:
 	push rsi
@@ -389,18 +390,18 @@ os_hex_string_to_int_loop:
 	sub al, 0x20				; convert to upper case if alpha
 os_hex_string_to_int_ok:
 	sub al, '0'				; check if legal
-	jc os_hex_string_to_int_exit		; jmp if out of range
+	jc os_hex_string_to_int_exit		; jump if out of range
 	cmp al, 9
-	jle os_hex_string_to_int_got		; jmp if number is 0-9
+	jle os_hex_string_to_int_got		; jump if number is 0-9
 	sub al, 7				; convert to number from A-F or 10-15
 	cmp al, 15				; check if legal
-	ja os_hex_string_to_int_exit		; jmp if illegal hex char
+	ja os_hex_string_to_int_exit		; jump if illegal hex char
 os_hex_string_to_int_got:
 	shl rbx, cl
 	or bl, al
 	jmp os_hex_string_to_int_loop
 os_hex_string_to_int_exit:
-	mov rax, rbx				; int value stored in RBX, move to RAX
+	mov rax, rbx				; integer value stored in RBX, move to RAX
 
 	pop rbx
 	pop rcx

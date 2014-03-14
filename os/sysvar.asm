@@ -14,7 +14,7 @@ hextable: 		db '0123456789ABCDEF'
 
 ; Strings
 system_status_header:	db 'BareMetal v0.6.1', 0
-readymsg:		db 'BareMetal is ready', 0
+readymsg:		db 'BareMetal is ready, lol', 0
 cpumsg:			db '[cpu: ', 0
 memmsg:			db ']  [mem: ', 0
 networkmsg:		db ']  [net: ', 0

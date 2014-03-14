@@ -14,7 +14,7 @@ align 16
 ; os_input -- Take string from keyboard entry
 ;  IN:	RDI = location where string will be stored
 ;	RCX = maximum number of characters to accept
-; OUT:	RCX = length of string that was inputed (NULL not counted)
+; OUT:	RCX = length of string that was input (NULL not counted)
 ;	All other registers preserved
 os_input:
 	push rdi
@@ -41,7 +41,7 @@ os_input_more:
 	cmp rcx, rdx			; Check if we have reached the max number of chars
 	je os_input_more		; Jump if we have (should beep as well)
 	stosb				; Store AL at RDI and increment RDI by 1
-	inc rcx				; Increment the couter
+	inc rcx				; Increment the counter
 	call os_output_char		; Display char
 	jmp os_input_more
 
@@ -58,6 +58,7 @@ os_input_backspace:
 	jmp os_input_more
 
 os_input_halt:
+	xchg bx, bx
 	hlt				; Halt until another keystroke is received
 	jmp os_input_more
 
@@ -78,7 +79,7 @@ os_input_done:
 ; os_input_key -- Scans keyboard for input
 ;  IN:	Nothing
 ; OUT:	AL = 0 if no key pressed, otherwise ASCII code, other regs preserved
-;	Carry flag is set if there was a keystoke, clear if there was not
+;	Carry flag is set if there was a keystroke, clear if there was not
 ;	All other registers preserved
 os_input_key:
 	mov al, [key]

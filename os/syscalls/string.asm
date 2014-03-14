@@ -68,7 +68,7 @@ os_string_to_int:
 	mov rbx, 10			; decimal-system's radix
 os_string_to_int_next_digit:
 	mov cl, [rsi]			; fetch next character
-	cmp cl, '0'			; char preceeds '0'?
+	cmp cl, '0'			; char precedes '0'?
 	jb os_string_to_int_invalid	; yes, not a numeral
 	cmp cl, '9'			; char follows '9'?
 	ja os_string_to_int_invalid	; yes, not a numeral
@@ -101,7 +101,7 @@ os_string_length:
 	mov rdi, rsi
 	not rcx
 	cld
-	repne scasb	; compare byte at RDI to value in AL
+	repne scasb			; compare byte at RDI to value in AL
 	not rcx
 	dec rcx
 

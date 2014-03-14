@@ -153,7 +153,7 @@ os_net_i8254x_reset:
 	xor eax, eax
 	mov [rsi+I8254X_REG_TDH], eax		; Transmit Descriptor Head
 	mov [rsi+I8254X_REG_TDT], eax		; Transmit Descriptor Tail
-	mov eax, 0x010400FA			; Enabled, Pad Short Packets, 15 retrys, 64-byte COLD, Re-transmit on Late Collision
+	mov eax, 0x010400FA			; Enabled, Pad Short Packets, 15 retries, 64-byte COLD, Re-transmit on Late Collision
 	mov [rsi+I8254X_REG_TCTL], eax		; Transmit Control Register
 	mov eax, 0x0060200A			; IPGT 10, IPGR1 8, IPGR2 6
 	mov [rsi+I8254X_REG_TIPG], eax		; Transmit IPG Register

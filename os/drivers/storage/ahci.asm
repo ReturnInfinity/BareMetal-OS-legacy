@@ -327,7 +327,7 @@ ret
 
 
 ; -----------------------------------------------------------------------------
-; writesectors -- Write data tp a SATA hard drive
+; writesectors -- Write data to a SATA hard drive
 ; IN:	RAX = starting sector # to write
 ;	RCX = number of sectors to write (up to 8192 = 4MiB)
 ;	RDX = disk #

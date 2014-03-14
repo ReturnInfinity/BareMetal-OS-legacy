@@ -98,7 +98,7 @@ os_ethernet_rx:
 
 	mov rsi, os_EthernetBuffer
 	mov ax, word [rsi]		; Grab the packet length
-	cmp ax, 0			; Anthing there?
+	cmp ax, 0			; Anything there?
 	je os_ethernet_rx_fail		; If not, bail out
 	mov word [rsi], cx		; Clear the packet length
 	mov cx, ax			; Save the count
@@ -142,7 +142,7 @@ os_ethernet_rx_from_interrupt:
 
 	xor ecx, ecx
 
-; Call the poll function of the ethernet card driver
+; Call the poll function of the Ethernet card driver
 	call qword [os_net_poll]
 	add qword [os_net_RXPackets], 1
 	add qword [os_net_RXBytes], rcx

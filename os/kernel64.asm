@@ -43,7 +43,7 @@ kernel_start:
 	align 16
 
 start:
-	call init_64			; After this point we are in a working 64-bit enviroment
+	call init_64			; After this point we are in a working 64-bit environment
 	call init_pci			; Initialize the PCI bus
 	call init_hdd			; Initialize the disk
 	call init_net			; Initialize the network
@@ -69,7 +69,7 @@ start:
 
 align 16
 
-ap_clear:				; All cores start here on first startup and after an exception
+ap_clear:				; All cores start here on first start-up and after an exception
 
 	cli				; Disable interrupts on this core
 

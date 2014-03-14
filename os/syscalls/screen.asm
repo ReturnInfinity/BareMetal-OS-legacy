@@ -59,7 +59,7 @@ os_dec_cursor_done:
 ; -----------------------------------------------------------------------------
 ; os_print_newline -- Reset cursor to start of next line and scroll if needed
 ;  IN:	Nothing
-; OUT:	All registers perserved
+; OUT:	All registers preserved
 os_print_newline:
 	push rax
 
@@ -83,7 +83,7 @@ os_print_newline_done:
 ; -----------------------------------------------------------------------------
 ; os_output -- Displays text
 ;  IN:	RSI = message location (zero-terminated string)
-; OUT:	All registers perserved
+; OUT:	All registers preserved
 os_output:
 	push rcx
 
@@ -98,7 +98,7 @@ os_output:
 ; -----------------------------------------------------------------------------
 ; os_output_char -- Displays a char
 ;  IN:	AL  = char to display
-; OUT:	All registers perserved
+; OUT:	All registers preserved
 os_output_char:
 	push rdi
 	push rdx
@@ -162,11 +162,11 @@ os_pixel:
 
 	push rax			; Save the pixel details
 	mov rax, rbx
-	shr eax, 16			; Isolate Y coord
+	shr eax, 16			; Isolate Y co-ordinate
 	xor ecx, ecx
 	mov cx, [os_VideoX]
 	mul ecx				; Multiply Y by os_VideoX
-	and ebx, 0x0000FFFF		; Isolate X coord
+	and ebx, 0x0000FFFF		; Isolate X co-ordinate
 	add eax, ebx			; Add X
 	mov rdi, [os_VideoBase]
 
@@ -221,7 +221,7 @@ os_glyph_put:
 	mov rsi, font_data
 	add rsi, rax			; add offset to correct glyph
 
-; Calculate pixel co-ords for character
+; Calculate pixel co-ordinates for character
 	xor ebx, ebx
 	xor edx, edx
 	xor eax, eax
@@ -289,7 +289,7 @@ glyph_done:
 ; os_output_chars -- Displays text
 ;  IN:	RSI = message location (A string, not zero-terminated)
 ;	RCX = number of chars to print
-; OUT:	All registers perserved
+; OUT:	All registers preserved
 os_output_chars:
 	push rdi
 	push rsi
@@ -358,7 +358,7 @@ os_output_chars_done:
 ; -----------------------------------------------------------------------------
 ; os_scroll_screen -- Scrolls the screen up by one line
 ;  IN:	Nothing
-; OUT:	All registers perserved
+; OUT:	All registers preserved
 os_screen_scroll:
 	push rsi
 	push rdi
@@ -405,7 +405,7 @@ os_screen_scroll_done:
 ; -----------------------------------------------------------------------------
 ; os_screen_clear -- Clear the screen
 ;  IN:	Nothing
-; OUT:	All registers perserved
+; OUT:	All registers preserved
 os_screen_clear:
 	push rdi
 	push rcx
@@ -443,7 +443,7 @@ os_screen_clear_done:
 ; -----------------------------------------------------------------------------
 ; os_screen_update -- Manually refresh the screen from the frame buffer
 ;  IN:	Nothing
-; OUT:	All registers perserved
+; OUT:	All registers preserved
 os_screen_update:
 	push rsi
 	push rdi

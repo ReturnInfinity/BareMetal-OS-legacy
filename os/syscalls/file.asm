@@ -71,9 +71,9 @@ os_file_seek:
 
 ; -----------------------------------------------------------------------------
 ; os_file_query -- Query the existence of a file
-; IN:	RSI = Address of filename string
+; IN:	RSI = Address of file name string
 ; OUT:	RCX = Size in bytes
-;	Carry is set if the file was not found or an error occured
+;	Carry is set if the file was not found or an error occurred
 os_file_query:
 	jmp os_bmfs_file_query
 ; -----------------------------------------------------------------------------
@@ -84,7 +84,7 @@ os_file_query:
 ; IN:	RSI = Memory location of file name to create
 ;	RCX = Size in bytes of the space to reserve for this file (will be
 ;		rounded up to the nearest 2MiB)
-; OUT:	Carry is set if the file already exists or an error occured
+; OUT:	Carry is set if the file already exists or an error occurred
 os_file_create:
 	jmp os_bmfs_file_create
 ; -----------------------------------------------------------------------------
@@ -93,7 +93,7 @@ os_file_create:
 ; -----------------------------------------------------------------------------
 ; os_file_delete -- Delete a file from disk
 ; IN:	RSI = Memory location of file name to delete
-; OUT:	Carry is set if the file was not found or an error occured
+; OUT:	Carry is set if the file was not found or an error occurred
 os_file_delete:
 	jmp os_bmfs_file_delete
 ; -----------------------------------------------------------------------------

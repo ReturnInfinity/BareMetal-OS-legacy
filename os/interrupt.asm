@@ -40,7 +40,7 @@ keyboard:
 
 	xor eax, eax
 
-	in al, 0x60			; Get the scancode from the keyboard
+	in al, 0x60			; Get the scan code from the keyboard
 	cmp al, 0x01
 	je keyboard_escape
 	cmp al, 0x2A			; Left Shift Make
@@ -66,7 +66,7 @@ keyboard_uppercase:
 keyboard_lowercase:	
 	mov rbx, keylayoutlower
 
-keyboard_processkey:			; Convert the scancode
+keyboard_processkey:			; Convert the scan code
 	add rbx, rax
 	mov bl, [rbx]
 	mov [key], bl
@@ -120,8 +120,44 @@ align 16
 rtc:
 	push rax
 
-	add qword [os_ClockCounter], 1	; 64-bit counter started at bootup
+	add qword [os_ClockCounter], 1	; 64-bit counter started at boot-up
 
+	cmp qword [os_ClockCallback], 0	; Is it valid?
+	je rtc_end			; If not then bail out.
+
+	; We could do a 'call [os_NetworkCallback]' here but that would not be ideal.
+	; A defective callback would hang the system if it never returned back to the
+	; interrupt handler. Instead, we modify the stack so that the callback is
+	; executed after the interrupt handler has finished. Once the callback has
+	; finished, the execution flow will pick up back in the program.
+	push rdi
+	push rsi
+	push rcx
+	mov rcx, clock_callback	; RCX stores the callback function address
+	mov rsi, rsp			; Copy the current stack pointer to RSI
+	sub rsp, 8			; Subtract 8 since we add a 64-bit value to the stack
+	mov rdi, rsp			; Copy the 'new' stack pointer to RDI
+	movsq				; RCX
+	movsq				; RSI
+	movsq				; RDI
+	movsq				; RAX
+	lodsq				; RIP
+	xchg rax, rcx
+	stosq				; Callback address
+	movsq				; CS
+	movsq				; Flags
+	lodsq				; RSP
+	sub rax, 8
+	stosq
+	movsq				; SS
+	movsq				; ???
+	xchg rax, rcx
+	stosq				; Original RIP
+	pop rcx
+	pop rsi
+	pop rdi
+
+rtc_end:
 	mov al, 0x0C			; Select RTC register C
 	out 0x70, al			; Port 0x70 is the RTC index, and 0x71 is the RTC data
 	in al, 0x71			; Read the value in register C
@@ -185,6 +221,7 @@ network_rx_as_well:
 	sub rax, 8
 	stosq
 	movsq				; SS
+	movsq				; ???
 	xchg rax, rcx
 	stosq				; Original RIP
 	jmp network_end
@@ -215,13 +252,28 @@ network_ack_only_low:
 align 16
 network_callback:
 	push rsi
-;	mov rsi, network_callback_msg
-;	call os_output
-	call [os_NetworkCallback]
+	mov rsi, network_callback_msg
+	call os_output
+;	call [os_NetworkCallback]
 	pop rsi
 	ret
 
-network_callback_msg db 13, 'Callback!', 0
+network_callback_msg db 13, 'Network Callback!', 0
+; -----------------------------------------------------------------------------
+
+
+; -----------------------------------------------------------------------------
+; Network interrupt.
+align 16
+clock_callback:
+	push rsi
+	mov rsi, clock_callback_msg
+	call os_output
+;	call [os_ClockCallback]
+	pop rsi
+	ret
+
+clock_callback_msg db 13, 'Clock Callback!', 0
 ; -----------------------------------------------------------------------------
 
 
@@ -385,7 +437,7 @@ exception_gate_main:
 	push rbx
 	push rdi
 	push rsi
-	push rax			; Save RAX since os_smp_get_id clobers it
+	push rax			; Save RAX since os_smp_get_id clobbers it
 	call os_print_newline
 	mov rsi, int_string00
 	call os_output

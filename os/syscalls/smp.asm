@@ -15,7 +15,7 @@ align 16
 ;  IN:	AL = CPU #
 ; OUT:	Nothing. All registers preserved.
 ; Note:	This code resets an AP
-;	For setup use only.
+;	For set-up use only.
 os_smp_reset:
 	push rdi
 	push rax
@@ -77,7 +77,7 @@ os_smp_wakeup_all:
 ; -----------------------------------------------------------------------------
 ; os_smp_get_id -- Returns the APIC ID of the CPU that ran this function
 ;  IN:	Nothing
-; OUT:	RAX = CPU's APIC ID number, All other registers perserved.
+; OUT:	RAX = CPU's APIC ID number, All other registers preserved.
 os_smp_get_id:
 	push rsi
 
@@ -258,7 +258,7 @@ os_smp_wait:
 checkit:
 	lodsb
 	cmp rbx, rcx		; Check to see if it is looking at itself
-	je skipit		; If so then skip as it shouild be marked as busy
+	je skipit		; If so then skip as it should be marked as busy
 	bt ax, 0		; Check the Present bit
 	jnc skipit		; If carry is not set then the CPU does not exist
 	bt ax, 1		; Check the Ready/Busy bit

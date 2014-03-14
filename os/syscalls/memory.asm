@@ -14,7 +14,7 @@ align 16
 ; os_mem_allocate -- Allocates the requested number of 2 MiB pages
 ;  IN:	RCX = Number of pages to allocate
 ; OUT:	RAX = Starting address (Set to 0 on failure)
-; This function will only allocate continous pages
+; This function will only allocate continuous pages
 os_mem_allocate:
 	push rsi
 	push rdx
@@ -28,7 +28,7 @@ os_mem_allocate:
 
 	xor rax, rax
 	mov rsi, os_MemoryMap		; First available memory block
-	mov eax, [os_MemAmount]		; Total memory in MiB from a doubleword
+	mov eax, [os_MemAmount]		; Total memory in MiB from a double-word
 	mov rdx, rsi			; Keep os_MemoryMap unmodified for later in RDX					
 	shr eax, 1			; Divide actual memory by 2
 
