@@ -75,13 +75,16 @@ os_debug_dump_mem:
 	push rdx			; Total number of bytes to display
 	push rax
 
-	cmp rcx, 0			; Bail out if 0 bytes were asked for
+	cmp rcx, 0			; Bail out if no bytes were requested
 	je os_debug_dump_mem_done
+	mov rax, rsi
+	and rax, 0x0F			; Isolate the low 4 bytes of RSI
+	add rcx, rax			; Add to round up the number of bytes needed
 	mov rdx, rcx			; Save the total number of bytes to display
-	add rdx, 15
+	add rdx, 15			; Make sure we print out another line if needed
 
-	and cl, 0xF0			; Clear lower 4 bits
-	and dl, 0xF0			; Clear lower 4 bits
+	and cl, 0xF0
+	and dl, 0xF0
 
 	shr rsi, 4			; Round the starting memory address
 	shl rsi, 4
@@ -89,32 +92,38 @@ os_debug_dump_mem:
 os_debug_dump_mem_print_address:
 	mov rax, rsi
 	call os_debug_dump_rax
-	push rsi
-	mov rsi, divider
-	call os_output
-	pop rsi
-	xor rcx, rcx			; Clear the counter
-
-os_debug_dump_mem_next_byte_hex:
-	lodsb
-	call os_debug_dump_al
-	add rcx, 1
-	cmp rcx, 16
-	jne os_debug_dump_mem_next_byte_hex
 
 	push rsi
-	mov rsi, divider
+	mov rsi, divider4
 	call os_output
 	pop rsi
+
+os_debug_dump_mem_print_contents:
+	lodsq
+	bswap rax			; Switch Endianness
+	call os_debug_dump_rax
+	push rsi
+	mov rsi, divider2
+	call os_output
+	pop rsi
+	lodsq
+	bswap rax			; Switch Endianness
+	call os_debug_dump_rax
+
+	push rsi
+	mov rsi, divider4
+	call os_output
+	pop rsi
+
+os_debug_dump_mem_print_ascii:
 	sub rsi, 0x10
 	xor rcx, rcx			; Clear the counter
-
-os_debug_dump_mem_next_byte_ascii:
+os_debug_dump_mem_print_ascii_next:
 	lodsb
 	call os_output_char
 	add rcx, 1
 	cmp rcx, 16
-	jne os_debug_dump_mem_next_byte_ascii
+	jne os_debug_dump_mem_print_ascii_next
 	
 	sub rdx, 16
 	cmp rdx, 0
@@ -129,7 +138,8 @@ os_debug_dump_mem_done:
 	pop rsi
 	ret
 
-divider: db ' | ', 0
+divider4: db '    ', 0
+divider2: db '  ', 0
 ; -----------------------------------------------------------------------------
 
 
