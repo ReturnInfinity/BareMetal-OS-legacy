@@ -15,13 +15,13 @@ align 16
 ;  IN:	Nothing
 ; OUT:	Nothing, all registers preserved
 os_debug_dump_reg:
-	pushfq						; Push the registers used by this function
+	pushfq				; Push the registers used by this function
 	push rsi
 	push rbx
 	push rax
 
-	pushfq						; Push the flags to the stack
-	push r15					; Push all of the registers to the stack
+	pushfq				; Push the flags to the stack
+	push r15			; Push all of the registers to the stack
 	push r14
 	push r13
 	push r12
@@ -67,28 +67,23 @@ os_debug_dump_reg_done:
 ; -----------------------------------------------------------------------------
 ; os_debug_dump_mem -- Dump some memory content to the screen
 ;  IN:	RSI = Start of memory address to dump
-;	RCX = number of bytes to dump
+;	RCX = Number of bytes to dump
 ; OUT:	Nothing, all registers preserved
 os_debug_dump_mem:
 	push rsi
-	push rcx		; counter
-	push rdx		; total number of bytes to display
+	push rcx			; Counter
+	push rdx			; Total number of bytes to display
 	push rax
 
-	cmp rcx, 0
+	cmp rcx, 0			; Bail out if 0 bytes were asked for
 	je os_debug_dump_mem_done
-	mov rdx, rcx		; Save the total number of bytes to display
+	mov rdx, rcx			; Save the total number of bytes to display
 	add rdx, 15
 
-	shl rcx, 32
-	shr rcx, 36
-	shl rcx, 4
+	and cl, 0xF0			; Clear lower 4 bits
+	and dl, 0xF0			; Clear lower 4 bits
 
-	shl rdx, 32
-	shr rdx, 36
-	shl rdx, 4
-
-	shr rsi, 4		; Round the starting memory address
+	shr rsi, 4			; Round the starting memory address
 	shl rsi, 4
 
 os_debug_dump_mem_print_address:
@@ -98,7 +93,7 @@ os_debug_dump_mem_print_address:
 	mov rsi, divider
 	call os_output
 	pop rsi
-	xor rcx, rcx		; Clear the counter
+	xor rcx, rcx			; Clear the counter
 
 os_debug_dump_mem_next_byte_hex:
 	lodsb
@@ -112,7 +107,7 @@ os_debug_dump_mem_next_byte_hex:
 	call os_output
 	pop rsi
 	sub rsi, 0x10
-	xor rcx, rcx		; Clear the counter
+	xor rcx, rcx			; Clear the counter
 
 os_debug_dump_mem_next_byte_ascii:
 	lodsb
@@ -143,7 +138,7 @@ divider: db ' | ', 0
 ;  IN:	RAX = content to dump
 ; OUT:	Nothing, all registers preserved
 os_debug_dump_rax:
-	ror rax, 56
+	rol rax, 8
 	call os_debug_dump_al
 	rol rax, 8
 	call os_debug_dump_al
@@ -153,25 +148,25 @@ os_debug_dump_rax:
 	call os_debug_dump_al
 	rol rax, 32
 os_debug_dump_eax:
-	ror rax, 24
+	rol eax, 8
 	call os_debug_dump_al
-	rol rax, 8
+	rol eax, 8
 	call os_debug_dump_al
-	rol rax, 16
+	rol eax, 16
 os_debug_dump_ax:
-	ror rax, 8
+	rol ax, 8
 	call os_debug_dump_al
-	rol rax, 8
+	rol ax, 8
 os_debug_dump_al:
 	push rbx
 	push rax
 	mov rbx, hextable
-	push rax	; save rax for the next part
-	shr al, 4	; we want to work on the high part so shift right by 4 bits
+	push rax			; Save RAX since we work in 2 parts
+	shr al, 4			; Shift high 4 bits into low 4 bits
 	xlatb
 	call os_output_char
 	pop rax
-	and al, 0x0f	; we want to work on the low part so clear the high part
+	and al, 0x0f			; Clear the high 4 bits
 	xlatb
 	call os_output_char
 	pop rax
