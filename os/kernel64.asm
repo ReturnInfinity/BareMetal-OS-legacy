@@ -87,6 +87,7 @@ ap_clear:				; All cores start here on first start-up and after an exception
 	; Set up the stack
 	shl rax, 21			; Shift left 21 bits for a 2 MiB stack
 	add rax, [os_StackBase]		; The stack decrements when you "push", start at 2 MiB in
+	sub rax, 8
 	mov rsp, rax
 
 	; Set the CPU status to "Present" and "Ready"

@@ -364,6 +364,7 @@ os_screen_scroll:
 	push rdi
 	push rcx
 	push rax
+	pushfq
 
 	cld				; Clear the direction flag as we want to increment through memory
 
@@ -394,6 +395,7 @@ os_screen_scroll_graphics:
 	rep movsb
 
 os_screen_scroll_done:
+	popfq
 	pop rax
 	pop rcx
 	pop rdi
@@ -410,6 +412,7 @@ os_screen_clear:
 	push rdi
 	push rcx
 	push rax
+	pushfq
 
 	cld				; Clear the direction flag as we want to increment through memory
 
@@ -433,6 +436,7 @@ os_screen_clear_graphics:
 	rep stosb
 
 os_screen_clear_done:
+	popfq
 	pop rax
 	pop rcx
 	pop rdi
@@ -448,12 +452,16 @@ os_screen_update:
 	push rsi
 	push rdi
 	push rcx
+	pushfq
+
+	cld				; Clear the direction flag as we want to increment through memory
 
 	mov rsi, os_screen
 	mov rdi, 0xb8000
 	mov cx, 2000			; 80 x 25
 	rep movsw
 
+	popfq
 	pop rcx
 	pop rdi
 	pop rsi

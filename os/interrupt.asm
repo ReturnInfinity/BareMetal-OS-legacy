@@ -37,6 +37,7 @@ keyboard:
 	push rdi
 	push rbx
 	push rax
+	pushfq
 
 	xor eax, eax
 
@@ -91,6 +92,7 @@ keyboard_done:
 	out 0x20, al
 	call os_smp_wakeup_all		; A terrible hack
 
+	popfq
 	pop rax
 	pop rbx
 	pop rdi
@@ -119,6 +121,7 @@ cascade:
 align 16
 rtc:
 	push rax
+	pushfq
 
 	add qword [os_ClockCounter], 1	; 64-bit counter started at boot-up
 
@@ -133,13 +136,14 @@ rtc:
 	push rdi
 	push rsi
 	push rcx
-	mov rcx, clock_callback	; RCX stores the callback function address
+	mov rcx, clock_callback		; RCX stores the callback function address
 	mov rsi, rsp			; Copy the current stack pointer to RSI
 	sub rsp, 8			; Subtract 8 since we add a 64-bit value to the stack
 	mov rdi, rsp			; Copy the 'new' stack pointer to RDI
 	movsq				; RCX
 	movsq				; RSI
 	movsq				; RDI
+	movsq				; Flags
 	movsq				; RAX
 	lodsq				; RIP
 	xchg rax, rcx
@@ -150,7 +154,6 @@ rtc:
 	sub rax, 8
 	stosq
 	movsq				; SS
-	movsq				; ???
 	xchg rax, rcx
 	stosq				; Original RIP
 	pop rcx
@@ -166,6 +169,7 @@ rtc_end:
 	out 0xA0, al
 	out 0x20, al
 
+	popfq
 	pop rax
 	iretq
 ; -----------------------------------------------------------------------------
@@ -179,6 +183,7 @@ network:
 	push rsi
 	push rcx
 	push rax
+	pushfq
 
 	cld				; Clear direction flag
 	call os_ethernet_ack_int	; Call the driver function to acknowledge the interrupt internally
@@ -208,6 +213,7 @@ network_rx_as_well:
 	mov rsi, rsp			; Copy the current stack pointer to RSI
 	sub rsp, 8			; Subtract 8 since we add a 64-bit value to the stack
 	mov rdi, rsp			; Copy the 'new' stack pointer to RDI
+	movsq				; Flags
 	movsq				; RAX
 	movsq				; RCX
 	movsq				; RSI
@@ -221,7 +227,6 @@ network_rx_as_well:
 	sub rax, 8
 	stosq
 	movsq				; SS
-	movsq				; ???
 	xchg rax, rcx
 	stosq				; Original RIP
 	jmp network_end
@@ -239,6 +244,7 @@ network_end:
 network_ack_only_low:
 	out 0x20, al
 
+	popfq
 	pop rax
 	pop rcx
 	pop rsi
