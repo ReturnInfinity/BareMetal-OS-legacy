@@ -258,9 +258,10 @@ network_ack_only_low:
 align 16
 network_callback:
 	push rsi
-	mov rsi, network_callback_msg
-	call os_output
-;	call [os_NetworkCallback]
+	xchg bx, bx			; Debug
+;	mov rsi, network_callback_msg
+;	call os_output
+	call [os_NetworkCallback]
 	pop rsi
 	ret
 
@@ -273,9 +274,10 @@ network_callback_msg db 13, 'Network Callback!', 0
 align 16
 clock_callback:
 	push rsi
-	mov rsi, clock_callback_msg
-	call os_output
-;	call [os_ClockCallback]
+	xchg bx, bx			; Debug
+;	mov rsi, clock_callback_msg
+;	call os_output
+	call [os_ClockCallback]
 	pop rsi
 	ret
 

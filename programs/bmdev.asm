@@ -42,6 +42,8 @@ config_argc		equ 1
 config_argv		equ 2
 networkcallback_get	equ 3
 networkcallback_set	equ 4
+clockcallback_get	equ 5
+clockcallback_set	equ 6
 statusbar		equ 10
 
 

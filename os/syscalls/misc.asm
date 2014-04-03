@@ -77,6 +77,10 @@ os_system_config:
 	je os_system_config_networkcallback_get
 	cmp rdx, 4
 	je os_system_config_networkcallback_set
+	cmp rdx, 5
+	je os_system_config_clockcallback_get
+	cmp rdx, 6
+	je os_system_config_clockcallback_set
 	cmp rdx, 20
 	je os_system_config_video_base
 	cmp rdx, 21
@@ -108,6 +112,14 @@ os_system_config_networkcallback_get:
 
 os_system_config_networkcallback_set:
 	mov qword [os_NetworkCallback], rax
+	ret
+
+os_system_config_clockcallback_get:
+	mov rax, [os_ClockCallback]
+	ret
+
+os_system_config_clockcallback_set:
+	mov qword [os_ClockCallback], rax
 	ret
 
 os_system_config_video_base:
