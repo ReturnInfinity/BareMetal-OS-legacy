@@ -58,7 +58,6 @@ os_input_backspace:
 	jmp os_input_more
 
 os_input_halt:
-	xchg bx, bx
 	hlt				; Halt until another keystroke is received
 	jmp os_input_more
 

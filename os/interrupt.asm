@@ -128,7 +128,7 @@ rtc:
 	cmp qword [os_ClockCallback], 0	; Is it valid?
 	je rtc_end			; If not then bail out.
 
-	; We could do a 'call [os_NetworkCallback]' here but that would not be ideal.
+	; We could do a 'call [os_ClockCallback]' here but that would not be ideal.
 	; A defective callback would hang the system if it never returned back to the
 	; interrupt handler. Instead, we modify the stack so that the callback is
 	; executed after the interrupt handler has finished. Once the callback has
