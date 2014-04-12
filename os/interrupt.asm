@@ -152,10 +152,9 @@ rtc:
 	movsq				; Flags
 	lodsq				; RSP
 	sub rax, 8
+	mov [rax], rcx			; Original RIP
 	stosq
 	movsq				; SS
-	xchg rax, rcx
-	stosq				; Original RIP
 	pop rcx
 	pop rsi
 	pop rdi
@@ -225,10 +224,9 @@ network_rx_as_well:
 	movsq				; Flags
 	lodsq				; RSP
 	sub rax, 8
+	mov [rax], rcx			; Original RIP
 	stosq
 	movsq				; SS
-	xchg rax, rcx
-	stosq				; Original RIP
 	jmp network_end
 
 network_tx:
@@ -257,15 +255,10 @@ network_ack_only_low:
 ; Network interrupt.
 align 16
 network_callback:
-	push rsi
-	xchg bx, bx			; Debug
-;	mov rsi, network_callback_msg
-;	call os_output
+	pushfq
 	call [os_NetworkCallback]
-	pop rsi
+	popfq
 	ret
-
-network_callback_msg db 13, 'Network Callback!', 0
 ; -----------------------------------------------------------------------------
 
 
@@ -273,15 +266,10 @@ network_callback_msg db 13, 'Network Callback!', 0
 ; Network interrupt.
 align 16
 clock_callback:
-	push rsi
-	xchg bx, bx			; Debug
-;	mov rsi, clock_callback_msg
-;	call os_output
+	pushfq
 	call [os_ClockCallback]
-	pop rsi
+	popfq
 	ret
-
-clock_callback_msg db 13, 'Clock Callback!', 0
 ; -----------------------------------------------------------------------------
 
 
