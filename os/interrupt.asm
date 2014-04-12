@@ -152,9 +152,9 @@ rtc:
 	movsq				; Flags
 	lodsq				; RSP
 	sub rax, 8
-	mov [rax], rcx			; Original RIP
 	stosq
 	movsq				; SS
+	mov [rax], rcx			; Original RIP
 	pop rcx
 	pop rsi
 	pop rdi
@@ -224,9 +224,9 @@ network_rx_as_well:
 	movsq				; Flags
 	lodsq				; RSP
 	sub rax, 8
-	mov [rax], rcx			; Original RIP
 	stosq
 	movsq				; SS
+	mov [rax], rcx			; Original RIP
 	jmp network_end
 
 network_tx:
