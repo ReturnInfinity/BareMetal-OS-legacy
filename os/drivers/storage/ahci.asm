@@ -73,7 +73,7 @@ founddrive:
 	mov [ahci_port], ecx
 	mov rdi, rsi
 	add rdi, 0x100			; Offset to port 0
-	push rcx			; Save port number
+	push rcx				; Save port number
 	shl rcx, 7			; Quick multiply by 0x80
 	add rdi, rcx
 	pop rcx				; Restore port number
@@ -131,7 +131,7 @@ iddrive:
 	shl rcx, 7			; Quick multiply by 0x80
 	add rcx, 0x100			; Offset to port 0
 
-	push rdi			; Save the destination memory address
+	push rdi				; Save the destination memory address
 
 	mov rsi, [ahci_base]
 
@@ -220,15 +220,16 @@ ret
 ;	RDI = RDI + (number of sectors read * 512)
 ;	All other registers preserved
 readsectors:
+	push rdx
 	push rbx
 	push rdi
 	push rsi
 	push rcx
 	push rax
 
-	push rcx			; Save the sector count
-	push rdi			; Save the destination memory address
-	push rax			; Save the block number
+	push rcx				; Save the sector count
+	push rdi				; Save the destination memory address
+	push rax				; Save the block number
 	push rax
 
 	shl rdx, 7			; Quick multiply by 0x80
@@ -301,10 +302,10 @@ readsectors:
 	mov eax, 0x00000001		; Execute Command Slot 0
 	stosd
 
-.poll:
+readsectors_poll:
 	mov eax, [rsi+0x38]
 	cmp eax, 0
-	jne .poll
+	jne readsectors_poll
 
 	mov rdi, rsi
 	add rdi, 0x18			; Offset to port 0
@@ -322,6 +323,7 @@ readsectors:
 	shl rbx, 9
 	add rdi, rbx
 	pop rbx
+	pop rdx
 ret
 ; -----------------------------------------------------------------------------
 
@@ -337,15 +339,16 @@ ret
 ;	RSI = RSI + (number of sectors written * 512)
 ;	All other registers preserved
 writesectors:
+	push rdx
 	push rbx
 	push rdi
 	push rsi
 	push rcx
 	push rax
 
-	push rcx			; Save the sector count
-	push rsi			; Save the source memory address
-	push rax			; Save the block number
+	push rcx				; Save the sector count
+	push rsi				; Save the source memory address
+	push rax				; Save the block number
 	push rax
 
 	shl rdx, 7			; Quick multiply by 0x80
@@ -419,10 +422,10 @@ writesectors:
 	mov eax, 0x00000001		; Execute Command Slot 0
 	stosd
 
-.poll:
+writesectors_poll:
 	mov eax, [rsi+0x38]
 	cmp eax, 0
-	jne .poll
+	jne writesectors_poll
 
 	mov rdi, rsi
 	add rdi, 0x18			; Offset to port 0
@@ -440,6 +443,7 @@ writesectors:
 	shl rbx, 9
 	add rdi, rbx
 	pop rbx
+	pop rdx
 ret
 ; -----------------------------------------------------------------------------
 
