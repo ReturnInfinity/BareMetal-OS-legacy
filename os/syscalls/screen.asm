@@ -132,8 +132,6 @@ os_output_char_text:
 	jmp os_output_char_done
 
 os_output_char_graphics:
-	mov ebx, [os_Font_Color]
-	and eax, 0x000000FF
 	call os_glyph_put
 
 os_output_char_done:
@@ -203,8 +201,7 @@ os_pixel_done:
 
 ; -----------------------------------------------------------------------------
 ; os_glyph_put -- Put a glyph on the screen at the cursor location
-;  IN:	EAX = Glyph
-;	EBX = Color (AARRGGBB)
+;  IN:	AL  = char to display
 ; OUT:	All registers preserved
 os_glyph_put:
 	push rdi
@@ -287,7 +284,7 @@ glyph_done:
 
 ; -----------------------------------------------------------------------------
 ; os_output_chars -- Displays text
-;  IN:	RSI = message location (A string, not zero-terminated)
+;  IN:	RSI = message location (an ASCII string, not zero-terminated)
 ;	RCX = number of chars to print
 ; OUT:	All registers preserved
 os_output_chars:
@@ -326,7 +323,7 @@ os_output_chars_newline_skip_LF:
 os_output_chars_newline_skip_LF_nosub:
 	add rsi, 1
 	call os_print_newline
-	jmp os_output_chars_nextchar	
+	jmp os_output_chars_nextchar
 
 os_output_chars_tab:
 	push rcx
@@ -375,7 +372,7 @@ os_screen_scroll:
 
 os_screen_scroll_text:
 	mov rsi, os_screen 		; Start of video text memory for row 2
-	add rsi, 0xA0	
+	add rsi, 0xA0
 	mov rdi, os_screen 		; Start of video text memory for row 1
 	mov cx, 1920			; 80 x 24
 	rep movsw			; Copy the Character and Attribute
