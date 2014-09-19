@@ -1,6 +1,6 @@
 /*
 3D stars!
-gcc -I newlib-2.0.0/newlib/libc/include/ -c 3dstars.c -o 3dstars.o
+gcc -I newlib-2.1.0/newlib/libc/include/ -c 3dstars.c -o 3dstars.o
 ld -T app.ld -o 3dstars.app crt0.o 3dstars.o libBareMetal.o libc.a libm.a
 */
 
