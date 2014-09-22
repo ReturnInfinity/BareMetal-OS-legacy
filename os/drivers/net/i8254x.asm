@@ -104,7 +104,7 @@ os_net_i8254x_reset:
 	mov eax, 0x00000030
 	mov [rsi+I8254X_REG_PBA], eax		; PBA: set the RX buffer size to 48KB (TX buffer is calculated as 64-RX buffer)
 
-	mov eax, 0x08008060
+	mov eax, 0x80008060
 	mov [rsi+I8254X_REG_TXCW], eax		; TXCW: set ANE, TxConfigWord (Half/Full duplex, Next Page Request)
 
 	mov eax, [rsi+I8254X_REG_CTRL]
@@ -261,7 +261,7 @@ I8254X_REG_FCTTV	equ 0x0170 ; Flow Control Transmit Timer Value
 I8254X_REG_TXCW		equ 0x0178 ; Transmit Configuration Word
 I8254X_REG_RXCW		equ 0x0180 ; Receive Configuration Word
 I8254X_REG_TCTL		equ 0x0400 ; Transmit Control Register
-I8254X_REG_TIPG		equ 0x0410 ; Transmit Inter Packet Gap 
+I8254X_REG_TIPG		equ 0x0410 ; Transmit Inter Packet Gap
 
 I8254X_REG_LEDCTL	equ 0x0E00 ; LED Control
 I8254X_REG_PBA		equ 0x1000 ; Packet Buffer Allocation

@@ -11,15 +11,15 @@ align 16
 
 
 init_pci:
-	mov eax, 0x80000000
+	mov eax, 0x80000000		; Bit 31 set for 'Enabled'
+	mov ebx, eax
 	mov dx, PCI_CONFIG_ADDRESS
 	out dx, eax
 	in eax, dx
-	cmp eax, 0x80000000
-	jne init_pci_not_found
-	mov byte [os_PCIEnabled], 1
-
-init_pci_not_found:
+	xor edx, edx
+	cmp eax, ebx
+	sete dl				; Set byte if equal, otherwise clear
+	mov byte [os_PCIEnabled], dl
 	ret
 
 
