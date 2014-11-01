@@ -2,7 +2,7 @@
 ; BareMetal -- a 64-bit OS written in Assembly for x86-64 systems
 ; Copyright (C) 2008-2014 Return Infinity -- see LICENSE.TXT
 ;
-; PCI Functions. http://wiki.osdev.org/PIC
+; PIC Functions. http://wiki.osdev.org/PIC
 ; =============================================================================
 
 align 16
