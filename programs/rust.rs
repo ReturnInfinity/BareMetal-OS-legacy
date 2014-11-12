@@ -1,4 +1,6 @@
 // Rust on BareMetal - Tested with Rust 0.13.0-nightly
+// Adapted from https://github.com/charliesome/rustboot and
+// https://github.com/charliesome/rustboot/pull/25
 // rustc -O --crate-type lib -o rust.o --emit obj rust.rs
 // ld -T app.ld -o rust.app rust.o
 
