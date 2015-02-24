@@ -33,6 +33,12 @@ os_net_i8254x_init:
 	call os_pci_read_reg
 	mov [os_NetIRQ], al			; AL holds the IRQ
 
+	; Enable PCI Bus Mastering
+	mov dl, 0x01				; Get Status/Command
+	call os_pci_read_reg
+	bts eax, 2
+	call os_pci_write_reg
+
 	; Grab the MAC address
 	mov rsi, [os_NetIOBaseMem]
 	mov eax, [rsi+0x5400]				; RAL
