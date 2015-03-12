@@ -11,10 +11,10 @@ align 16
 
 
 ; -----------------------------------------------------------------------------
-; os_pci_read_reg -- Read a register from a PCI device
+; os_pci_read_reg -- Read from a register on a PCI device
 ;  IN:	BL  = Bus number
 ;	CL  = Device/Slot/Function number
-;	DL  = Register number
+;	DL  = Register number (0-15)
 ; OUT:	EAX = Register information
 ;	All other registers preserved
 os_pci_read_reg:
@@ -43,42 +43,36 @@ ret
 
 
 ; -----------------------------------------------------------------------------
-; os_pci_dump_devices -- Dump all Device and Vendor ID's to the screen
-;  IN:	Nothing
-; OUT:	Nothing, All registers preserved
-; http://pci-ids.ucw.cz/read/PC/ - Online list of Device and Vendor ID's
-os_pci_dump_devices:
+; os_pci_write_reg -- Write to a register on a PCI device
+;  IN:	BL  = Bus number
+;	CL  = Device/Slot/Function number
+;	DL  = Register number (0-15)
+; OUT:	EAX = Register information
+;	All other registers preserved
+os_pci_write_reg:
 	push rdx
 	push rcx
 	push rbx
 	push rax
 
-	xor rcx, rcx
-	xor rax, rax
-	
-	mov ecx, 0x80000000		; Bit 31 must be set
-
-os_pci_dump_devices_check_next:
-	mov eax, ecx
+	shl ebx, 16			; Move Bus number to bits 23 - 16
+	shl ecx, 8			; Move Device/Slot/Fuction number to bits 15 - 8
+	mov bx, cx
+	shl edx, 2
+	mov bl, dl
+	and ebx, 0x00ffffff		; Clear bits 31 - 24
+	or ebx, 0x80000000		; Set bit 31
+	mov eax, ebx
 	mov dx, PCI_CONFIG_ADDRESS
 	out dx, eax
-	mov dx, PCI_CONFIG_DATA
-	in eax, dx			; EAX now holds the Device and Vendor ID
-	cmp eax, 0xffffffff		; 0xFFFFFFFF means no device present on that Bus and Slot
-	je os_pci_dump_devices_nothing_there
-	call os_debug_dump_eax		; Print the Device and Vendor ID (DDDDVVVV)
-	call os_print_newline
-os_pci_dump_devices_nothing_there:
-	add ecx, 0x800
-	cmp ecx, 0x81000000		; The end has been reached (already looked at 8192 devices)
-	jne os_pci_dump_devices_check_next
-
-os_pci_dump_devices_end:
 	pop rax
+	mov dx, PCI_CONFIG_DATA
+	out dx, eax
+
 	pop rbx
 	pop rcx
 	pop rdx
-ret
+	ret
 ; -----------------------------------------------------------------------------
 
 

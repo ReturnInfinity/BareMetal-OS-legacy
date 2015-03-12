@@ -141,25 +141,5 @@ os_mem_get_free_end:
 ; -----------------------------------------------------------------------------
 
 
-; -----------------------------------------------------------------------------
-; os_mem_copy -- Copy a number of bytes
-;  IN:	RSI = Source address
-;	RDI = Destination address
-;	RCX = Number of bytes to copy
-; OUT:	Nothing, all registers preserved
-os_mem_copy:
-	push rdi
-	push rsi
-	push rcx
-
-	rep movsb			; Optimize this!
-
-	pop rcx
-	pop rsi
-	pop rdi
-	ret
-; -----------------------------------------------------------------------------
-
-
 ; =============================================================================
 ; EOF
