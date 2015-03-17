@@ -133,8 +133,8 @@ void put_pixel(unsigned int x, unsigned int y, unsigned char red, unsigned char 
 			offset = offset * 4;
 			VideoMemory[offset] = 0x00;
 			VideoMemory[offset+1] = red;
-			VideoMemory[offset+3] = blue;
-			VideoMemory[offset+4] = green;
+			VideoMemory[offset+2] = blue;
+			VideoMemory[offset+3] = green;
 		}
 	}
 }
