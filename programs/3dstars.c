@@ -11,7 +11,7 @@ ld -T app.ld -o 3dstars.app crt0.o 3dstars.o libBareMetal.o libc.a libm.a
 #include "libBareMetal.h"
 
 void clear_screen();
-void put_pixel(unsigned int x, unsigned int y, unsigned char red, unsigned char blue, unsigned char green);
+void put_pixel(unsigned int x, unsigned int y, unsigned char red, unsigned char green, unsigned char blue);
 
 unsigned long VideoX, VideoY, VideoBPP;
 char* VideoMemory;
@@ -115,7 +115,7 @@ void clear_screen()
 	memset(VideoMemory, 0x00, bytes);
 }
 
-void put_pixel(unsigned int x, unsigned int y, unsigned char red, unsigned char blue, unsigned char green)
+void put_pixel(unsigned int x, unsigned int y, unsigned char red, unsigned char green, unsigned char blue)
 {
 	int offset = 0;
 	if (x >= 0 && x < VideoX && y >= 0 && y < VideoY) // Sanity check
@@ -124,16 +124,16 @@ void put_pixel(unsigned int x, unsigned int y, unsigned char red, unsigned char 
 		if (VideoBPP == 24)
 		{
 			offset = offset * 3;
-			VideoMemory[offset] = green;
-			VideoMemory[offset+1] = blue;
+			VideoMemory[offset] = blue;
+			VideoMemory[offset+1] = green;
 			VideoMemory[offset+2] = red;
 		}
 		else if (VideoBPP == 32)
 		{
 			offset = offset * 4;
 			VideoMemory[offset] = 0x00;
-			VideoMemory[offset+1] = green;
-			VideoMemory[offset+2] = blue;
+			VideoMemory[offset+1] = blue;
+			VideoMemory[offset+2] = green;
 			VideoMemory[offset+3] = red;
 		}
 	}
