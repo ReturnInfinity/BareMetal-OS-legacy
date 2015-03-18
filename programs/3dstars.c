@@ -124,17 +124,17 @@ void put_pixel(unsigned int x, unsigned int y, unsigned char red, unsigned char 
 		if (VideoBPP == 24)
 		{
 			offset = offset * 3;
-			VideoMemory[offset] = red;
+			VideoMemory[offset] = green;
 			VideoMemory[offset+1] = blue;
-			VideoMemory[offset+2] = green;
+			VideoMemory[offset+2] = red;
 		}
 		else if (VideoBPP == 32)
 		{
 			offset = offset * 4;
 			VideoMemory[offset] = 0x00;
-			VideoMemory[offset+1] = red;
+			VideoMemory[offset+1] = green;
 			VideoMemory[offset+2] = blue;
-			VideoMemory[offset+3] = green;
+			VideoMemory[offset+3] = red;
 		}
 	}
 }
