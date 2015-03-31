@@ -240,6 +240,12 @@ int gettimeofday(struct timeval *p, void *z)
 	return 0;
 }
 
+// times - Timing information for current process.
+// Minimal implementation
+int times(struct tms *buf){
+        return -1;
+}
+
 void __stack_chk_fail(void)
 {
 	write(1, "Stack smashin' detected!\n", 25);
