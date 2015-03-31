@@ -36,6 +36,9 @@ int execve(char *name, char **argv, char **env)
 }
 
 // environ - A pointer to a list of environment variables and their values
+// Minimal implementation
+char *__env[1] = { 0 };
+char **environ = __env;
 
 // getpid -- Process-ID
 // Return 1 by default
