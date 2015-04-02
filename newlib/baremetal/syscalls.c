@@ -245,7 +245,7 @@ int gettimeofday(struct timeval *p, void *z)
 
 // times - Timing information for current process.
 // Minimal implementation
-int times(struct tms *buf){
+clock_t times(struct tms *buf){
         return -1;
 }
 
