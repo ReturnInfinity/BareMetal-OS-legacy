@@ -8,8 +8,8 @@
 //
 // This allows for a C/C++ program to access OS functions available in BareMetal OS
 // =============================================================================
-#ifndef LIBBAREMETAL_INC
-#define LIBBAREMETAL_INC
+#ifndef _LIBBAREMETAL_H
+#define _LIBBAREMETAL_H 1
 
 void b_output(const char *str);
 void b_output_chars(const char *str, unsigned long nbr);
