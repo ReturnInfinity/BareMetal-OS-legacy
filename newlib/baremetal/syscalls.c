@@ -21,10 +21,9 @@ inline void outportbyte(unsigned int port,unsigned char value);
 // --- Process Control ---
 
 // exit -- Exit a program without cleaning up files
-int _exit(int val)
+void _exit(int val)
 {
-	exit(val);
-	return (-1);
+        asm volatile ("call *0x001000C0");
 }
 
 // execve -- Transfer control to a new process
