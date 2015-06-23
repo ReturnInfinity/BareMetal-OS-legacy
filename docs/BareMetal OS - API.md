@@ -120,7 +120,7 @@ Scans keyboard for input
 Assembly Registers:
 
 	 IN:	Nothing
-	OUT:	AL = 0 if no key pressed, otherwise ASCII code, other regs preserved
+	OUT:	AL = 0 if no key pressed, otherwise ASCII code
 			All other registers preserved
 
 Assembly Example:
