@@ -52,11 +52,11 @@ int main(int argc, char *argv[])
 
 	for(i=3; i<=max_number; i+=2)
 	{
-		for(j=2; j<=i-1; j++)
+		for(j=2; j<=i*i; j++)
 		{
 			if(i%j==0) break; //Number is divisble by some other number. So break out
 		}
-		if(i==j)
+		if(j>i*i)
 		{
 			primes = primes + 1;
 		}
