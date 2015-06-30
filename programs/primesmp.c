@@ -159,11 +159,11 @@ void *prime_process(void *param)
 	// Process
 	for(; i<=max_number; i+=h)
 	{
-		for(j=2; j<=i-1; j++)
+		for(j=2; j*j<=i; j++)
 		{
 			if(i%j==0) break; // Number is divisible by some other number. So break out
 		}
-		if(i==j)
+		if(j*j>i)
 		{
 			tprimes = tprimes + 1;
 		}
