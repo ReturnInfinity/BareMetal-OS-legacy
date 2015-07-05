@@ -37,8 +37,8 @@ sys_pml4:		equ 0x0000000000002000	; 4096 bytes	0x002000 -> 0x002FFF	PML4 table
 sys_pdp:		equ 0x0000000000003000	; 4096 bytes	0x003000 -> 0x003FFF	PDP table
 sys_Pure64:		equ 0x0000000000004000	; 16384 bytes	0x004000 -> 0x007FFF	Pure64 system data
 sys_pd:			equ 0x0000000000010000	; 262144 bytes	0x010000 -> 0x04FFFF	Page directory
-ahci_cmdlist:		equ 0x0000000000070000	; 4096 bytes	0x070000 -> 0x071FFF
-ahci_receivedfis:	equ 0x0000000000071000	; 4096 bytes	0x071000 -> 0x072FFF
+ahci_cmdlist:		equ 0x0000000000070000	; 4096 bytes	0x070000 -> 0x070FFF
+ahci_receivedfis:	equ 0x0000000000071000	; 4096 bytes	0x071000 -> 0x071FFF
 ahci_cmdtable:		equ 0x0000000000072000	; 57344 bytes	0x072000 -> 0x07FFFF
 cli_temp_string:	equ 0x0000000000080000	; 1024 bytes	0x080000 -> 0x0803FF
 os_temp_string:		equ 0x0000000000080400	; 1024 bytes	0x080400 -> 0x0807FF
