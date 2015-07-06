@@ -81,7 +81,7 @@ founddrive:
 	stosd				; Offset 00h: PxCLB – Port x Command List Base Address
 	xor eax, eax
 	stosd				; Offset 04h: PxCLBU – Port x Command List Base Address Upper 32-bits
-	mov rax, ahci_cmdlist + 0x1000	; 256 or 4096 bytes per port
+	mov rax, ahci_receivedfis	; 256 or 4096 bytes per port
 	stosd				; Offset 08h: PxFB – Port x FIS Base Address
 	xor eax, eax
 	stosd				; Offset 0Ch: PxFBU – Port x FIS Base Address Upper 32-bits
