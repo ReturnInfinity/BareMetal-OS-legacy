@@ -45,7 +45,8 @@ Output text to the screen (The string must be null-terminated - also known as AS
 Assembly Registers:
 
 	 IN:	RSI = message location (zero-terminated string)
-	OUT:	All registers preserved
+	OUT:	Nothing.
+			All registers preserved
 
 Assembly Example:
 
@@ -65,12 +66,14 @@ C/C++ Example:
 ### b\_output\_chars
 
 Output a number of characters to the screen
+The Message should not contain a Null-Byte
 
 Assembly Registers:
 
 	 IN:	RSI = message location
 			RCX = number of characters to output
-	OUT:	All registers preserved
+	OUT:	Nothing.
+			All registers preserved
 
 Assembly Example:
 
@@ -91,6 +94,7 @@ C/C++ Example:
 ### b\_input
 
 Accept a number of keys from the keyboard. The resulting string will automatically be null-terminated
+The String will have a length of RCX(IN) + 1
 
 Assembly Registers:
 
@@ -145,20 +149,44 @@ C/C++ Example:
 
 Add a workload to the processing queue
 
+Assembly Registers:
+
+	 IN:	RAX = Address of code to execute
+			RSI = Variable
+	OUT:	Nothing
+
 
 ### b\_smp\_dequeue
 
 Dequeue a workload from the processing queue
+
+Assembly Registers:
+
+	 IN:	Nothing
+	OUT:	RAX = Address of code to execute (Set to 0 if queue is empty)
+			RDI = Variable
 
 
 ### b\_smp\_run
 
 Call the code address stored in RAX
 
+Assembly Registers:
+
+	 IN:	RAX = Address of code to execute
+	OUT:	Nothing
+
 
 ### b\_smp\_wait
 
 Wait until all other CPU Cores are finished processing
+
+Assembly Registers:
+
+	 IN:	Nothing
+	OUT:	Nothing.
+			All registers preserved.
+
 
 
 ## Memory
@@ -167,6 +195,7 @@ Wait until all other CPU Cores are finished processing
 ### b\_mem\_allocate
 
 Allocate pages of memory
+The pagesize is always 2MiB
 
 Assembly Registers:
 
@@ -189,7 +218,7 @@ Release pages of memory
 Assembly Registers:
 
 	 IN:	RAX = Starting address
-				RCX = Number of pages to free
+			RCX = Number of pages to free
 	OUT:	RCX = Number of pages freed
 			All other registers preserved
 
@@ -211,7 +240,8 @@ Assembly Registers:
 
 	 IN:	RSI = memory location of packet
 			RCX = length of packet
-	OUT:	All registers preserved
+	OUT:	Nothing.
+			All registers preserved
 
 Assembly Example:
 
@@ -277,7 +307,8 @@ Close a file
 Assembly Registers:
 
 	 IN:	RAX = File I/O handler number
-	OUT:	All registers preserved
+	OUT:	Nothing.
+			All registers preserved
 
 Assembly Example:
 
@@ -320,7 +351,8 @@ Assembly Registers:
 	 IN:	RAX = File I/O handler number
 			RCX = Number of bytes to offset from origin.
 			RDX = Origin
-	OUT:	All registers preserved
+	OUT:	Nothing.
+			All registers preserved
 
 
 ### b\_file\_query
@@ -336,7 +368,8 @@ Assembly Registers:
 
 	 IN:	RCX = Number of bytes to reserve
 			RSI = File name (zero-terminated string)
-	OUT:	All registers preserved
+	OUT:	Nothing.
+			All registers preserved
 
 
 ### b\_file\_delete
@@ -346,7 +379,8 @@ Delete a file from disk
 Assembly Registers:
 
 	 IN:	RSI = File name (zero-terminated string)
-	OUT:	All registers preserved
+	OUT:	Nothing.
+			All registers preserved
 
 
 ## Misc
@@ -364,6 +398,38 @@ Assembly Registers:
 
 Function numbers come in pairs (one for reading a parameter, and one for writing a parameter). b_system_config should be called with a function alias and not a direct function number.
 
+Currently the following functions are supported:
+
+
+0. timecounter
+	- get the timecounter, the timecounter increments 8 times a second
+1. argc
+	- get the argument count
+2. argv
+	- get the nth argument
+3. networkcallback_get
+	- get the current networkcallback entrypoint
+4. networkcallback_set
+	- set the current networkcallback entrypoint
+5. clockcallback_get
+	- get the current clockcallback entrypoint
+6. clockcallback_set
+	- set the current clockcallback entrypoint
+20. video_base
+	- get the video base address
+21. video_x
+	- get the width of the screen
+22. video_y
+	- get the height of the screen
+23. video_bpp
+	- get the depth of the screen
+30. mac
+	- get the current mac address (or 0 if ethernet is down)
+
+every function that gets something sets RAX with the result
+
+every function that sets something gets the value from RAX
+
 
 ### b\_system\_misc
 
@@ -377,3 +443,37 @@ Assembly Registers:
 	OUT:	RAX = Result 1
 			RCX = Result 2
 
+Currently the following functions are supported:
+
+1. smp_get_id
+	- Returns the APIC ID of the CPU that ran this function
+	- out rax: The ID
+2. smp_lock
+	- Attempt to lock a mutex, this is a simple spinlock
+	- in rax: The address of the mutex (one word)
+3. smp_unlock
+	- Unlock a mutex
+	- in rax: The address of the mutex (one word)
+4. debug_dump_mem
+	- os_debug_dump_mem 
+	- in rax: The start of the memory to dump
+	- in rcx: Number of bytes to dump
+5. debug_dump_rax
+	- Dump rax in Hex
+	- in rax: The Content that gets printed to memory
+6. delay
+	- Delay by X eights of a second
+	- in rax: Time in eights of a second
+7. ethernet_status
+	- Get the current mac address (or 0 if ethernet is down)
+	- Same as system_config 30 (mac)
+	- out rax: The mac address
+8. mem_get_free
+	- Returns the number of 2 MiB pages that are available
+	- out rcx: Number of pages
+9. smp_numcores
+	- Returns the number of cores in this computer
+	- out rcx: The number of cores
+10. smp_queuelen
+	- Returns the number of items in the processing queue
+	- out rax: Number of items in processing queue
