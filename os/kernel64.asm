@@ -40,6 +40,7 @@ kernel_start:
 	dq os_file_delete		; 0x00A8
 	dq os_system_config		; 0x00B0
 	dq os_system_misc		; 0x00B8
+	dq os_command_line              ; 0x00C0
 	align 16
 
 start:
