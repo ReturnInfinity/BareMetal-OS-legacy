@@ -122,7 +122,6 @@ int read(int file, char *ptr, int len)
 		ptr[len] = '\n'; // BareMetal does not add a newline after keyboard input ...
 		ptr[len+1] = 0; // ... but C expects it.
 		len+=1;
-		write(1, "\n", 1);
 	}
 	else
 	{
