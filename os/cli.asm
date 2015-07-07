@@ -21,7 +21,6 @@ os_command_line:
 	mov rdi, cli_temp_string
 	mov rcx, 250			; Limit the input to 250 characters
 	call os_input
-	call os_print_newline		; The user hit enter so print a new line
 	jrcxz os_command_line		; os_input_string stores the number of characters received in RCX
 
 	mov rsi, rdi
