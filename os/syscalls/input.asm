@@ -62,6 +62,7 @@ os_input_halt:
 	jmp os_input_more
 
 os_input_done:	
+	call os_print_newline
 	mov al, 0x00
 	stosb				; We NULL terminate the string
 	mov al, ' '
