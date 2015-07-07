@@ -77,7 +77,7 @@ os_input_done:
 ; -----------------------------------------------------------------------------
 ; os_input_key -- Scans keyboard for input
 ;  IN:	Nothing
-; OUT:	AL = 0 if no key pressed, otherwise ASCII code, other regs preserved
+; OUT:	AL = 0 if no key pressed, otherwise ASCII code
 ;	Carry flag is set if there was a keystroke, clear if there was not
 ;	All other registers preserved
 os_input_key:
