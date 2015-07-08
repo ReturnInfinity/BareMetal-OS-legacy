@@ -61,12 +61,12 @@ os_input_halt:
 	hlt				; Halt until another keystroke is received
 	jmp os_input_more
 
-os_input_done:	
-	call os_print_newline
+os_input_done:
 	mov al, 0x00
 	stosb				; We NULL terminate the string
 	mov al, ' '
 	call os_output_char
+	call os_print_newline
 
 	pop rax
 	pop rdx
