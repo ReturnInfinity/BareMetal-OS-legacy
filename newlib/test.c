@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <stdlib.h>
 #include <time.h>
 
 char tempstring[32];
@@ -27,4 +28,5 @@ int main(int argc, char *argv[])
 	printf("Enter some text: ");
 	fgets(tempstring, 32, stdin);			// Get up to 32 chars from the keyboard
 	printf("You entered: '%s'", tempstring);
+	exit(1);
 }

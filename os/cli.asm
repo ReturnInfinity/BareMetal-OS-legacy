@@ -150,7 +150,8 @@ debug_dump_reg:
 	jmp os_command_line
 
 exit:
-	call os_screen_clear
+	mov rdx, 256
+	call os_system_misc
 	ret
 
 ; Strings

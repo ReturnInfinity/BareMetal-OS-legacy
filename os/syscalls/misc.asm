@@ -177,6 +177,8 @@ os_system_misc:
 	je os_system_misc_smp_numcores
 	cmp rdx, 10
 	je os_system_misc_smp_queuelen
+	cmp rdx, 256
+	je os_system_misc_reset
 	ret
 
 os_system_misc_smp_get_id:
@@ -221,8 +223,33 @@ os_system_misc_smp_numcores:
 os_system_misc_smp_queuelen:
 	call os_smp_queuelen
 	ret
-; -----------------------------------------------------------------------------
 
+os_system_misc_reset:
+	xor eax, eax
+	mov qword [os_NetworkCallback], rax	; clear callbacks
+	mov qword [os_ClockCallback], rax
+	mov rdi, cpuqueue		; Clear SMP queue
+	mov rcx, 512
+	stosq
+	call os_smp_get_id		; Reset all other cpu cores
+	mov rbx, rax
+	mov rsi, 0x0000000000005100	; Location in memory of the Pure64 CPU data
+os_system_misc_reset_next_ap:
+	cmp cx, 0
+	je os_system_misc_reset_no_more_aps
+	lodsb				; Load the CPU APIC ID
+	cmp al, bl
+	je os_system_misc_reset_skip_ap
+	call os_smp_reset		; Reset the CPU
+os_system_misc_reset_skip_ap:
+	sub cx, 1
+	jmp os_system_misc_reset_next_ap
+os_system_misc_reset_no_more_aps:
+	call init_memory_map		; Clear memory table
+	mov rax, os_command_line	; Queue up the CLI
+	call os_smp_enqueue
+	int 0x81			; Reset this core
+; -----------------------------------------------------------------------------
 
 
 ; -----------------------------------------------------------------------------

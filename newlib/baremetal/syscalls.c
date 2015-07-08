@@ -23,8 +23,8 @@ inline void outportbyte(unsigned int port,unsigned char value);
 // exit -- Exit a program without cleaning up files
 int _exit(int val)
 {
-	exit(val);
-	return (-1);
+	unsigned int reset = 256;
+	asm volatile ("call *0x001000B8" : : "d"(reset));
 }
 
 // execve -- Transfer control to a new process
