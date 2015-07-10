@@ -401,29 +401,29 @@ Function numbers come in pairs (one for reading a parameter, and one for writing
 Currently the following functions are supported:
 
 
-0. timecounter
+ - 0: timecounter
 	- get the timecounter, the timecounter increments 8 times a second
-1. argc
+ - 1: argc
 	- get the argument count
-2. argv
+ - 2: argv
 	- get the nth argument
-3. networkcallback_get
+ - 3: networkcallback_get
 	- get the current networkcallback entrypoint
-4. networkcallback_set
+ - 4: networkcallback_set
 	- set the current networkcallback entrypoint
-5. clockcallback_get
+ - 5: clockcallback_get
 	- get the current clockcallback entrypoint
-6. clockcallback_set
+ - 6: clockcallback_set
 	- set the current clockcallback entrypoint
-20. video_base
+ - 20: video_base
 	- get the video base address
-21. video_x
+ - 21: video_x
 	- get the width of the screen
-22. video_y
+ - 22: video_y
 	- get the height of the screen
-23. video_bpp
+ - 23: video_bpp
 	- get the depth of the screen
-30. mac
+ - 30: mac
 	- get the current mac address (or 0 if ethernet is down)
 
 every function that gets something sets RAX with the result
