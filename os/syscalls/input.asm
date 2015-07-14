@@ -14,7 +14,7 @@ align 16
 ; os_input -- Take string from keyboard entry
 ;  IN:	RDI = location where string will be stored
 ;	RCX = maximum number of characters to accept
-; OUT:	RCX = length of string that was input (NULL not counted)
+; OUT:	RCX = length of string that was received (NULL not counted)
 ;	All other registers preserved
 os_input:
 	push rdi
@@ -22,7 +22,7 @@ os_input:
 	push rax
 
 	mov rdx, rcx			; Max chars to accept
-	xor rcx, rcx			; Offset from start
+	xor ecx, ecx			; Offset from start
 
 os_input_more:
 	mov al, '_'
