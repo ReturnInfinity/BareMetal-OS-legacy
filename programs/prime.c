@@ -57,9 +57,8 @@ int main(int argc, char *argv[])
 			if(i%j==0) break; //Number is divisble by some other number. So break out
 		}
 		if(j*j>i)
-		{
 			primes++;
-		}
+
 	} //Continue loop up to max number
 
 	time(&finish);
