@@ -1,6 +1,6 @@
 ; =============================================================================
 ; BareMetal -- a 64-bit OS written in Assembly for x86-64 systems
-; Copyright (C) 2008-2014 Return Infinity -- see LICENSE.TXT
+; Copyright (C) 2008-2015 Return Infinity -- see LICENSE.TXT
 ;
 ; COMMAND LINE INTERFACE
 ; =============================================================================
@@ -125,7 +125,7 @@ debug:
 	call os_system_config
 	cmp al, 1
 	je debug_dump_reg		; If it is only one then do a register dump
-	mov rcx, 16	
+	mov rcx, 16
 	cmp al, 3			; Did we get at least 3?
 	jl noamount			; If not no amount was specified
 	mov al, 2
@@ -313,7 +313,7 @@ os_string_parse:
 	mov rdi, rsi
 
 	call os_string_chomp		; Remove leading and trailing spaces
-	
+
 	cmp byte [rsi], 0x00		; Check the first byte
 	je os_string_parse_done		; If it is a null then bail out
 	inc rcx				; At this point we know we have at least one word
@@ -489,8 +489,8 @@ os_bmfs_list_done:
 	pop rax
 	pop rbx
 	pop rcx
-	pop rsi		
-	pop rdi		
+	pop rsi
+	pop rdi
 
 	ret
 
