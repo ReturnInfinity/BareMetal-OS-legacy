@@ -1,6 +1,6 @@
 ; =============================================================================
 ; BareMetal -- a 64-bit OS written in Assembly for x86-64 systems
-; Copyright (C) 2008-2014 Return Infinity -- see LICENSE.TXT
+; Copyright (C) 2008-2015 Return Infinity -- see LICENSE.TXT
 ;
 ; BMFS Functions
 ; =============================================================================
@@ -358,7 +358,7 @@ os_bmfs_file_delete_notfound:
 ; IN:	RAX = Starting block #
 ;	RCX = Number of blocks to read
 ;	RDI = Memory location to store blocks
-; OUT:	
+; OUT:
 os_bmfs_block_read:
 	cmp rcx, 0
 	je os_bmfs_block_read_done	; Bail out if instructed to read nothing
@@ -369,7 +369,7 @@ os_bmfs_block_read:
 	; Calculate sectors to read
 	shl rcx, 12			; Multiply block count by 4096 to get number of sectors to read
 	mov rbx, rcx
-	
+
 os_bmfs_block_read_loop:
 	mov rcx, 4096			; Read 2MiB at a time (4096 512-byte sectors = 2MiB)
 	call readsectors
@@ -386,10 +386,10 @@ os_bmfs_block_read_done:
 ; IN:	RAX = Starting block #
 ;	RCX = Number of blocks to write
 ;	RSI = Memory location of blocks to store
-; OUT:	
+; OUT:
 os_bmfs_block_write:
 	cmp rcx, 0
-	je os_bmfs_block_write_done	; Bail out if instructed to write nothing	
+	je os_bmfs_block_write_done	; Bail out if instructed to write nothing
 
 	; Calculate the starting sector
 	shl rax, 12			; Multiply block start count by 4096 to get sector start count
@@ -397,7 +397,7 @@ os_bmfs_block_write:
 	; Calculate sectors to write
 	shl rcx, 12			; Multiply block count by 4096 to get number of sectors to write
 	mov rbx, rcx
-	
+
 os_bmfs_block_write_loop:
 	mov rcx, 4096			; Write 2MiB at a time (4096 512-byte sectors = 2MiB)
 	call writesectors
