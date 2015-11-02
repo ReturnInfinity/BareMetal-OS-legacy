@@ -34,7 +34,6 @@ interrupt_gate:				; handler for all other interrupts
 ; This IRQ runs whenever there is input on the keyboard
 align 16
 keyboard:
-	push rdi
 	push rbx
 	push rax
 	pushfq
@@ -42,8 +41,6 @@ keyboard:
 	xor eax, eax
 
 	in al, 0x60			; Get the scan code from the keyboard
-	cmp al, 0x01
-	je keyboard_escape
 	cmp al, 0x2A			; Left Shift Make
 	je keyboard_shift
 	cmp al, 0x36			; Right Shift Make
@@ -52,11 +49,10 @@ keyboard:
 	je keyboard_noshift
 	cmp al, 0xB6			; Right Shift Break
 	je keyboard_noshift
-	test al, 0x80
-	jz keydown
-	jmp keyup
+	test al, 0x80			; Test for 'Make' code
+	jnz keyboard_done
 
-keydown:
+keyboard_press:
 	cmp byte [key_shift], 0x00
 	je keyboard_lowercase
 
@@ -71,12 +67,6 @@ keyboard_processkey:			; Convert the scan code
 	add rbx, rax
 	mov bl, [rbx]
 	mov [key], bl
-	jmp keyboard_done
-
-keyboard_escape:
-	jmp reboot
-
-keyup:
 	jmp keyboard_done
 
 keyboard_shift:
@@ -95,7 +85,6 @@ keyboard_done:
 	popfq
 	pop rax
 	pop rbx
-	pop rdi
 	iretq
 ; -----------------------------------------------------------------------------
 
@@ -117,7 +106,6 @@ cascade:
 ; -----------------------------------------------------------------------------
 ; Real-time clock interrupt. IRQ 0x08, INT 0x28
 ; Currently this IRQ runs 8 times per second (As defined in init_64.asm)
-; The supervisor lives here
 align 16
 rtc:
 	push rax
@@ -429,6 +417,7 @@ exception_gate_19:
 
 align 16
 exception_gate_main:
+	mov qword [os_ClockCallback], 0		; Reset the clock callback
 	mov qword [os_NetworkCallback], 0	; Reset the network callback
 	push rbx
 	push rdi
