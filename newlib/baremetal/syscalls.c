@@ -1,6 +1,6 @@
 // ============================================================================
 // BareMetal -- a 64-bit OS written in Assembly for x86-64 systems
-// Copyright (C) 2008-2013 Return Infinity -- see LICENSE.TXT
+// Copyright (C) 2008-2015 Return Infinity -- see LICENSE.TXT
 //
 // Syscalls glue for Newlib
 // ============================================================================
@@ -208,12 +208,12 @@ caddr_t sbrk(int incr)
 
 // --- Other ---
 
-// gettimeofday -- 
+// gettimeofday --
 int gettimeofday(struct timeval *p, void *z)
 {
 	unsigned char bcd;
 	struct tm t;
-    
+
 //	outportbyte(0x70, 0x32); // Century
 //	bcd = inportbyte(0x71);
 	outportbyte(0x70, 0x09); // Year
@@ -251,7 +251,7 @@ clock_t times(struct tms *buf){
 void __stack_chk_fail(void)
 {
 	write(1, "Stack smashin' detected!\n", 25);
-} 
+}
 
 inline unsigned char inportbyte(unsigned int port)
 {

@@ -2,7 +2,7 @@
 BareMetal OS -- License
 ===============================================================================
 
-Copyright (C) 2008-2014 Return Infinity -- http://www.returninfinity.com
+Copyright (C) 2008-2015 Return Infinity -- http://www.returninfinity.com
 
 All rights reserved.
 
