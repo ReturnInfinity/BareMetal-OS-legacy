@@ -168,8 +168,7 @@ os_net_i8254x_reset:
 	mov [rsi+I8254X_REG_RDTR], eax		; Clear the Receive Delay Timer Register
 	mov [rsi+I8254X_REG_RADV], eax		; Clear the Receive Interrupt Absolute Delay Timer
 	mov [rsi+I8254X_REG_RSRPD], eax		; Clear the Receive Small Packet Detect Interrupt
-	bts eax, 0				; TXDW
-	bts eax, 7				; RXT0
+
 	mov eax, 0x1FFFF			; Temp enable all interrupt types
 	mov [rsi+I8254X_REG_IMS], eax		; Enable interrupt types
 
