@@ -45,7 +45,6 @@ init_ahci_found:
 
 ; Basic config of the controller, port 0
 	mov rsi, rax			; RSI holds the ABAR
-	mov rdi, rsi
 
 ; Search the implemented ports for a drive
 	mov eax, [rsi+0x0C]		; PI – Ports Implemented
@@ -57,8 +56,7 @@ nextport:
 	jnc nodrive
 	mov eax, [rsi+rbx]
 	cmp eax, 0
-	je nodrive
-	jmp founddrive
+	jne founddrive
 
 nodrive:
 	add ecx, 1
