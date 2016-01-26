@@ -77,11 +77,11 @@ founddrive:
 	pop rcx				; Restore port number
 	mov rax, ahci_cmdlist		; 1024 bytes per port
 	stosd				; Offset 00h: PxCLB – Port x Command List Base Address
-	xor eax, eax
+	shr rax, 32			; 63..32 bits of address
 	stosd				; Offset 04h: PxCLBU – Port x Command List Base Address Upper 32-bits
 	mov rax, ahci_receivedfis	; 256 or 4096 bytes per port
 	stosd				; Offset 08h: PxFB – Port x FIS Base Address
-	xor eax, eax
+	shr rax, 32			; 63..32 bits of address
 	stosd				; Offset 0Ch: PxFBU – Port x FIS Base Address Upper 32-bits
 	stosd				; Offset 10h: PxIS – Port x Interrupt Status
 	stosd				; Offset 14h: PxIE – Port x Interrupt Enable
@@ -134,14 +134,16 @@ iddrive:
 	mov rsi, [ahci_base]
 
 	mov rdi, ahci_cmdlist		; command list (1K with 32 entries, 32 bytes each)
-	xor eax, eax
-	mov eax, 0x00010005 ;4		; 1 PRDTL Entry, Command FIS Length = 16 bytes
+	mov eax, 0x00010004 ;4		; 1 PRDTL Entry, Command FIS Length = 16 bytes
+	; is it really 0x00010005 => 4(16 bytes) or should be 0x00010004 ? :)
+	; Serial ATA specification, page 47/137 point 4.4.2 Command List Structure, record CFL (bits 4..0)
+	
 	stosd				; DW 0 - Description Information
 	xor eax, eax
 	stosd				; DW 1 - Command Status
 	mov eax, ahci_cmdtable
 	stosd				; DW 2 - Command Table Base Address
-	xor eax, eax
+	shr rax, 32			; 63..32 bits of address
 	stosd				; DW 3 - Command Table Base Address Upper
 	stosd
 	stosd
