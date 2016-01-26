@@ -134,14 +134,12 @@ iddrive:
 	mov rsi, [ahci_base]
 
 	mov rdi, ahci_cmdlist		; command list (1K with 32 entries, 32 bytes each)
-	mov eax, 0x00010004 ;4		; 1 PRDTL Entry, Command FIS Length = 16 bytes
-	; is it really 0x00010005 => 4(16 bytes) or should be 0x00010004 ? :)
-	; Serial ATA specification, page 47/137 point 4.4.2 Command List Structure, record CFL (bits 4..0)
-	
+	mov eax, 0x00010004		; 1 PRDTL Entry, Command FIS Length = 16 bytes
+
 	stosd				; DW 0 - Description Information
 	xor eax, eax
 	stosd				; DW 1 - Command Status
-	mov eax, ahci_cmdtable
+	mov rax, ahci_cmdtable
 	stosd				; DW 2 - Command Table Base Address
 	shr rax, 32			; 63..32 bits of address
 	stosd				; DW 3 - Command Table Base Address Upper
@@ -246,7 +244,7 @@ readsectors:
 	stosd				; DW 1 - Command Status
 	mov eax, ahci_cmdtable
 	stosd				; DW 2 - Command Table Base Address
-	xor eax, eax
+	shr rax, 32			; 63..32 bits of address
 	stosd				; DW 3 - Command Table Base Address Upper
 	stosd
 	stosd
@@ -363,9 +361,9 @@ writesectors:
 	stosd				; DW 0 - Description Information
 	xor eax, eax
 	stosd				; DW 1 - Command Status
-	mov eax, ahci_cmdtable
+	mov rax, ahci_cmdtable
 	stosd				; DW 2 - Command Table Base Address
-	xor eax, eax
+	shr rax, 32			; 63..32 bits of address
 	stosd				; DW 3 - Command Table Base Address Upper
 	stosd
 	stosd
