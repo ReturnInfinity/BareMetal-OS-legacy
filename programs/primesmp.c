@@ -32,7 +32,7 @@
 void *prime_process(void *param);
 
 // primes is set to 1 since we don't calculate for '2' as it is a known prime number
-unsigned long max_number=0, primes=1, local=0, process_stage=0, processes=0, max_processes=0, singletime=0, k=0;
+unsigned long max_number=0, max_root=0xFFFFFFFF, primes=1, local=0, process_stage=0, processes=0, max_processes=0, singletime=0, k=0;
 float speedup;
 time_t start, finish;
 
@@ -81,6 +81,24 @@ int main(int argc, char *argv[])
 		printf("Processing with %ld process(es)...\n", processes);
 
 		time(&start);				// Grab the starting time
+	
+		if(!(max_number&1)) max_number--; // drop max to odd
+
+		// using McDougall/Wotherspoon to find root of max_number for all threads
+		unsigned long xx_k, x_k, f_val, df_val; // root finding variables
+		xx_k = max_root;				// x*_0 = x_0
+								// max_number <= max_64 implies sqr(max_number) <= sqr(max_64)
+		f_val = max_root * max_root - max_number;	// f(x_0)
+		df_val = max_root * 2;				// f'((x_0+x*_0)/2) = f'(x_0)
+		x_k = max_root / 2 + max_number / df_val;	// x_1  = x_0 - f(x_0)/f'((x_0+x*_0)/2) = x_0 - f(x_0)/f'(x_0)
+		for(int i=1; i<30 && (max_root - x_k); i++){
+			max_root= x_k;
+			f_val	= x_k * x_k - max_number;
+			xx_k	= (df_val * x_k - f_val) / df_val;
+			df_val	= x_k + xx_k;
+			x_k	= (df_val * x_k - f_val) / df_val;
+		}
+		// end root algo
 
 		// Spawn the worker processes
 		for (k=0; k<processes; k++)
@@ -157,16 +175,25 @@ void *prime_process(void *param)
 	h = processes * 2;
 
 	// Process
-	for(; i<=max_number; i+=h)
+	unsigned long xx_k, x_k, f_val, df_val, iRoot=max_root; // root finding variables
+	for(/* need to fix i = max_number - (process_stage*2+1)*/; i>2; i-=h)
 	{
-		for(j=2; j*j<=i; j++)
-		{
-			if(i%j==0) break; // Number is divisible by some other number. So break out
+		// using McDougall/Wotherspoon to find root of max_number for i
+		xx_k = iRoot;			// x*_0 = x_0
+						// max_number <= max_64 implies sqr(max_number) <= sqr(max_64)
+		f_val = iRoot * iRoot - i;	// f(x_0)
+		df_val = iRoot * 2;		// f'((x_0+x*_0)/2) = f'(x_0)
+		x_k = iRoot / 2 + i / df_val;	// x_1  = x_0 - f(x_0)/f'((x_0+x*_0)/2) = x_0 - f(x_0)/f'(x_0)
+		for(j=1; j<30 && (iRoot - x_k); j++){
+			iRoot	= x_k;
+			f_val	= x_k * x_k - i;
+			xx_k	= (df_val * x_k - f_val) / df_val;
+			df_val	= x_k + xx_k;
+			x_k	= (df_val * x_k - f_val) / df_val;
 		}
-		if(j*j>i)
-		{
-			tprimes = tprimes + 1;
-		}
+		// end root algo
+		for(j=3; j<=iRoot && i%j; j+=2);
+		if(j>iRoot)tprimes++;
 	} // Continue loop up to max number
 
 	// Add tprimes to primes.
