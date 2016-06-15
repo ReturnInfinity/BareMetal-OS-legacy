@@ -70,9 +70,10 @@ int main(int argc, char *argv[])
 
 	for(i=max_number; i>2; i-=2) // reversed i to count down so previous step's iRoot is a good starting point
 	{
-		// using a step of Raphson to find the square root of i from previous iRoot
-		iRoot = (iRoot * iRoot + i) / (2 * iRoot);
+		// using a step of Babylonian to find the square root of i from previous iRoot
+		iRoot = (iRoot + i / iRoot) / 2;
 		// end root algo
+		
 		for(j=3; j<=iRoot && i%j; j+=2); // test i for divisibility by j
 		if(j>iRoot)primes++;             // count as prime when not divisible
 	} //Continue loop up to max number
