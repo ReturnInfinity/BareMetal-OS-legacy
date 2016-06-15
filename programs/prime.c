@@ -16,6 +16,7 @@
 // maxn = 1000000	=0x00000000000f4240	primes = 78498
 // maxn = 5000000	=0x00000000004c4b40	primes = 348513
 // maxn = 10000000	=0x0000000000989680	primes = 664579
+// maxn = 4294967295	=0x00000000ffffffff	primes = 203280221	(max_32)
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -51,16 +52,16 @@ int main(int argc, char *argv[])
 	time(&start);
 	
 	if(!(max_number&1))max_number--; // drop max to odd
-	unsigned long xx_k, x_k, f_val, df_val, iRoot=0xFFFFFFFF; // root finding variables 
+	unsigned long xx_k, x_k, f_val, df_val;	// root finding variables
+	unsigned long iRoot=0xFFFFFFFF;		// max_number <= max_64 implies sqr(max_number) <= sqr(max_64)
 
 	for(i=max_number; i>2; i-=2) // reversed i to count down so previous step's iRoot is a good starting point
 	{
 		// using McDougall/Wotherspoon to find square root of i
-			xx_k = iRoot;                  // x*_0 = x_0
-			                               // max_number <= max_64 implies sqr(max_number) <= sqr(max_64)
-			f_val = iRoot * iRoot - i;     // f(x_0)
-        	df_val = iRoot * 2;            // f'((x_0+x*_0)/2) = f'(x_0)
-        	x_k = iRoot / 2 + i / df_val;  // x_1  = x_0 - f(x_0)/f'((x_0+x*_0)/2) = x_0 - f(x_0)/f'(x_0)
+		xx_k 	= iRoot;		// x*_0 = x_0
+		f_val 	= iRoot * iRoot - i;	// f(x_0)
+        	df_val 	= iRoot * 2;		// f'((x_0+x*_0)/2) = f'(x_0)
+        	x_k 	= iRoot / 2 + i / df_val;// x_1  = x_0 - f(x_0)/f'((x_0+x*_0)/2) = x_0 - f(x_0)/f'(x_0)
         	for(j=1; j<30 && (iRoot - x_k); j++){
         		iRoot  = x_k;
         		f_val  = x_k * x_k - i;
@@ -68,7 +69,7 @@ int main(int argc, char *argv[])
         		df_val = x_k + xx_k;
         		x_k    = (df_val * x_k - f_val) / df_val;
        		}
-         // end root algo
+       		// end root algo
          
 		for(j=3; j<=iRoot && i%j; j+=2); // test i for divisibility by j
 		if(j>iRoot)primes++;             // count as prime when not divisible
