@@ -179,9 +179,9 @@ void *prime_process(void *param)
 	// Process
 	for(i = max_number - (max_number - iFloor) % h; i>=iFloor; i-=h)
 	{
-		// use a step of Raphson to find root of i
+		// use a step of Babylonian to find root of i
 		// I think one step is probably ok until around h >= 64379, then you may need two steps
-		iRoot = (iRoot * iRoot + i) / (2 * iRoot);
+		iRoot = (iRoot + i / iRoot) / 2;
 		// end root algo
 		
 		for(j=3; j<=iRoot && i%j; j+=2);
