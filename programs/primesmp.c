@@ -157,7 +157,6 @@ int main(int argc, char *argv[])
 void *prime_process(void *param)
 {
 	register unsigned long h, i, j, tprimes=0, iRoot=max_root, iFloor;
-	unsigned long xx_k, x_k, f_val, df_val; // root finding variables
 
 	// Lock process_stage, copy it to local var, subtract 1 from process_stage, unlock it.
 #ifdef BAREMETAL
@@ -180,21 +179,13 @@ void *prime_process(void *param)
 	// Process
 	for(i = max_number - (max_number - iFloor) % h; i>=iFloor; i-=h)
 	{
-		// find root of i
-		xx_k 	= iRoot;			// x*_0 = x_0
-		f_val 	= iRoot * iRoot - i;		// f(x_0)
-		df_val 	= iRoot * 2;			// f'((x_0+x*_0)/2) = f'(x_0)
-		x_k 	= iRoot / 2 + i / df_val;	// x_1  = x_0 - f(x_0)/f'((x_0+x*_0)/2) = x_0 - f(x_0)/f'(x_0)
-		for(j=1; j<30 && (iRoot - x_k); j++){
-			iRoot	= x_k;
-			f_val	= x_k * x_k - i;
-			xx_k	= (df_val * x_k - f_val) / df_val;
-			df_val	= x_k + xx_k;
-			x_k	= (df_val * x_k - f_val) / df_val;
-		}
+		// use a step of Raphson to find root of i
+		// I think one step is probably ok until around h >= 64379, then you may need two steps
+		iRoot = (iRoot * iRoot + i) / (2 * iRoot);
 		// end root algo
+		
 		for(j=3; j<=iRoot && i%j; j+=2);
-		if(j>iRoot)tprimes++;
+		if(j>iRoot) tprimes++;
 	} // Continue loop down from max number
 
 	// Add tprimes to primes.
