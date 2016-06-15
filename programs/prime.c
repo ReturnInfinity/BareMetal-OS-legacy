@@ -54,23 +54,25 @@ int main(int argc, char *argv[])
 	if(!(max_number&1))max_number--; // drop max to odd
 	unsigned long xx_k, x_k, f_val, df_val;	// root finding variables
 	unsigned long iRoot=0xFFFFFFFF;		// max_number <= max_64 implies sqr(max_number) <= sqr(max_64)
+	// using McDougall/Wotherspoon to find square root of max_number
+	xx_k 	= iRoot;			// x*_0 = x_0
+	f_val 	= iRoot * iRoot - max_number;	// f(x_0)
+	df_val 	= iRoot * 2;			// f'((x_0+x*_0)/2) = f'(x_0)
+	x_k 	= iRoot / 2 + max_number / df_val;// x_1  = x_0 - f(x_0)/f'((x_0+x*_0)/2) = x_0 - f(x_0)/f'(x_0)
+	for(j=1; j<30 && (iRoot - x_k); j++){
+		iRoot  = x_k;
+		f_val  = x_k * x_k - max_number;
+		xx_k   = (df_val * x_k - f_val) / df_val;
+		df_val = x_k + xx_k;
+		x_k    = (df_val * x_k - f_val) / df_val;
+       	}
+       	// end root algo
 
 	for(i=max_number; i>2; i-=2) // reversed i to count down so previous step's iRoot is a good starting point
 	{
-		// using McDougall/Wotherspoon to find square root of i
-		xx_k 	= iRoot;		// x*_0 = x_0
-		f_val 	= iRoot * iRoot - i;	// f(x_0)
-        	df_val 	= iRoot * 2;		// f'((x_0+x*_0)/2) = f'(x_0)
-        	x_k 	= iRoot / 2 + i / df_val;// x_1  = x_0 - f(x_0)/f'((x_0+x*_0)/2) = x_0 - f(x_0)/f'(x_0)
-        	for(j=1; j<30 && (iRoot - x_k); j++){
-        		iRoot  = x_k;
-        		f_val  = x_k * x_k - i;
-        		xx_k   = (df_val * x_k - f_val) / df_val;
-        		df_val = x_k + xx_k;
-        		x_k    = (df_val * x_k - f_val) / df_val;
-       		}
-       		// end root algo
-         
+		// using a step of Raphson to find the square root of i from previous iRoot
+		iRoot = (iRoot * iRoot + i) / (2 * iRoot);
+		// end root algo
 		for(j=3; j<=iRoot && i%j; j+=2); // test i for divisibility by j
 		if(j>iRoot)primes++;             // count as prime when not divisible
 	} //Continue loop up to max number
