@@ -2,7 +2,7 @@
 
 [![Join the chat at https://gitter.im/ReturnInfinity/BareMetal-OS](https://badges.gitter.im/ReturnInfinity/BareMetal-OS.svg)](https://gitter.im/ReturnInfinity/BareMetal-OS?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
-Copyright (C) 2007-2015 Return Infinity -- see LICENSE.TXT
+Copyright (C) 2007-2016 Return Infinity -- see LICENSE.TXT
 
 BareMetal is a 64-bit OS for x86-64 based computers. The OS is written entirely in Assembly, while applications can be written in Assembly, C/C++, and Rust. Development of the Operating System is guided by its 3 target segments:
 
