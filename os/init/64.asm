@@ -21,8 +21,8 @@ init_64:
 	mov word [os_Screen_Cols], 80
 	mov rsi, 0x5080
 	lodsd
-	cmp eax, 0
-	je nographics
+	test eax, eax
+	jz nographics
 	call init_screen
 nographics:
 
@@ -62,8 +62,8 @@ nographics:
 	mov rax, exception_gate
 make_exception_gate_stubs:
 	call create_gate
-	add rdi, 1
-	sub rcx, 1
+	inc rdi
+	dec rcx
 	jnz make_exception_gate_stubs
 
 	; Create interrupt gate stubs (Pure64 has already set the correct gate markers)
@@ -71,8 +71,8 @@ make_exception_gate_stubs:
 	mov rax, interrupt_gate
 make_interrupt_gate_stubs:
 	call create_gate
-	add rdi, 1
-	sub rcx, 1
+	inc rdi
+	dec rcx
 	jnz make_interrupt_gate_stubs
 
 	; Set up the exception gates for all of the CPU exceptions
@@ -81,9 +81,9 @@ make_interrupt_gate_stubs:
 	mov rax, exception_gate_00
 make_exception_gates:
 	call create_gate
-	add rdi, 1
+	inc rdi
 	add rax, 16			; The exception gates are aligned at 16 bytes
-	sub rcx, 1
+	dec rcx
 	jnz make_exception_gates
 
 	; Set up the IRQ handlers (Network IRQ handler is configured in init_net)
@@ -148,11 +148,10 @@ nexttritone:
 	lodsb
 	out dx, al
 	dec rcx
-	cmp rcx, 0
-	jne nexttritone
+	test rcx, rcx
+	jnz nexttritone
 	dec rbx
-	cmp rbx, 0
-	jne nextline			; Set the next 16 colors to the same
+	jnz nextline			; Set the next 16 colors to the same
 	mov eax, 0x14			; Fix for color 6
 	mov dx, 0x03c8			; DAC Address Write Mode Register
 	out dx, al
@@ -201,14 +200,14 @@ nexttritone:
 	xor rax, rax
 	mov rsi, 0x0000000000005100	; Location in memory of the Pure64 CPU data
 next_ap:
-	cmp cx, 0
-	je no_more_aps
+	test cx, cx
+	jz no_more_aps
 	lodsb				; Load the CPU APIC ID
 	cmp al, bl
 	je skip_ap
 	call os_smp_reset		; Reset the CPU
 skip_ap:
-	sub cx, 1
+	dec cx
 	jmp next_ap
 
 no_more_aps:
@@ -277,8 +276,8 @@ init_memory_map:			; Build the OS memory table
 	xor rcx, rcx
 	mov cx, [os_NumCores]		; Get the amount of cores in the system
 	call os_mem_allocate		; Allocate a page for each core
-	cmp rcx, 0			; os_mem_allocate returns 0 on failure
-	je system_failure
+	test rcx, rcx			; os_mem_allocate returns 0 on failure
+	jz system_failure
 	add rax, 2097152
 	mov [os_StackBase], rax		; Store the Stack base address
 

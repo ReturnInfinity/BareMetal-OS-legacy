@@ -75,8 +75,8 @@ os_debug_dump_mem:
 	push rdx			; Total number of bytes to display
 	push rax
 
-	cmp rcx, 0			; Bail out if no bytes were requested
-	je os_debug_dump_mem_done
+	test rcx, rcx			; Bail out if no bytes were requested
+	jz os_debug_dump_mem_done
 	mov rax, rsi
 	and rax, 0x0F			; Isolate the low 4 bytes of RSI
 	add rcx, rax			; Add to round up the number of bytes needed
@@ -121,13 +121,13 @@ os_debug_dump_mem_print_ascii:
 os_debug_dump_mem_print_ascii_next:
 	lodsb
 	call os_output_char
-	add rcx, 1
+	inc rcx
 	cmp rcx, 16
 	jne os_debug_dump_mem_print_ascii_next
 	
 	sub rdx, 16
-	cmp rdx, 0
-	je os_debug_dump_mem_done
+	test rdx, rdx
+	jz os_debug_dump_mem_done
 	call os_print_newline
 	jmp os_debug_dump_mem_print_address
 

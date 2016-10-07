@@ -25,14 +25,14 @@ init_ahci_probe_next:
 	shr eax, 16			; Move the Class/Subclass code to AX
 	cmp ax, 0x0106			; Mass Storage Controller (01) / SATA Controller (06)
 	je init_ahci_found		; Found a SATA Controller
-	add ecx, 1
+	inc ecx
 	cmp ecx, 256			; Maximum 256 devices/functions per bus
 	je init_ahci_probe_next_bus
 	jmp init_ahci_probe_next
 
 init_ahci_probe_next_bus:
 	xor ecx, ecx
-	add ebx, 1
+	inc ebx
 	cmp ebx, 256			; Maximum 256 buses
 	je init_ahci_err_noahci
 	jmp init_ahci_probe_next
@@ -55,11 +55,11 @@ nextport:
 	bt edx, 0			; Valid port?
 	jnc nodrive
 	mov eax, [rsi+rbx]
-	cmp eax, 0
-	jne founddrive
+	test eax, eax
+	jnz founddrive
 
 nodrive:
-	add ecx, 1
+	inc ecx
 	shr edx, 1
 	add ebx, 0x80			; Each port has a 128 byte memory space
 	cmp ecx, 32
@@ -189,8 +189,8 @@ iddrive:
 
 iddrive_poll:
 	mov eax, [rsi+0x38]
-	cmp eax, 0
-	jne iddrive_poll
+	test eax, eax
+	jnz iddrive_poll
 
 	mov rdi, rsi
 	add rdi, 0x18			; Offset to port 0
@@ -278,7 +278,7 @@ readsectors:
 	stosd				; Reserved
 	pop rax				; Restore the sector count
 	shl rax, 9			; multiply by 512 for bytes
-	sub rax, 1			; subtract 1 (4.2.3.3, DBC is number of bytes - 1)
+	dec rax				; subtract 1 (4.2.3.3, DBC is number of bytes - 1)
 	stosd				; Description Information
 
 	add rsi, rdx
@@ -302,8 +302,8 @@ readsectors:
 
 readsectors_poll:
 	mov eax, [rsi+0x38]
-	cmp eax, 0
-	jne readsectors_poll
+	test eax, eax
+	jnz readsectors_poll
 
 	mov rdi, rsi
 	add rdi, 0x18			; Offset to port 0
@@ -398,7 +398,7 @@ writesectors:
 	stosd				; Reserved
 	pop rax				; Restore the sector count
 	shl rax, 9			; multiply by 512 for bytes
-	add rax, -1			; subtract 1 (4.2.3.3, DBC is number of bytes - 1)
+	dec rax				; subtract 1 (4.2.3.3, DBC is number of bytes - 1)
 	stosd				; Description Information
 
 	add rsi, rdx
@@ -422,8 +422,8 @@ writesectors:
 
 writesectors_poll:
 	mov eax, [rsi+0x38]
-	cmp eax, 0
-	jne writesectors_poll
+	test eax, eax
+	jnz writesectors_poll
 
 	mov rdi, rsi
 	add rdi, 0x18			; Offset to port 0

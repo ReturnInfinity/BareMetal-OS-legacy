@@ -17,17 +17,17 @@ align 16
 os_inc_cursor:
 	push rax
 
-	add word [os_Screen_Cursor_Col], 1
+	inc word [os_Screen_Cursor_Col]
 	mov ax, [os_Screen_Cursor_Col]
 	cmp ax, [os_Screen_Cols]
 	jne os_inc_cursor_done
 	mov word [os_Screen_Cursor_Col], 0
-	add word [os_Screen_Cursor_Row], 1
+	inc word [os_Screen_Cursor_Row]
 	mov ax, [os_Screen_Cursor_Row]
 	cmp ax, [os_Screen_Rows]
 	jne os_inc_cursor_done
 	call os_screen_scroll
-	sub word [os_Screen_Cursor_Row], 1
+	dec word [os_Screen_Cursor_Row]
 
 os_inc_cursor_done:
 	pop rax
@@ -44,12 +44,12 @@ os_dec_cursor:
 
 	cmp word [os_Screen_Cursor_Col], 0
 	jne os_dec_cursor_done
-	sub word [os_Screen_Cursor_Row], 1
+	dec word [os_Screen_Cursor_Row]
 	mov ax, [os_Screen_Cols]
 	mov word [os_Screen_Cursor_Col], ax
 
 os_dec_cursor_done:
-	sub word [os_Screen_Cursor_Col], 1
+	dec word [os_Screen_Cursor_Col]
 
 	pop rax
 	ret
@@ -65,10 +65,10 @@ os_print_newline:
 
 	mov word [os_Screen_Cursor_Col], 0	; Reset column to 0
 	mov ax, [os_Screen_Rows]		; Grab max rows on screen
-	sub ax, 1				; and subtract 1
+	dec ax					; and subtract 1
 	cmp ax, [os_Screen_Cursor_Row]		; Is the cursor already on the bottom row?
 	je os_print_newline_scroll		; If so, then scroll
-	add word [os_Screen_Cursor_Row], 1	; If not, increment the cursor to next row
+	inc word [os_Screen_Cursor_Row]		; If not, increment the cursor to next row
 	jmp os_print_newline_done
 
 os_print_newline_scroll:
@@ -259,15 +259,15 @@ os_glyph_put_pixel:
 	call os_pixel
 	pop rax
 os_glyph_put_skip:
-	add ebx, 1
-	add ecx, 1
+	inc ebx
+	inc ecx
 	jmp nextpixel
 
 bailout:
 	xor ecx, ecx
 	sub ebx, 6			; column start
 	add ebx, 0x00010000		; next row
-	add edx, 1
+	inc edx
 	cmp edx, 12			; Font height
 	jne nextline1
 
@@ -298,7 +298,7 @@ os_output_chars:
 
 os_output_chars_nextchar:
 	jrcxz os_output_chars_done
-	sub rcx, 1
+	dec rcx
 	lodsb				; Get char from string and store in AL
 	cmp al, 13			; Check if there was a newline character in the string
 	je os_output_chars_newline	; If so then we print a new line
@@ -317,11 +317,11 @@ os_output_chars_newline:
 	jmp os_output_chars_nextchar
 
 os_output_chars_newline_skip_LF:
-	cmp rcx, 0
-	je os_output_chars_newline_skip_LF_nosub
-	sub rcx, 1
+	test rcx, rcx
+	jz os_output_chars_newline_skip_LF_nosub
+	dec rcx
 os_output_chars_newline_skip_LF_nosub:
-	add rsi, 1
+	inc rsi
 	call os_print_newline
 	jmp os_output_chars_nextchar
 
@@ -337,9 +337,8 @@ os_output_chars_tab:
 	mov al, ' '
 os_output_chars_tab_next:
 	call os_output_char
-	sub cx, 1
-	cmp cx, 0
-	jne os_output_chars_tab_next
+	dec cx
+	jnz os_output_chars_tab_next
 	pop rcx
 	jmp os_output_chars_nextchar
 

@@ -194,7 +194,7 @@ os_net_i8254x_transmit:
 	mov rdi, [os_NetIOBaseMem]
 	xor eax, eax
 	mov [rdi+I8254X_REG_TDH], eax		; TDH - Transmit Descriptor Head
-	add eax, 1
+	inc eax
 	mov [rdi+I8254X_REG_TDT], eax		; TDL - Transmit Descriptor Tail
 	ret
 ; -----------------------------------------------------------------------------
@@ -216,7 +216,7 @@ os_net_i8254x_poll:
 	mov rsi, [os_NetIOBaseMem]
 	xor eax, eax
 	mov [rsi+I8254X_REG_RDH], eax		; Receive Descriptor Head
-	mov eax, 1
+	inc eax
 	mov [rsi+I8254X_REG_RDT], eax		; Receive Descriptor Tail
 
 	push rdi

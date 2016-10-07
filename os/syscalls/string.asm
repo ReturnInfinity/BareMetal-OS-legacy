@@ -33,8 +33,8 @@ os_int_to_string_next_divide:
 	div rbx						; divide by the number-base
 	push rdx					; save remainder on the stack
 	inc rcx						; and count this remainder
-	cmp rax, 0					; was the quotient zero?
-	jne os_int_to_string_next_divide		; no, do another division
+	test rax, rax					; was the quotient zero?
+	jnz os_int_to_string_next_divide		; no, do another division
 
 os_int_to_string_next_digit:
 	pop rax						; else pop recent remainder
@@ -125,8 +125,8 @@ os_string_copy:
 os_string_copy_more:
 	lodsb				; Load a character from the source string
 	stosb
-	cmp al, 0			; If source string is empty, quit out
-	jne os_string_copy_more
+	test al, al			; If source string is empty, quit out
+	jnz os_string_copy_more
 
 	pop rax
 	pop rdi
@@ -149,8 +149,8 @@ os_string_compare:
 os_string_compare_more:
 	mov al, [rsi]			; Store string contents
 	mov bl, [rdi]
-	cmp al, 0			; End of first string?
-	je os_string_compare_terminated
+	test al, al			; End of first string?
+	jz os_string_compare_terminated
 	cmp al, bl
 	jne os_string_compare_not_same
 	inc rsi
@@ -166,8 +166,8 @@ os_string_compare_not_same:
 	ret
 
 os_string_compare_terminated:
-	cmp bl, 0			; End of second string?
-	jne os_string_compare_not_same
+	test bl, bl			; End of second string?
+	jnz os_string_compare_not_same
 
 	pop rax
 	pop rbx
