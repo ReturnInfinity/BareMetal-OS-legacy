@@ -30,7 +30,7 @@ os_command_line:
 
 	; Break the contents of cli_temp_string into individual strings
 	mov al, 0x20
-	mov bl, 0x00
+	xor bl, bl
 	call os_string_change_char
 
 	mov rdi, cls_string		; 'CLS' entered?
@@ -67,9 +67,9 @@ os_command_line:
 
 	; At this point it is not one of the built-in CLI functions. Prepare to check the file system.
 	call os_file_open
-	cmp rax, 0
+	test rax, rax
 	je fail
-	mov rcx, 1
+	inc rcx
 	mov rdi, programlocation
 	; Program found, load and execute
 	call os_file_read
@@ -221,8 +221,8 @@ os_string_change_char:
 	mov cl, al
 os_string_change_char_loop:
 	mov byte al, [rsi]
-	cmp al, 0
-	je os_string_change_char_done
+	test al, al
+	jz os_string_change_char_done
 	cmp al, cl
 	jne os_string_change_char_no_change
 	mov byte [rsi], bl
@@ -276,7 +276,7 @@ os_string_chomp_start_count:		; read through string until we find a non-space ch
 
 os_string_chomp_fail:			; In this situation the string is all spaces
 	pop rdi				; We are about to bail out so make sure the stack is sane
-	mov al, 0x00
+	xor al, al
 	stosb
 	jmp os_string_chomp_done
 
@@ -286,8 +286,8 @@ os_string_chomp_fail:			; In this situation the string is all spaces
 os_string_chomp_copy:		; Copy a byte from RSI to RDI one byte at a time until we find a NULL
 	lodsb
 	stosb
-	cmp al, 0x00
-	jne os_string_chomp_copy
+	test al, al
+	jnz os_string_chomp_copy
 
 os_string_chomp_done:
 	pop rax
@@ -321,8 +321,8 @@ os_string_parse:
 os_string_parse_next_char:
 	lodsb
 	stosb
-	cmp al, 0x00			; Check if we are at the end
-	je os_string_parse_done		; If so then bail out
+	test al, al			; Check if we are at the end
+	jz os_string_parse_done		; If so then bail out
 	cmp al, ' '			; Is it a space?
 	je os_string_parse_found_a_space
 	jmp os_string_parse_next_char	; If not then grab the next char
@@ -429,7 +429,7 @@ os_bmfs_file_list:
 	mov eax, [hd1_size]
 	call os_int_to_string
 	dec rdi
-	mov al, 0
+	xor al, al
 
 	mov rsi, MiB_MSG
 	call os_string_length
@@ -483,7 +483,7 @@ os_bmfs_list_skip:
 	jne os_bmfs_list_next
 
 os_bmfs_list_done:
-	mov al, 0x00
+	xor al, al
 	stosb
 
 	pop rax

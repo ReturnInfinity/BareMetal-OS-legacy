@@ -32,9 +32,9 @@ os_pic_mask_clear_write:
 	btr ax, bx
 	out dx, al			; Write the new mask
 
-	pop ax	
+	pop ax
 	pop bx
-	pop dx 
+	pop dx
 ret
 ; -----------------------------------------------------------------------------
 

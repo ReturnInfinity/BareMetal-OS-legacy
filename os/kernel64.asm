@@ -58,7 +58,7 @@ start:
 	mov rsi, readymsg
 	call os_output
 	pop ax
-	sub ax, 1
+	dec ax
 	mov word [os_Screen_Cursor_Row], ax
 	mov word [os_Screen_Cursor_Col], 0
 

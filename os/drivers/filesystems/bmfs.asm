@@ -133,8 +133,8 @@ os_bmfs_file_read:
 	push rax
 
 	; Is it a valid read?
-	cmp rcx, 0
-	je os_bmfs_file_read_error
+	test rcx, rcx
+	jz os_bmfs_file_read_error
 
 	; Is it in the valid file handler range?
 	sub rax, 10			; Subtract the handler offset
@@ -200,7 +200,7 @@ os_bmfs_file_write:
 	push rax
 
 	; Is it a valid write?
-	cmp rcx, 0
+	test rcx, rcx
 	je os_bmfs_file_write_error
 
 	; Is it in the valid file handler range?
@@ -360,8 +360,8 @@ os_bmfs_file_delete_notfound:
 ;	RDI = Memory location to store blocks
 ; OUT:
 os_bmfs_block_read:
-	cmp rcx, 0
-	je os_bmfs_block_read_done	; Bail out if instructed to read nothing
+	test rcx, rcx
+	jz os_bmfs_block_read_done	; Bail out if instructed to read nothing
 
 	; Calculate the starting sector
 	shl rax, 12			; Multiply block start count by 4096 to get sector start count
@@ -388,8 +388,8 @@ os_bmfs_block_read_done:
 ;	RSI = Memory location of blocks to store
 ; OUT:
 os_bmfs_block_write:
-	cmp rcx, 0
-	je os_bmfs_block_write_done	; Bail out if instructed to write nothing
+	test rcx, rcx
+	jz os_bmfs_block_write_done	; Bail out if instructed to write nothing
 
 	; Calculate the starting sector
 	shl rax, 12			; Multiply block start count by 4096 to get sector start count

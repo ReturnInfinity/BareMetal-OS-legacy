@@ -298,7 +298,7 @@ ap_reset:
 align 16
 exception_gate_00:
 	push rax
-	mov al, 0x00
+	xor al, al
 	jmp exception_gate_main
 
 align 16

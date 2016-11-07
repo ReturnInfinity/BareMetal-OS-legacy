@@ -124,7 +124,7 @@ os_smp_enqueue_spin:
 
 	add word [os_QueueLen], 1
 	shr rcx, 4			; Quickly divide RCX by 16
-	add cx, 1
+	inc cx
 	cmp cx, [cpuqueuemax]
 	jne os_smp_enqueue_end
 	xor cx, cx			; We wrap around
@@ -181,9 +181,9 @@ os_smp_dequeue_spin:
 	mov rdi, rax
 	pop rax
 
-	sub word [os_QueueLen], 1
+	dec word [os_QueueLen]
 	shr rcx, 4			; Quickly divide RCX by 16
-	add cx, 1
+	inc cx
 	cmp cx, [cpuqueuemax]
 	jne os_smp_dequeue_end
 	xor cx, cx			; We wrap around
@@ -266,7 +266,7 @@ checkit:
 	sub rsi, 1
 	jmp checkit		; Core is marked as Busy, check it again
 skipit:
-	add rcx, 1
+	inc rcx
 	cmp rcx, 256
 	jne checkit
 
