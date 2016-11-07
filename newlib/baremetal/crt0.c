@@ -21,6 +21,9 @@ _start()
 	for(i=0; i<argc; i++)
 		argv[i] = (char *)b_system_config_crt0(2, (unsigned long)i);
 
+	// Set process start time to current time
+	asm volatile ("call *0x001000C8");
+
 	retval = main(argc, argv);
 
 	fflush(stdout);
