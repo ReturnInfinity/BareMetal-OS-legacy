@@ -243,9 +243,26 @@ int gettimeofday(struct timeval *p, void *z)
 }
 
 // times - Timing information for current process.
-// Minimal implementation
 clock_t times(struct tms *buf){
-        return -1;
+	// get current process time
+	unsigned long long proc_time;
+	asm volatile ("call *0x001000C0" : "=a"(proc_time));
+
+	/*
+	 * Process time is assumed to be the CPU time charged for
+	 * the execution of user instructions of the calling process.
+	 * This is not necessary accurate since CPU time may also be
+	 * charged for execution by the system on behalf of the calling
+	 * process (i.e. when a syscall is executed); the ability to
+	 * differentiate user and system time should be added in future
+	 * development.
+	 */
+	buf->tms_utime = proc_time;
+	buf->tms_stime = 0;
+	buf->tms_cutime = 0;
+	buf->tms_cutime = 0;
+
+	return proc_time;
 }
 
 void __stack_chk_fail(void)

@@ -85,6 +85,7 @@ os_net_RXBytes:		equ os_SystemVariables + 152
 os_net_RXPackets:	equ os_SystemVariables + 160
 os_hdd_BytesRead:	equ os_SystemVariables + 168
 os_hdd_BytesWrite:	equ os_SystemVariables + 176
+os_ProcessStartTime:	equ os_SystemVariables + 184
 
 ; DD - Starting at offset 256, increments by 4
 cpu_speed:		equ os_SystemVariables + 256	; in MHz

@@ -61,6 +61,30 @@ os_get_argv_end:
 
 
 ; -----------------------------------------------------------------------------
+; os_get_proc_time -- Get the current process time
+; OUT:	RAX = Current process time
+os_get_proc_time:
+	push rcx
+	mov rax, [os_ClockCounter]	; Get current time
+	mov rcx, [os_ProcessStartTime]	; Get process start time
+	sub rax, rcx			; Compute elapsed process time
+	pop rcx
+	ret
+; -----------------------------------------------------------------------------
+
+
+; -----------------------------------------------------------------------------
+; os_set_proc_start_time -- Set the process start time to the current time
+os_set_proc_start_time:
+	push rax
+	mov rax, [os_ClockCounter]
+	mov [os_ProcessStartTime], rax
+	pop rax
+	ret
+; -----------------------------------------------------------------------------
+
+
+; -----------------------------------------------------------------------------
 ; os_system_config - View or modify system configuration options
 ; IN:	RDX = Function #
 ;	RAX = Variable
