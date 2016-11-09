@@ -111,7 +111,7 @@ build/x86_64-pc-baremetal/newlib/libc.a is the compiled C library that is ready 
 	cp crt0.o ../../..
 	cd ../../..
 
-By default libc.a will be about 5.5 MiB. You can `strip` it to make it a little more compact. `strip` can decrease it to about 1.2 MiB.
+By default libc.a will be about 6.1 MiB. You can `strip` it to make it a little more compact. `strip` can decrease it to about 1.4 MiB.
 
 	strip --strip-debug libc.a
 
@@ -120,5 +120,5 @@ Compiling Your Application
 
 By default GCC will look in predefined system paths for the C headers. This will not work correctly as we need to use the Newlib C headers. Using the `-I` argument we can point GCC where to find the correct headers. Adjust the path as necessary.
 
-	gcc -I newlib-2.1.0/newlib/libc/include/ -c test.c -o test.o
+	gcc -I newlib-2.4.0/newlib/libc/include/ -c test.c -o test.o
 	ld -T app.ld -o test.app crt0.o test.o libc.a
