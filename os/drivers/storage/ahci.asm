@@ -71,7 +71,7 @@ founddrive:
 	mov [ahci_port], ecx
 	mov rdi, rsi
 	add rdi, 0x100			; Offset to port 0
-	push rcx				; Save port number
+	push rcx			; Save port number
 	shl rcx, 7			; Quick multiply by 0x80
 	add rdi, rcx
 	pop rcx				; Restore port number
@@ -129,13 +129,13 @@ iddrive:
 	shl rcx, 7			; Quick multiply by 0x80
 	add rcx, 0x100			; Offset to port 0
 
-	push rdi				; Save the destination memory address
+	push rdi			; Save the destination memory address
 
 	mov rsi, [ahci_base]
 
+	; Build the Command List
 	mov rdi, ahci_cmdlist		; command list (1K with 32 entries, 32 bytes each)
 	mov eax, 0x00010004		; 1 PRDTL Entry, Command FIS Length = 16 bytes
-
 	stosd				; DW 0 - Description Information
 	xor eax, eax
 	stosd				; DW 1 - Command Status
@@ -143,13 +143,11 @@ iddrive:
 	stosd				; DW 2 - Command Table Base Address
 	shr rax, 32			; 63..32 bits of address
 	stosd				; DW 3 - Command Table Base Address Upper
-	stosd
-	stosd
-	stosd
-	stosd
-	; DW 4 - 7 are reserved
+	xor eax, eax
+	stosq				; DW 4-7 are reserved
+	stosq
 
-	; command table
+	; Build the Command Table
 	mov rdi, ahci_cmdtable		; Build a command table for Port 0
 	mov eax, 0x00EC8027		; EC identify, bit 15 set, fis 27 H2D
 	stosd				; feature 7:0, command, c, fis
@@ -157,7 +155,9 @@ iddrive:
 	stosd				; device, lba 23:16, lba 15:8, lba 7:0
 	stosd				; feature 15:8, lba 47:40, lba 39:32, lba 31:24
 	stosd				; control, ICC, count 15:8, count 7:0
-;	stosd				; reserved
+	stosd				; reserved
+
+	; PRDT - pysical region descriptor table
 	mov rdi, ahci_cmdtable + 0x80
 	pop rax				; Restore the destination memory address
 	stosd				; Data Base Address
@@ -170,40 +170,32 @@ iddrive:
 
 	add rsi, rcx
 
-	mov rdi, rsi
-	add rdi, 0x10			; Port x Interrupt Status
 	xor eax, eax
-	stosd
+	mov [rsi+0x10], eax		; Port x Interrupt Status
 
-	mov rdi, rsi
-	add rdi, 0x18			; Offset to port 0 Command and Status
-	mov eax, [rdi]
-	bts eax, 4			; FRE
-	bts eax, 0			; ST
-	stosd
+	xor eax, eax
+	bts eax, 4			; FIS Recieve Enable (FRE)
+	bts eax, 0			; Start (ST)
+	mov eax, [rsi+0x18]             ; Offset to port 0 Command and Status
 
-	mov rdi, rsi
-	add rdi, 0x38			; Command Issue
 	mov eax, 0x00000001		; Execute Command Slot 0
-	stosd
+	mov [rsi+0x38], eax
 
 iddrive_poll:
-	mov eax, [rsi+0x38]
+	mov eax, [rsi+0x38]		; Read Command Slot 0 status
 	test eax, eax
 	jnz iddrive_poll
 
-	mov rdi, rsi
-	add rdi, 0x18			; Offset to port 0
-	mov eax, [rdi]
-	btc eax, 4			; FRE
-	btc eax, 0			; ST
-	stosd
+	mov eax, [rsi+0x18]		; Offset to port 0
+	btc eax, 4			; FIS Receive Enable (FRE)
+	btc eax, 0			; Start (ST)
+	mov [rsi+0x18], eax
 
 	pop rax
 	pop rcx
 	pop rsi
 	pop rdi
-ret
+	ret
 ; -----------------------------------------------------------------------------
 
 
@@ -225,9 +217,9 @@ readsectors:
 	push rcx
 	push rax
 
-	push rcx				; Save the sector count
-	push rdi				; Save the destination memory address
-	push rax				; Save the block number
+	push rcx			; Save the sector count
+	push rdi			; Save the destination memory address
+	push rax			; Save the block number
 	push rax
 
 	shl rdx, 7			; Quick multiply by 0x80
@@ -235,7 +227,7 @@ readsectors:
 
 	mov rsi, [ahci_base]
 
-	; Command list setup
+	; Build the Command List
 	mov rdi, ahci_cmdlist		; command list (1K with 32 entries, 32 bytes each)
 	xor eax, eax
 	mov eax, 0x00010005		; 1 PRDTL Entry, Command FIS Length = 20 bytes
@@ -246,13 +238,12 @@ readsectors:
 	stosd				; DW 2 - Command Table Base Address
 	shr rax, 32			; 63..32 bits of address
 	stosd				; DW 3 - Command Table Base Address Upper
-	stosd
-	stosd
-	stosd
-	stosd
+	xor eax, eax
+	stosq
+	stosq
 	; DW 4 - 7 are reserved
 
-	; Command FIS setup
+	; Build the Command Table
 	mov rdi, ahci_cmdtable		; Build a command table for Port 0
 	mov eax, 0x00258027		; 25 READ DMA EXT, bit 15 set, fis 27 H2D
 	stosd				; feature 7:0, command, c, fis
@@ -283,34 +274,26 @@ readsectors:
 
 	add rsi, rdx
 
-	mov rdi, rsi
-	add rdi, 0x10			; Port x Interrupt Status
 	xor eax, eax
-	stosd
+	mov [rsi+0x10], eax		; Port x Interrupt Status
 
-	mov rdi, rsi
-	add rdi, 0x18			; Offset to port 0
-	mov eax, [rdi]
-	bts eax, 4			; FRE
-	bts eax, 0			; ST
-	stosd
+	xor eax, eax
+	bts eax, 4			; FIS Receive Enable (FRE)
+	bts eax, 0			; Start (ST)
+	mov [rsi+0x18], eax		; Offset to port 0
 
-	mov rdi, rsi
-	add rdi, 0x38			; Command Issue
 	mov eax, 0x00000001		; Execute Command Slot 0
-	stosd
+	mov [rsi+0x38], eax		; Command Issue
 
 readsectors_poll:
 	mov eax, [rsi+0x38]
 	test eax, eax
 	jnz readsectors_poll
 
-	mov rdi, rsi
-	add rdi, 0x18			; Offset to port 0
-	mov eax, [rdi]
-	btc eax, 4			; FRE
-	btc eax, 0			; ST
-	stosd
+	mov eax, [rsi+0x18]		; Offset to port 0
+	btc eax, 4			; FIS Receive Enable (FRE)
+	btc eax, 0			; Start (ST)
+	mov [rsi+0x18], eax
 
 	pop rax				; rax = start
 	pop rcx				; rcx = number of sectors read
@@ -322,7 +305,7 @@ readsectors_poll:
 	add rdi, rbx
 	pop rbx
 	pop rdx
-ret
+	ret
 ; -----------------------------------------------------------------------------
 
 
@@ -344,9 +327,9 @@ writesectors:
 	push rcx
 	push rax
 
-	push rcx				; Save the sector count
-	push rsi				; Save the source memory address
-	push rax				; Save the block number
+	push rcx			; Save the sector count
+	push rsi			; Save the source memory address
+	push rax			; Save the block number
 	push rax
 
 	shl rdx, 7			; Quick multiply by 0x80
@@ -442,7 +425,7 @@ writesectors_poll:
 	add rdi, rbx
 	pop rbx
 	pop rdx
-ret
+	ret
 ; -----------------------------------------------------------------------------
 
 
