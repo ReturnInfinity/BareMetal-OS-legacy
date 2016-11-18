@@ -176,7 +176,7 @@ iddrive:
 	xor eax, eax
 	bts eax, 4			; FIS Recieve Enable (FRE)
 	bts eax, 0			; Start (ST)
-	mov eax, [rsi+0x18]             ; Offset to port 0 Command and Status
+	mov [rsi+0x18], eax             ; Offset to port 0 Command and Status
 
 	mov eax, 0x00000001		; Execute Command Slot 0
 	mov [rsi+0x38], eax
