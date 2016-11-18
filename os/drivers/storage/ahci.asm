@@ -89,6 +89,7 @@ founddrive:
 	mov [rdi+AHCI_PxCI], eax	; Clear all slots
 
 	pop rcx				; Restore port number
+
 	mov rax, ahci_cmdlist		; 1024 bytes per port
 	stosd				; Offset 00h: PxCLB – Port x Command List Base Address
 	shr rax, 32			; 63..32 bits of address
@@ -149,7 +150,7 @@ iddrive:
 
 	; Build the Command List
 	mov rdi, ahci_cmdlist		; command list (1K with 32 entries, 32 bytes each)
-	mov eax, 0x00010004		; 1 PRDTL Entry, Command FIS Length = 16 bytes
+	mov eax, 0x00010005		; 1 PRDTL Entry, Command FIS Length = 20 bytes
 	stosd				; DW 0 - Description Information
 	xor eax, eax
 	stosd				; DW 1 - Command Status
@@ -253,9 +254,8 @@ readsectors:
 	shr rax, 32			; 63..32 bits of address
 	stosd				; DW 3 - Command Table Base Address Upper
 	xor eax, eax
+	stosq				; DW 4 - 7 are reserved
 	stosq
-	stosq
-	; DW 4 - 7 are reserved
 
 	; Build the Command Table
 	mov rdi, ahci_cmdtable		; Build a command table for Port 0
