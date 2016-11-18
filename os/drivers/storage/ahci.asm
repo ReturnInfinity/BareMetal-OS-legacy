@@ -46,6 +46,11 @@ init_ahci_found:
 ; Basic config of the controller, port 0
 	mov rsi, rax			; RSI holds the ABAR
 
+; Enable AHCI
+	xor eax, eax
+	bts eax, 31
+	mov [rsi+0x04], eax
+
 ; Search the implemented ports for a drive
 	mov eax, [rsi+0x0C]		; PI – Ports Implemented
 	mov edx, eax
@@ -74,6 +79,15 @@ founddrive:
 	push rcx			; Save port number
 	shl rcx, 7			; Quick multiply by 0x80
 	add rdi, rcx
+
+	mov eax, [rdi+AHCI_PxCMD]	; Stop the port
+	btr eax, 4			; FRE
+	btr eax, 0			; ST
+	mov [rdi+AHCI_PxCMD], eax
+
+	xor eax, eax
+	mov [rdi+AHCI_PxCI], eax	; Clear all slots
+
 	pop rcx				; Restore port number
 	mov rax, ahci_cmdlist		; 1024 bytes per port
 	stosd				; Offset 00h: PxCLB – Port x Command List Base Address
@@ -173,23 +187,23 @@ iddrive:
 	xor eax, eax
 	mov [rsi+0x10], eax		; Port x Interrupt Status
 
+	mov eax, 0x00000001		; Execute Command Slot 0
+	mov [rsi+AHCI_PxCI], eax
+
 	xor eax, eax
 	bts eax, 4			; FIS Recieve Enable (FRE)
 	bts eax, 0			; Start (ST)
-	mov [rsi+0x18], eax             ; Offset to port 0 Command and Status
-
-	mov eax, 0x00000001		; Execute Command Slot 0
-	mov [rsi+0x38], eax
+	mov [rsi+AHCI_PxCMD], eax	; Offset to port 0 Command and Status
 
 iddrive_poll:
-	mov eax, [rsi+0x38]		; Read Command Slot 0 status
+	mov eax, [rsi+AHCI_PxCI]	; Read Command Slot 0 status
 	test eax, eax
 	jnz iddrive_poll
 
-	mov eax, [rsi+0x18]		; Offset to port 0
-	btc eax, 4			; FIS Receive Enable (FRE)
-	btc eax, 0			; Start (ST)
-	mov [rsi+0x18], eax
+	mov eax, [rsi+AHCI_PxCMD]	; Offset to port 0
+	btr eax, 4			; FIS Receive Enable (FRE)
+	btr eax, 0			; Start (ST)
+	mov [rsi+AHCI_PxCMD], eax
 
 	pop rax
 	pop rcx
@@ -280,20 +294,20 @@ readsectors:
 	xor eax, eax
 	bts eax, 4			; FIS Receive Enable (FRE)
 	bts eax, 0			; Start (ST)
-	mov [rsi+0x18], eax		; Offset to port 0
+	mov [rsi+AHCI_PxCMD], eax	; Offset to port 0
 
 	mov eax, 0x00000001		; Execute Command Slot 0
-	mov [rsi+0x38], eax		; Command Issue
+	mov [rsi+AHCI_PxCI], eax	; Command Issue
 
 readsectors_poll:
-	mov eax, [rsi+0x38]
+	mov eax, [rsi+AHCI_PxCI]
 	test eax, eax
 	jnz readsectors_poll
 
-	mov eax, [rsi+0x18]		; Offset to port 0
-	btc eax, 4			; FIS Receive Enable (FRE)
-	btc eax, 0			; Start (ST)
-	mov [rsi+0x18], eax
+	mov eax, [rsi+AHCI_PxCMD]	; Offset to port 0
+	btr eax, 4			; FIS Receive Enable (FRE)
+	btr eax, 0			; Start (ST)
+	mov [rsi+AHCI_PxCMD], eax
 
 	pop rax				; rax = start
 	pop rcx				; rcx = number of sectors read
@@ -411,8 +425,8 @@ writesectors_poll:
 	mov rdi, rsi
 	add rdi, 0x18			; Offset to port 0
 	mov eax, [rdi]
-	btc eax, 4			; FRE
-	btc eax, 0			; ST
+	btr eax, 4			; FRE
+	btr eax, 0			; ST
 	stosd
 
 	pop rax				; rax = start
