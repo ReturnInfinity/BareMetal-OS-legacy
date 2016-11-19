@@ -86,9 +86,7 @@ founddrive:
 	mov [rdi+AHCI_PxCMD], eax
 
 	xor eax, eax
-	mov [rdi+AHCI_PxCI], eax	; Clear all slots
-
-	pop rcx				; Restore port number
+	mov [rdi+AHCI_PxCI], eax	; Clear all command slots
 
 	mov rax, ahci_cmdlist		; 1024 bytes per port
 	stosd				; Offset 00h: PxCLB – Port x Command List Base Address
@@ -102,6 +100,7 @@ founddrive:
 	stosd				; Offset 14h: PxIE – Port x Interrupt Enable
 
 	; Query drive
+	pop rcx				; Restore port number
 	mov rdi, 0x200000
 	call iddrive
 	mov rsi, 0x200000
@@ -140,13 +139,12 @@ iddrive:
 	push rsi
 	push rcx
 	push rax
+	push rdi			; Save the destination memory address
 
 	mov rsi, [ahci_base]
 	shl rcx, 7			; Quick multiply by 0x80
 	add rcx, 0x100			; Offset to port 0
 	add rsi, rcx
-
-	push rdi			; Save the destination memory address
 
 	; Build the Command List Header
 	mov rdi, ahci_cmdlist		; command list (1K with 32 entries, 32 bytes each)
@@ -167,10 +165,8 @@ iddrive:
 	mov eax, 0x00EC8027		; EC identify, bit 15 set, fis 27 H2D
 	stosd				; feature 7:0, command, c, fis
 	xor eax, eax
-	stosd				; device, lba 23:16, lba 15:8, lba 7:0
-	stosd				; feature 15:8, lba 47:40, lba 39:32, lba 31:24
-	stosd				; control, ICC, count 15:8, count 7:0
-	stosd				; reserved
+	stosq				; the rest of the table can be clear
+	stosq
 
 	; PRDT - pysical region descriptor table
 	mov rdi, ahci_cmdtable + 0x80
@@ -269,7 +265,7 @@ readsectors:
 	stosd				; feature 15:8, lba 47:40, lba 39:32, lba 31:24
 	mov rax, rcx			; Read the number of sectors given in rcx
 	stosd				; control, ICC, count 15:8, count 7:0
-	mov rax, 0x00000000
+	xor eax, eax
 	stosd				; reserved
 
 	; PRDT setup
@@ -375,7 +371,7 @@ writesectors:
 	stosd				; feature 15:8, lba 47:40, lba 39:32, lba 31:24
 	mov rax, rcx			; Read the number of sectors given in rcx
 	stosd				; control, ICC, count 15:8, count 7:0
-	mov rax, 0x00000000
+	xor eax, eax
 	stosd				; reserved
 
 	; PRDT setup

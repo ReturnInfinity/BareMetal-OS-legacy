@@ -41,7 +41,7 @@ os_net_i8254x_init:
 
 	; Grab the MAC address
 	mov rsi, [os_NetIOBaseMem]
-	mov eax, [rsi+0x5400]				; RAL
+	mov eax, [rsi+0x5400]			; RAL
 	cmp eax, 0x00000000
 	je os_net_i8254x_init_get_MAC_via_EPROM
 	mov [os_NetMAC], al
@@ -51,7 +51,7 @@ os_net_i8254x_init:
 	mov [os_NetMAC+2], al
 	shr eax, 8
 	mov [os_NetMAC+3], al
-	mov eax, [rsi+0x5404]				; RAH
+	mov eax, [rsi+0x5404]			; RAH
 	mov [os_NetMAC+4], al
 	shr eax, 8
 	mov [os_NetMAC+5], al
