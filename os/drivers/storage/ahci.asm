@@ -371,6 +371,7 @@ writesectors:
 	stosd				; DW 2 - Command Table Base Address
 	shr rax, 32			; 63..32 bits of address
 	stosd				; DW 3 - Command Table Base Address Upper
+	xor eax, eax
 	stosq				; DW 4 - 7 are reserved
 	stosq
 
