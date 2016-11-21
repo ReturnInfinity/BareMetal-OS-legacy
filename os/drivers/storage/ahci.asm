@@ -226,8 +226,8 @@ readsectors:
 	push rcx
 	push rax
 
-	cmp rcx, 0xFFFFFFFFFFFF
-	jg readsectors_error
+;	cmp rax, qword 0xFFFFFFFFFFFF
+;	jg readsectors_error
 
 	push rcx			; Save the sector count
 	push rdi			; Save the destination memory address
@@ -347,8 +347,8 @@ writesectors:
 	push rcx
 	push rax
 
-	cmp rcx, 0xFFFFFFFFFFFF
-	jg writesectors_error
+;	cmp rax, 0xFFFFFFFFFFFF
+;	jg writesectors_error
 
 	push rcx			; Save the sector count
 	push rsi			; Save the source memory address
