@@ -101,9 +101,9 @@ founddrive:
 
 	; Query drive
 	pop rcx				; Restore port number
-	mov rdi, 0x200000
+	mov rdi, os_temp
+	mov rsi, rdi
 	call iddrive
-	mov rsi, 0x200000
 	mov eax, [rsi+200]		; Max LBA Extended
 	shr rax, 11			; rax = rax * 512 / 1048576	MiB
 ;	shr rax, 21			; rax = rax * 512 / 1073741824	GiB
