@@ -4,7 +4,7 @@ Building the Newlib C library for BareMetal OS
 Introduction
 ------------
 
-This document contains the instructions necessary to build the [Newlib](http://sourceware.org/newlib/) C library for BareMetal OS. The latest version of Newlib as of this writing is 2.4.0
+This document contains the instructions necessary to build the [Newlib](http://sourceware.org/newlib/) C library for BareMetal OS. The latest version of Newlib as of this writing is 2.5.0
 
 Newlib gives BareMetal OS access to the standard set of C library calls like `printf()`, `scanf()`, `memcpy()`, etc.
 
@@ -22,11 +22,11 @@ Create a Newlib directory and download the latest Newlib:
 
 	mkdir newlib
 	cd newlib
-	wget ftp://sourceware.org/pub/newlib/newlib-2.4.0.tar.gz
+	wget ftp://sourceware.org/pub/newlib/newlib-2.5.0.tar.gz
 
 Extract it:
 
-	tar xf newlib-2.4.0.tar.gz
+	tar xf newlib-2.5.0.tar.gz
 
 Download the latest BareMetal OS source code from GitHub:
 
@@ -36,13 +36,13 @@ Extract it:
 
 	unzip master
 
-Create a build folder alongside the extracted `newlib-2.4.0` directory:
+Create a build folder alongside the extracted `newlib-2.5.0` directory:
 
 	mkdir build
 
 Modify the following files:
 
-	newlib-2.4.0/config.sub
+	newlib-2.5.0/config.sub
 	@ Line 1379
 	  	      | -sym* | -kopensolaris* \
 	  	      | -amigaos* | -amigados* | -msdos* | -newsos* | -unicos* | -aof* \
@@ -52,7 +52,7 @@ Modify the following files:
 	  	      | -clix* | -riscos* | -uniplus* | -iris* | -rtu* | -xenix* \
 	  	      | -hiux* | -386bsd* | -knetbsd* | -mirbsd* | -netbsd* \
 	
-	newlib-2.4.0/newlib/configure.host
+	newlib-2.5.0/newlib/configure.host
 	@ Line 542
 	    z8k-*-coff)
 	  	sys_dir=z8ksim
@@ -62,7 +62,7 @@ Modify the following files:
 	+ 	;;
 	  esac
 	
-	newlib-2.4.0/newlib/libc/sys/configure.in
+	newlib-2.5.0/newlib/libc/sys/configure.in
 	@ Line 50
 	  	tic80) AC_CONFIG_SUBDIRS(tic80) ;;
 	  	w65) AC_CONFIG_SUBDIRS(w65) ;;
@@ -71,15 +71,15 @@ Modify the following files:
 	    esac;
 	  fi
 
-In `newlib-2.4.0/newlib/libc/sys` create a directory called `baremetal`:
+In `newlib-2.5.0/newlib/libc/sys` create a directory called `baremetal`:
 
-	mkdir newlib-2.4.0/newlib/libc/sys/baremetal
+	mkdir newlib-2.5.0/newlib/libc/sys/baremetal
 
 Copy the contents of the `newlib/baremetal` directory from the BareMetal OS code into the `newlib/libc/sys/baremetal` directory.
 
 Refresh the configuration files:
 
-	cd newlib-2.4.0/newlib/libc/sys
+	cd newlib-2.5.0/newlib/libc/sys
 	autoconf
 	cd baremetal
 	autoreconf
@@ -89,7 +89,7 @@ Change directory to the `build` directory that was created earlier.
 
 Run the following:
 
-	../newlib-2.4.0/configure --target=x86_64-pc-baremetal --disable-multilib
+	../newlib-2.5.0/configure --target=x86_64-pc-baremetal --disable-multilib
 
 Edit the Makefile with the following commands. This will instruct the compiler to use the default applications instead of looking for a special cross-compiler that does not exist (and is not necessary).
 
@@ -120,5 +120,5 @@ Compiling Your Application
 
 By default GCC will look in predefined system paths for the C headers. This will not work correctly as we need to use the Newlib C headers. Using the `-I` argument we can point GCC where to find the correct headers. Adjust the path as necessary.
 
-	gcc -I newlib-2.4.0/newlib/libc/include/ -c test.c -o test.o
+	gcc -I newlib-2.5.0/newlib/libc/include/ -c test.c -o test.o
 	ld -T app.ld -o test.app crt0.o test.o libc.a
