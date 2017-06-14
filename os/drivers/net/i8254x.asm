@@ -135,6 +135,15 @@ os_net_i8254x_reset:
 	mov [rsi+I8254X_REG_RDBAL], eax		; Receive Descriptor Base Address Low
 	shr rax, 32
 	mov [rsi+I8254X_REG_RDBAH], eax		; Receive Descriptor Base Address High
+
+	push rdi
+	mov rdi, os_eth_rx_buffer
+	mov rax, 0x1c9000
+	stosq
+	mov rax, 0
+	stosq
+	pop rdi
+
 	mov eax, (32 * 16)
 	mov [rsi+I8254X_REG_RDLEN], eax		; Receive Descriptor Length
 	xor eax, eax
@@ -143,12 +152,6 @@ os_net_i8254x_reset:
 	mov [rsi+I8254X_REG_RDT], eax		; Receive Descriptor Tail
 	mov eax, 0x04008006			; Receiver Enable, Store Bad Packets, Broadcast Accept Mode, Strip Ethernet CRC from incoming packet
 	mov [rsi+I8254X_REG_RCTL], eax		; Receive Control Register
-
-	push rdi
-	mov rdi, os_eth_rx_buffer
-	mov rax, 0x1c9000
-	stosd
-	pop rdi
 
 	mov rax, os_eth_tx_buffer
 	mov [rsi+I8254X_REG_TDBAL], eax		; Transmit Descriptor Base Address Low
@@ -213,17 +216,20 @@ os_net_i8254x_poll:
 	push rcx
 	rep movsb
 	pop rcx
+
+	push rdi
+	mov rdi, os_eth_rx_buffer
+	mov rax, 0x1c9000
+	stosq
+	mov rax, 0
+	stosq
+	pop rdi
+
 	mov rsi, [os_NetIOBaseMem]
 	xor eax, eax
 	mov [rsi+I8254X_REG_RDH], eax		; Receive Descriptor Head
 	inc eax
 	mov [rsi+I8254X_REG_RDT], eax		; Receive Descriptor Tail
-
-	push rdi
-	mov rdi, os_eth_rx_buffer
-	mov rax, 0x1c9000
-	stosd
-	pop rdi
 
 	ret
 ; -----------------------------------------------------------------------------
