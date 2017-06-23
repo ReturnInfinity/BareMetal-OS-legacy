@@ -17,6 +17,8 @@
 // maxn = 1000000	primes = 78498
 // maxn = 5000000	primes = 348513
 // maxn = 10000000	primes = 664579
+// maxn = 4294967295	primes = 203280221
+// maxn = 18446744073709551615	primes aprox 4.15829ee17
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -33,6 +35,7 @@ void *prime_process(void *param);
 
 // primes is set to 1 since we don't calculate for '2' as it is a known prime number
 unsigned long max_number=0, primes=1, local=0, process_stage=0, processes=0, max_processes=0, singletime=0, k=0;
+unsigned long max_root=0xFFFFFFFF; // max_number <= max_64 implies sqr(max_number) <= sqr(max_64)
 float speedup;
 time_t start, finish;
 
@@ -67,8 +70,8 @@ int main(int argc, char *argv[])
 
 	printf("Using a maximum of %ld process(es). Searching up to %ld.\n", max_processes, max_number);
 
-	for (processes=1; processes <= max_processes; processes*=2)
-	{
+	for (processes=1; processes <= max_processes; processes++) // changed to ++ from *=2 so processes matches comments below
+	{       
 		primes = 1;
 		process_stage = processes;
 
@@ -81,6 +84,23 @@ int main(int argc, char *argv[])
 		printf("Processing with %ld process(es)...\n", processes);
 
 		time(&start);				// Grab the starting time
+	
+		if(!(max_number&1)) max_number--; // drop max to odd
+
+		// using McDougall/Wotherspoon to find root of max_number as starting point for all threads
+		unsigned long xx_k, x_k, f_val, df_val; // root finding variables
+		xx_k = max_root;				// x*_0 = x_0
+		f_val = max_root * max_root - max_number;	// f(x_0)
+		df_val = max_root * 2;				// f'((x_0+x*_0)/2) = f'(x_0)
+		x_k = max_root / 2 + max_number / df_val;	// x_1  = x_0 - f(x_0)/f'((x_0+x*_0)/2) = x_0 - f(x_0)/f'(x_0)
+		for(int i=1; i<30 && (max_root - x_k); i++){
+			max_root= x_k;
+			f_val	= x_k * x_k - max_number;
+			xx_k	= (df_val * x_k - f_val) / df_val;
+			df_val	= x_k + xx_k;
+			x_k	= (df_val * x_k - f_val) / df_val;
+		}
+		// end root algo
 
 		// Spawn the worker processes
 		for (k=0; k<processes; k++)
@@ -103,7 +123,7 @@ int main(int argc, char *argv[])
 #else
 		for (k=0; k<processes; k++)
 		{
-			pthread_join(worker[k], NULL);
+			pthread_join(worker[k], NULL);	// Wait for process k to terminate
 		}
 #endif
 
@@ -130,13 +150,13 @@ int main(int argc, char *argv[])
 // The only even prime number is 2. All other even numbers can be divided by 2.
 // 1 process	1: 3 5 7 ...
 // 2 processes	1: 3 7 11 ...	2: 5 9 13 ...
-// 3 processes	1: 3 9 15 ...	2: 5 11 17 ...	3: 7 13 19 ...
+// 3 processes	1: 3 9 15 ...	2: 5 11 17 ...	3: 7 13 19 ...			// not done when processes*=2
 // 4 processes	1: 3 11 19 ...	2: 5 13 21 ...	3: 7 15 23 ...	4: 9 17 25...
 // And so on.
 
 void *prime_process(void *param)
 {
-	register unsigned long h, i, j, tprimes=0;
+	register unsigned long h, i, j, tprimes=0, iRoot=max_root, iFloor;
 
 	// Lock process_stage, copy it to local var, subtract 1 from process_stage, unlock it.
 #ifdef BAREMETAL
@@ -145,7 +165,7 @@ void *prime_process(void *param)
 	pthread_mutex_lock(&mutex1);
 #endif
 
-	i = (process_stage * 2) + 1;
+	iFloor = (process_stage * 2) + 1;
 	process_stage--;
 
 #ifdef BAREMETAL
@@ -157,17 +177,16 @@ void *prime_process(void *param)
 	h = processes * 2;
 
 	// Process
-	for(; i<=max_number; i+=h)
+	for(i = max_number - (max_number - iFloor) % h; i>=iFloor; i-=h)
 	{
-		for(j=2; j*j<=i; j++)
-		{
-			if(i%j==0) break; // Number is divisible by some other number. So break out
-		}
-		if(j*j>i)
-		{
-			tprimes = tprimes + 1;
-		}
-	} // Continue loop up to max number
+		// use a step of Babylonian to find root of i
+		// I think one step is probably ok until around h >= 64379, then you may need two steps
+		iRoot = (iRoot + i / iRoot) / 2;
+		// end root algo
+		
+		for(j=3; j<=iRoot && i%j; j+=2);
+		if(j>iRoot) tprimes++;
+	} // Continue loop down from max number
 
 	// Add tprimes to primes.
 #ifdef BAREMETAL

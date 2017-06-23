@@ -12,10 +12,11 @@
 // Linux/BSD compile using GCC (Tested with 4.7)
 // gcc primesmp.c -o primesmp
 //
-// maxn = 500000	primes = 41538
-// maxn = 1000000	primes = 78498
-// maxn = 5000000	primes = 348513
-// maxn = 10000000	primes = 664579
+// maxn = 500000	=0x000000000007a120	primes = 41538
+// maxn = 1000000	=0x00000000000f4240	primes = 78498
+// maxn = 5000000	=0x00000000004c4b40	primes = 348513
+// maxn = 10000000	=0x0000000000989680	primes = 664579
+// maxn = 4294967295	=0x00000000ffffffff	primes = 203280221	(max_32)
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -49,16 +50,32 @@ int main(int argc, char *argv[])
 	printf("Prime v1.5 - Searching up to %ld.\nProcessing...\n", max_number);
 
 	time(&start);
+	
+	if(!(max_number&1))max_number--; // drop max to odd
+	unsigned long xx_k, x_k, f_val, df_val;	// root finding variables
+	unsigned long iRoot=0xFFFFFFFF;		// max_number <= max_64 implies sqr(max_number) <= sqr(max_64)
+	// using McDougall/Wotherspoon to find square root of max_number
+	xx_k 	= iRoot;			// x*_0 = x_0
+	f_val 	= iRoot * iRoot - max_number;	// f(x_0)
+	df_val 	= iRoot * 2;			// f'((x_0+x*_0)/2) = f'(x_0)
+	x_k 	= iRoot / 2 + max_number / df_val;// x_1  = x_0 - f(x_0)/f'((x_0+x*_0)/2) = x_0 - f(x_0)/f'(x_0)
+	for(j=1; j<30 && (iRoot - x_k); j++){
+		iRoot  = x_k;
+		f_val  = x_k * x_k - max_number;
+		xx_k   = (df_val * x_k - f_val) / df_val;
+		df_val = x_k + xx_k;
+		x_k    = (df_val * x_k - f_val) / df_val;
+       	}
+       	// end root algo
 
-	for(i=3; i<=max_number; i+=2)
+	for(i=max_number; i>2; i-=2) // reversed i to count down so previous step's iRoot is a good starting point
 	{
-		for(j=2; j*j<=i; j++)
-		{
-			if(i%j==0) break; //Number is divisble by some other number. So break out
-		}
-		if(j*j>i)
-			primes++;
-
+		// using a step of Babylonian to find the square root of i from previous iRoot
+		iRoot = (iRoot + i / iRoot) / 2;
+		// end root algo
+		
+		for(j=3; j<=iRoot && i%j; j+=2); // test i for divisibility by j
+		if(j>iRoot)primes++;             // count as prime when not divisible
 	} //Continue loop up to max number
 
 	time(&finish);
