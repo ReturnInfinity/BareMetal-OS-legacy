@@ -1,6 +1,6 @@
 # BareMetal OS -- a 64-bit OS written in Assembly for x86-64 systems #
 
-[![Join the chat at https://gitter.im/ReturnInfinity/BareMetal-OS](https://badges.gitter.im/ReturnInfinity/BareMetal-OS.svg)](https://gitter.im/ReturnInfinity/BareMetal-OS?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+This repo is no longer updated. Development of the BareMetal kernel has moved to https://github.com/ReturnInfinity/BareMetal-kernel
 
 Copyright (C) 2007-2017 Return Infinity -- see LICENSE.TXT
 
